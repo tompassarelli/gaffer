@@ -2,8 +2,10 @@
 
 *Every squad needs a gaffer.*
 
-Which model? What effort? A preset subagent or a bespoke one? A one-off
-spawn or a staffed workflow? **Let the gaffer figure it out.**
+Orchestrating agentic workflows is complicated. Which model(s), at what
+effort(s)? Preset subagents or purpose-built ones? How should each worker
+be prompted, and what should each report back? **Let the gaffer figure it
+out.**
 
 A Claude Code plugin that routes every piece of delegated work: the right
 model, at the right effort, with prompting calibrated to that model —
