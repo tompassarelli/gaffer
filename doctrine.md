@@ -24,7 +24,7 @@ LAWS
    sonnet-tier agent, however mechanical the task looks — the stack layer
    sets the floor, not surface difficulty. Frontier or foundational work is
    opus tier minimum. Sonnet extends established patterns in solidified
-   code; opus does frontier work.
+   code; opus does novel/judgment work.
 2. SHINGLE LAW: each model has ~2 practical effort rungs — SONNET: low,
    medium · OPUS: high, xhigh (max = rare, critical only). The dominated
    middle — sonnet-high, opus-low/medium — is never the right pick: if a
@@ -33,8 +33,9 @@ LAWS
    suffices, it was a sonnet task). Route on one continuous ramp:
    sonnet-low → sonnet-medium → opus-high → opus-xhigh → your top tier.
    Harder ⇒ climb the MODEL or step to the next real rung; never crank a
-   dominated middle. high→xhigh: step up when being wrong is expensive or
-   the task is at the frontier (designer, hardest debugging, long-horizon).
+   dominated middle. high = default judgment; xhigh = HARD/hardest tasks
+   (designer, gnarly debugging, long-horizon); max = FRONTIER only —
+   genuinely at-the-edge problems, rare, with demonstrated headroom.
 3. PIN BOTH DIALS on every spawn: model AND effort. The preset agents do
    this for you; custom spawns must do it explicitly.
 4. BLAST RADIUS routes up; importance alone never does. A hard-but-local
