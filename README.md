@@ -2,8 +2,12 @@
 
 *Every squad needs a gaffer.*
 
-A Claude Code plugin that picks the right model, at the right effort, with
-the right prompting, for every piece of delegated work — automatically.
+Which model? What effort? A preset subagent or a bespoke one? A one-off
+spawn or a staffed workflow? **Let the gaffer figure it out.**
+
+A Claude Code plugin that routes every piece of delegated work: the right
+model, at the right effort, with prompting calibrated to that model —
+whether it's a single subagent or a multi-stage workflow.
 
 Install it and your sessions gain:
 
