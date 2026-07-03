@@ -25,11 +25,16 @@ LAWS
    sets the floor, not surface difficulty. Frontier or foundational work is
    opus tier minimum. Sonnet extends established patterns in solidified
    code; opus does frontier work.
-2. SHINGLE LAW: each model has ~2 practical effort rungs, and a model's top
-   rung is dominated by the next model's bottom rung (sonnet-high is almost
-   never right — that is opus-medium's job). Route on one continuous ramp:
-   sonnet-low → sonnet-medium → opus-medium → opus-high/xhigh → your top
-   tier. Harder ⇒ climb the MODEL; don't crank effort on a low ceiling.
+2. SHINGLE LAW: each model has ~2 practical effort rungs — SONNET: low,
+   medium · OPUS: high, xhigh (max = rare, critical only). The dominated
+   middle — sonnet-high, opus-low/medium — is never the right pick: if a
+   task needs opus at all it needs opus's ceiling, so run it high MINIMUM
+   (low/medium starve the ceiling you escalated for; if medium-effort truly
+   suffices, it was a sonnet task). Route on one continuous ramp:
+   sonnet-low → sonnet-medium → opus-high → opus-xhigh → your top tier.
+   Harder ⇒ climb the MODEL or step to the next real rung; never crank a
+   dominated middle. high→xhigh: step up when being wrong is expensive or
+   the task is at the frontier (designer, hardest debugging, long-horizon).
 3. PIN BOTH DIALS on every spawn: model AND effort. The preset agents do
    this for you; custom spawns must do it explicitly.
 4. BLAST RADIUS routes up; importance alone never does. A hard-but-local
@@ -62,7 +67,7 @@ per stage yourself:
   hold at once
 - build/transform stages → gaffer:implementer (sonnet-medium); layer floor
   still applies per stage — foundational targets get gaffer:integrator
-- verify stages → gaffer:verifier (opus-medium) per finding, in parallel;
+- verify stages → gaffer:verifier (opus-high) per finding, in parallel;
   the verifier never reuses the finder's tier below opus
 - judge/synthesis stages → gaffer:judge (opus-high)
 Never let a stage inherit the session's model/effort implicitly (in a

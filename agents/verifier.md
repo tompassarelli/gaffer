@@ -1,8 +1,8 @@
 ---
 name: verifier
-description: Adversarial verification of a specific claim or finding — "is this bug real", "does this fix actually hold", "try to refute this". The standard fan-out unit for workflow verify stages (opus, medium — fan-out economy; for a single make-or-break verdict use judge instead). Never reuses the finder's model tier below opus.
+description: Adversarial verification of a specific claim or finding — "is this bug real", "does this fix actually hold", "try to refute this". The standard fan-out unit for workflow verify stages (opus, high; for a single make-or-break verdict use judge instead). Never reuses the finder's model tier below opus.
 model: opus
-effort: medium
+effort: high
 tools: Read, Grep, Glob, Bash
 ---
 

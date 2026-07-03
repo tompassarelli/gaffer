@@ -74,10 +74,10 @@ const RECIPES = [
     description: "Research DEEP-DIVE tier — how a system actually works, why it behaves as it does, root-cause, or grounding a proposed design against real behavior. Read-only, opus/high: depth over breadth, traces to ground truth rather than simulating from the text. Produces UNDERSTANDING, not a decision (→ designer) or a change (→ integrator). Fan out multiple analysts over distinct subsystems when the analysis needs more than one held at once. Do NOT use for mere location/gathering (→ researcher).",
   },
   {
-    name: "verifier", model: "opus", effort: "medium",
+    name: "verifier", model: "opus", effort: "high",
     tools: "Read, Grep, Glob, Bash",
     tagline: "one claim in, one adversarial verdict out",
-    description: "Adversarial verification of a specific claim or finding — \"is this bug real\", \"does this fix actually hold\", \"try to refute this\". The standard fan-out unit for workflow verify stages (opus, medium — fan-out economy; for a single make-or-break verdict use judge instead). Never reuses the finder's model tier below opus.",
+    description: "Adversarial verification of a specific claim or finding — \"is this bug real\", \"does this fix actually hold\", \"try to refute this\". The standard fan-out unit for workflow verify stages (opus, high; for a single make-or-break verdict use judge instead). Never reuses the finder's model tier below opus.",
   },
   {
     name: "judge", model: "opus", effort: "high",
