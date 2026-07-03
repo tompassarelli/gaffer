@@ -1,0 +1,23 @@
+{
+  "name": "gaffer",
+  "description": "The gaffer picks the squad: automatic model/effort routing for delegated work, plus per-model prompt payloads (praxis deltas) baked into pre-tuned agents.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Tom Passarelli",
+    "url": "https://github.com/tompassarelli"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/doctrine.md\"",
+            "timeout": 5,
+            "statusMessage": "Gaffer picking the squad..."
+          }
+        ]
+      }
+    ]
+  }
+}

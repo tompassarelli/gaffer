@@ -1,0 +1,14 @@
+{
+  "name": "gaffer",
+  "owner": {
+    "name": "Tom Passarelli",
+    "url": "https://github.com/tompassarelli"
+  },
+  "plugins": [
+    {
+      "name": "gaffer",
+      "source": "./",
+      "description": "Automatic model/effort routing for delegated work + per-model prompt payloads baked into pre-tuned agents."
+    }
+  ]
+}
