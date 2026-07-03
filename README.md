@@ -22,7 +22,7 @@ Install it and your sessions gain:
    - **Shingle law** — each model has ~2 useful effort rungs, and a model's
      top rung is dominated by the next model's bottom rung. Harder ⇒ climb
      the model, don't crank effort against a low ceiling.
-2. **A pre-tuned squad** — five agents, each with model + effort pinned and
+2. **A pre-tuned squad** — agents with model + effort pinned and
    a *consumer-calibrated prompt payload* baked in:
 
    | Agent | Model / effort | Shape it plays |
@@ -40,7 +40,7 @@ Install it and your sessions gain:
    doctrine tells the session which member plays which stage, and stops
    workers from silently inheriting a top-tier session's model.
 
-3. **Two skills**:
+3. **Skills**:
    - `compose` — assemble a custom payload for spawns the presets don't
      cover (Workflow calls, unusual pairings).
    - `elicit` — calibrate a payload for a model gaffer doesn't know yet,
