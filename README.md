@@ -31,7 +31,8 @@ Install it and your sessions gain:
    | `gaffer:implementer` | sonnet / medium | one feature/fix inside known patterns |
    | `gaffer:integrator` | opus / high | cross-file work, ambiguous debugging, foundational layers |
    | `gaffer:designer` | opus / xhigh | choosing shapes: APIs, data models, decomposition (decision-only, read-only tools) |
-   | `gaffer:researcher` | sonnet / low | mapping territory, answering with provenance |
+   | `gaffer:researcher` | sonnet / low | scout: locate, map, gather sources (breadth, fan-out) |
+   | `gaffer:analyst` | opus / high | deep-dive: how/why it works, root-cause, design-grounding (read-only) |
    | `gaffer:verifier` | opus / medium | adversarial verification of one claim (workflow verify stages, fan-out) |
    | `gaffer:judge` | opus / high | scoring competing alternatives; single make-or-break verdicts |
 

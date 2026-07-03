@@ -64,8 +64,14 @@ const RECIPES = [
   {
     name: "researcher", model: "sonnet", effort: "low", posture: "explore",
     tools: "Read, Grep, Glob, Bash, WebSearch, WebFetch",
-    tagline: "understanding, with provenance",
-    description: "Research-shaped tasks — map unknown territory, sweep a codebase or the web, answer a question with cited provenance. Read-only; never blocks, always reports (dead ends included). Cheap fan-out unit (sonnet, low effort) — spawn several in parallel for multi-angle sweeps.",
+    tagline: "gathered findings, with provenance",
+    description: "Research SCOUT tier — locate, map, gather: where is X, what calls Y, sweep a codebase or the web for sources, map unknown territory. Read-only, cheap fan-out unit (sonnet, low effort) — spawn several in parallel for multi-angle sweeps. GATHERS and reports; does not deep-synthesize or conclude. For deep analysis / root-cause / grounding a design in real behavior, use analyst instead.",
+  },
+  {
+    name: "analyst", model: "opus", effort: "high", posture: "explore",
+    tools: "Read, Grep, Glob, Bash, WebSearch, WebFetch",
+    tagline: "understanding, grounded in real behavior",
+    description: "Research DEEP-DIVE tier — how a system actually works, why it behaves as it does, root-cause, or grounding a proposed design against real behavior. Read-only, opus/high: depth over breadth, traces to ground truth rather than simulating from the text. Produces UNDERSTANDING, not a decision (→ designer) or a change (→ integrator). Fan out multiple analysts over distinct subsystems when the analysis needs more than one held at once. Do NOT use for mere location/gathering (→ researcher).",
   },
   {
     name: "verifier", model: "opus", effort: "medium",

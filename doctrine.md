@@ -12,8 +12,12 @@ SHAPES → SQUAD
   at stake → gaffer:integrator (opus, high)
 - design — choose the shape: APIs, data models, decomposition, naming that
   commits the system → gaffer:designer (opus, xhigh)
-- research — map unknown territory, answer questions with provenance
+- research/scout — locate, map, gather sources; breadth, cheap, fan-out
   → gaffer:researcher (sonnet, low)
+- analyze — deep-dive: how does this work, why does it break, does this
+  design hold against real behavior; depth, read-only → gaffer:analyst
+  (opus, high). Fan out multiple over distinct subsystems when one can't be
+  held at once.
 
 LAWS
 1. LAYER FLOOR: foundational / library / architecture code never routes to a
@@ -53,6 +57,9 @@ workflow you author. Squad members plug in via agentType —
 agent(prompt, {agentType: 'gaffer:researcher'}) — or pin model+effort
 per stage yourself:
 - discovery/finder stages → gaffer:researcher (sonnet-low), fan out wide
+- deep-analysis/root-cause stages → gaffer:analyst (opus-high); fan out over
+  distinct subsystems — parallel analysts cover what one coordinator can't
+  hold at once
 - build/transform stages → gaffer:implementer (sonnet-medium); layer floor
   still applies per stage — foundational targets get gaffer:integrator
 - verify stages → gaffer:verifier (opus-medium) per finding, in parallel;
