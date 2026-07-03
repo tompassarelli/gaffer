@@ -36,6 +36,18 @@ LAWS
    workers' load-bearing claims yourself (spot-check; never trust a bare
    "done").
 
+SPAWN SURFACES — a squad member is a (role, model, effort) tuple, not a
+tool. Invoke it through whatever spawn surface your harness gives you:
+- native Agent tool available → subagent_type: 'gaffer:<role>'
+- Workflow → agent(prompt, {agentType: 'gaffer:<role>'})
+- a custom dispatch (SDK / MCP / a substrate that denies the native Agent
+  tool) → spawn on that surface passing the role's pinned model+effort (the
+  SHAPES→SQUAD list above gives every pin) + a role tag if the surface
+  supports one. The payload (role/posture/delta) rides the spawn regardless
+  of surface. If the native Agent tool is denied, that is a routing
+  instruction, not a wall — translate to the available surface, never abandon
+  the squad pick or drop to an unrouted spawn.
+
 WORKFLOWS (incl. ultracode): these laws govern STAFFING every stage of any
 workflow you author. Squad members plug in via agentType —
 agent(prompt, {agentType: 'gaffer:researcher'}) — or pin model+effort
