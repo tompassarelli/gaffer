@@ -46,6 +46,7 @@ LAWS
    workers' load-bearing claims yourself (spot-check; never trust a bare
    "done").
 
+<!-- gaffer:spawn-surfaces adapter=native (default; inject-doctrine.sh swaps this block per GAFFER_SPAWN_ADAPTER / dispatch=) -->
 SPAWN SURFACES — a squad member is a (role, model, effort) tuple, not a
 tool. Invoke it through whatever spawn surface your harness gives you:
 - native Agent tool available → subagent_type: 'gaffer:<role>'
@@ -57,6 +58,7 @@ tool. Invoke it through whatever spawn surface your harness gives you:
   of surface. If the native Agent tool is denied, that is a routing
   instruction, not a wall — translate to the available surface, never abandon
   the squad pick or drop to an unrouted spawn.
+<!-- /gaffer:spawn-surfaces -->
 
 WORKFLOWS (incl. ultracode): these laws govern STAFFING every stage of any
 workflow you author. Squad members plug in via agentType —
