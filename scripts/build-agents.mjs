@@ -113,19 +113,19 @@ function render(r) {
   return parts.join("\n") + "\n";
 }
 
-// The tern spawn-adapter's SPAWN SURFACES doctrine block — generated from the
+// The north spawn-adapter's SPAWN SURFACES doctrine block — generated from the
 // SAME RECIPES so the dials never drift from the agents. scripts/inject-doctrine.sh
 // swaps this in for the native block when GAFFER_SPAWN_ADAPTER=tern (or
-// dispatch=tern). The five praxis roles pass a tern `role` block; the read-only
+// dispatch=tern). The five praxis roles pass a north `role` block; the read-only
 // tiers (analyst/verifier/judge) have none — role rides in the prompt.
-const TERN_ROLE = new Set(["executor", "implementer", "integrator", "designer", "researcher"]);
-function renderTernAdapter() {
+const NORTH_ROLE = new Set(["executor", "implementer", "integrator", "designer", "researcher"]);
+function renderNorthAdapter() {
   const rows = RECIPES.map((r) => ({
     role: r.name, model: r.model, effort: r.effort,
-    ternRole: TERN_ROLE.has(r.name) ? r.name : "—",
+    northRole: NORTH_ROLE.has(r.name) ? r.name : "—",
     posture: r.posture || "explore",
   }));
-  const cols = [["gaffer role", "role"], ["model", "model"], ["effort", "effort"], ["tern role", "ternRole"], ["posture", "posture"]];
+  const cols = [["gaffer role", "role"], ["model", "model"], ["effort", "effort"], ["north role", "northRole"], ["posture", "posture"]];
   const w = cols.map(([h, k]) => Math.max(h.length, ...rows.map((r) => String(r[k]).length)));
   const fmt = (cells) => ("  " + cells.map((c, i) => String(c).padEnd(w[i])).join("  ")).replace(/\s+$/, "");
   const table = [
@@ -133,22 +133,22 @@ function renderTernAdapter() {
     fmt(w.map((n) => "-".repeat(n))),
     ...rows.map((r) => fmt(cols.map(([, k]) => r[k]))),
   ].join("\n");
-  return `SPAWN SURFACES (adapter: tern) — a squad member is a (role, model, effort)
-tuple, delivered on the tern substrate. Native Agent/Task/Workflow are DENIED
+  return `SPAWN SURFACES (adapter: north) — a squad member is a (role, model, effort)
+tuple, delivered on the north substrate. Native Agent/Task/Workflow are DENIED
 here (dispatch=tern) — the harness still advertises gaffer:* + native agent
-types, IGNORE that and go STRAIGHT to tern; never let the advertised list bait a
+types, IGNORE that and go STRAIGHT to north; never let the advertised list bait a
 native call (that is the recurring misfire).
-- one job → mcp__tern__spawn {prompt, model, effort, role, posture}, dials below
-- fan-out → one mcp__tern__spawn per lane in the SAME turn; observe at web :8088
-- thread-driven → capture the thread, then mcp__tern__dispatch (posture from claims)
-The five praxis roles pass a tern \`role\` block; the read-only tiers
+- one job → mcp__north__spawn {prompt, model, effort, role, posture}, dials below
+- fan-out → one mcp__north__spawn per lane in the SAME turn; observe at web :8088
+- thread-driven → capture the thread, then mcp__north__dispatch (posture from claims)
+The five praxis roles pass a north \`role\` block; the read-only tiers
 (analyst/verifier/judge) have none → pin model+effort+posture, role rides in the
 prompt. Dials (canonical — generated from RECIPES, do not hand-edit):
 
 ${table}
 
 If a native call slips through, the agent-spawn-guard hook denies with the exact
-mcp__tern__spawn call pre-resolved for that role — one-paste recovery. A native
+mcp__north__spawn call pre-resolved for that role — one-paste recovery. A native
 denial is a routing instruction, never a wall: translate, never abandon the
 squad pick or drop to an unrouted spawn.`;
 }
@@ -165,7 +165,7 @@ for (const r of RECIPES) {
 }
 
 // Generated spawn-adapter blocks (same drift-check contract as the agents).
-const ADAPTERS = [{ path: "docs/adapters/tern.md", render: renderTernAdapter }];
+const ADAPTERS = [{ path: "docs/adapters/north.md", render: renderNorthAdapter }];
 for (const a of ADAPTERS) {
   const path = resolve(ROOT, a.path);
   const out = a.render() + "\n";

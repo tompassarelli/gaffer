@@ -29,7 +29,7 @@ adapter="${GAFFER_SPAWN_ADAPTER:-}"
 if [ -z "$adapter" ]; then
   disp="$(grep -E '^dispatch=' "$HOME/.claude/my-config.state" 2>/dev/null | tail -1 | cut -d= -f2-)"
   case "$disp" in
-    tern) adapter="tern" ;;
+    tern|north) adapter="north" ;;
     *)    adapter="native" ;;
   esac
 fi
