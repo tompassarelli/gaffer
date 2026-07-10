@@ -115,8 +115,8 @@ function render(r) {
 
 // The north spawn-adapter's SPAWN SURFACES doctrine block — generated from the
 // SAME RECIPES so the dials never drift from the agents. scripts/inject-doctrine.sh
-// swaps this in for the native block when GAFFER_SPAWN_ADAPTER=tern (or
-// dispatch=tern). The five praxis roles pass a north `role` block; the read-only
+// swaps this in for the native block when GAFFER_SPAWN_ADAPTER=north (legacy tern accepted, or
+// dispatch=north). The five praxis roles pass a north `role` block; the read-only
 // tiers (analyst/verifier/judge) have none — role rides in the prompt.
 const NORTH_ROLE = new Set(["executor", "implementer", "integrator", "designer", "researcher"]);
 function renderNorthAdapter() {

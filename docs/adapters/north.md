@@ -1,6 +1,6 @@
 SPAWN SURFACES (adapter: north) — a squad member is a (role, model, effort)
 tuple, delivered on the north substrate. Native Agent/Task/Workflow are DENIED
-here (dispatch=tern) — the harness still advertises gaffer:* + native agent
+here (dispatch=north) — the harness still advertises gaffer:* + native agent
 types, IGNORE that and go STRAIGHT to north; never let the advertised list bait a
 native call (that is the recurring misfire).
 - one job → mcp__north__spawn {prompt, model, effort, role, posture}, dials below
