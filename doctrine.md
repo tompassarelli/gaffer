@@ -63,6 +63,11 @@ orchestrator, atomic ⇒ worker. Why the cap: audits showed lanes almost never
 fan out (1 sub-spawn across 15 spawns), and an uncapped depth invites the
 opposite failure — turtles all the way down. Two tiers fixes both ends.
 
+BRIEF DONE-BARS. Every brief an orchestrator fans out ends each step with a
+checkable done-bar — a command + its expected output, or a grep + the hit
+count it must return. Verification means checking the worker against its bars;
+a bare "done" is never accepted.
+
 <!-- gaffer:spawn-surfaces adapter=native (default; inject-doctrine.sh swaps this block per GAFFER_SPAWN_ADAPTER / dispatch=) -->
 SPAWN SURFACES — a squad member is a (role, model, effort) tuple, not a
 tool. Invoke it through whatever spawn surface your harness gives you:
