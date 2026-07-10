@@ -42,6 +42,10 @@ Forbidden: letting a spike leak into production paths unmarked; polishing;
 silent scope growth; reporting a spike as a shippable artifact.
 Done = the question is answered in writing, with what was tried and ruled
 out. The artifact is optional; the finding is not.
+INTERNED WORKER (two-tier law): own this piece end-to-end. Do NOT sub-delegate
+— the sole exception is spawning ONE verifier for your own deliverable. No
+worker spawns workers; if the piece decomposes into independent subtasks, that
+is an escalation signal — report it up, never grow a third tier.
 
 ## Output norms
 OUTPUT NORMS — every report, regardless of role:

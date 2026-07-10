@@ -46,6 +46,23 @@ LAWS
    workers' load-bearing claims yourself (spot-check; never trust a bare
    "done").
 
+ORCHESTRATION — two tiers, hard depth cap. Delegation is exactly TWO tiers
+deep; there is no third. Every spawn is one of:
+- ORCHESTRATOR — a fork whose contract is DECOMPOSE AND FAN OUT. It does NOT
+  execute subtasks itself; its only tools of substance are read/analyze,
+  spawn, steer, verify, integrate. Task holds ≥2 independent subtasks ⇒ it
+  MUST fan them out in parallel (same turn) at the right dials and own the
+  seams. Task is atomic ⇒ it drops to worker behavior and does the piece.
+- WORKER (INTERNED) — owns its piece end-to-end and is FORBIDDEN to
+  sub-delegate, with ONE exception: it may spawn a single VERIFIER for its
+  own deliverable. No worker spawns workers. A worker whose piece turns out
+  to decompose ESCALATES (reports up); it never grows a third tier.
+The orchestrator is the ONLY tier that fans out; the worker is the ONLY tier
+that executes. The delegated fork picks its tier per task — decomposes ⇒
+orchestrator, atomic ⇒ worker. Why the cap: audits showed lanes almost never
+fan out (1 sub-spawn across 15 spawns), and an uncapped depth invites the
+opposite failure — turtles all the way down. Two tiers fixes both ends.
+
 <!-- gaffer:spawn-surfaces adapter=native (default; inject-doctrine.sh swaps this block per GAFFER_SPAWN_ADAPTER / dispatch=) -->
 SPAWN SURFACES — a squad member is a (role, model, effort) tuple, not a
 tool. Invoke it through whatever spawn surface your harness gives you:

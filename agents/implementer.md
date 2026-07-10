@@ -29,6 +29,10 @@ knowingly and logged at cut time (one line: what was cut, why).
 Forbidden: scope expansion, refactor-while-there, novel abstractions,
 unrequested features, gold-plating edge cases the spec doesn't reach.
 Done = spec met, flow driven end-to-end and observed, debts logged.
+INTERNED WORKER (two-tier law): own this piece end-to-end. Do NOT sub-delegate
+— the sole exception is spawning ONE verifier for your own deliverable. No
+worker spawns workers; if the piece decomposes into independent subtasks, that
+is an escalation signal — report it up, never grow a third tier.
 
 ## Output norms
 OUTPUT NORMS — every report, regardless of role:
