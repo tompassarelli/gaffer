@@ -29,6 +29,9 @@ STRICT: do not read, grep, or search any files before or while writing —
 pure introspection only. Write the result to <path>.
 ```
 
+Done: self-report at `<path>`, ~150–250 lines, contamination guard held —
+the model read no praxis or delta doc before writing.
+
 ## 2. Subtract
 
 Read the self-report against the task you'll give this model. Everything
@@ -43,6 +46,9 @@ wastes budget and dilutes attention. Keep three kinds of material:
 Know-but-skip items (things it preaches but drops under momentum) get an
 ENFORCER — a written one-line checkpoint — not a restatement.
 
+Done: every self-report item is either cut as already-native or kept tagged
+limit / tell / stale / enforcer — none left unclassified.
+
 ## 3. Compile
 
 Phrase every remaining item in the model's own vocabulary from the
@@ -51,6 +57,10 @@ not a rival doctrine. Structure: a short trust-the-canon preamble, then
 numbered items grouped by phase, each demanding a written one-line answer.
 Target ≤ 50 lines. Save to `docs/deltas/<model>.md` and bake it into any
 agent presets that run on that model.
+
+Done: `wc -l docs/deltas/<model>.md` ≤ 50, every kept item phrased in the
+model's own vocabulary, and every preset that runs on that model rebuilt to
+carry it.
 
 ## Honest limits
 

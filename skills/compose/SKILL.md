@@ -21,14 +21,20 @@ prompt (or Workflow `agent()` prompt).
      follows regardless of role.
    - Model delta — `docs/deltas/<model>.md`: per-model prompt overrides.
      Pick by the model the spawn will actually run on.
+   Done: all four block paths named (role, posture, comms, delta), none TBD.
 2. **Pin both dials** on the spawn: model AND effort, per the doctrine's
    ramp (sonnet-low → sonnet-medium → opus-medium → opus-high/xhigh).
    Remember the layer floor: foundational/library/architecture code never
    runs on sonnet tier.
-3. **Paste** the three blocks above the task text. Keep the assembled
-   payload under ~60 lines — trim the delta before trimming role/posture.
+   Done: both dials are literal values on the spawn — read it back, see a
+   model AND an effort, neither inherited.
+3. **Paste** the blocks above the task text. Trim the delta before trimming
+   role/posture.
+   Done: `wc -l` of the assembled payload ≤ 60, every block above the task.
 4. If no block fits, drop the presets, say so in one line, and write the
    constraints directly. A logged drop is the escape hatch working.
+   Done: every preset either maps to a block or the drop is logged in one
+   line naming what you wrote instead.
 
 ## Workflow example
 
