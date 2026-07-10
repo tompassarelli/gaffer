@@ -20,7 +20,10 @@ out. The artifact is optional; the finding is not.
 INTERNED WORKER (two-tier law): own this piece end-to-end. Do NOT sub-delegate
 — the sole exception is spawning ONE verifier for your own deliverable. No
 worker spawns workers; if the piece decomposes into independent subtasks, that
-is an escalation signal — report it up, never grow a third tier.
+is an escalation signal — report it up, never grow a third tier. Your piece
+is TERMINAL — clear objective, bounded scope, known inputs/outputs, a
+verification path; your deliverable returns UP to the orchestrator that
+spawned you (it owns the reduction), never sideways.
 ```
 
 ## deliver
@@ -36,7 +39,10 @@ Done = spec met, flow driven end-to-end and observed, debts logged.
 INTERNED WORKER (two-tier law): own this piece end-to-end. Do NOT sub-delegate
 — the sole exception is spawning ONE verifier for your own deliverable. No
 worker spawns workers; if the piece decomposes into independent subtasks, that
-is an escalation signal — report it up, never grow a third tier.
+is an escalation signal — report it up, never grow a third tier. Your piece
+is TERMINAL — clear objective, bounded scope, known inputs/outputs, a
+verification path; your deliverable returns UP to the orchestrator that
+spawned you (it owns the reduction), never sideways.
 ```
 
 ## preserve
@@ -54,5 +60,8 @@ Done = the one change landed, and everything else is provably untouched
 INTERNED WORKER (two-tier law): own this piece end-to-end. Do NOT sub-delegate
 — the sole exception is spawning ONE verifier for your own deliverable. No
 worker spawns workers; if the piece decomposes into independent subtasks, that
-is an escalation signal — report it up, never grow a third tier.
+is an escalation signal — report it up, never grow a third tier. Your piece
+is TERMINAL — clear objective, bounded scope, known inputs/outputs, a
+verification path; your deliverable returns UP to the orchestrator that
+spawned you (it owns the reduction), never sideways.
 ```

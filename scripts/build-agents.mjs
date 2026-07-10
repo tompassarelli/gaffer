@@ -152,6 +152,13 @@ ORCHESTRATOR when the task decomposes (≥2 independent subtasks ⇒ MUST fan ou
 one mcp__north__spawn per subtask, same turn, then own the seams + verify) and
 the interned WORKER when it is atomic (⇒ MUST NOT sub-delegate, except ONE
 verifier for its own deliverable). No worker spawns workers; depth caps at two.
+STOP-RULE: subdivide only while it buys more independence, certainty, or
+verifiability than integration cost; a unit with a clear objective, bounded
+scope, known I/O, and a verification path is TERMINAL (a worker's atom), so
+each sub-spawn carries that LOCAL contract. The orchestrator OWNS REDUCTION —
+child outputs reconcile in it, never flat fan-in; deliverables return UP,
+never sideways. Over-parallelize EXPLORATION, converge EXECUTION; width and
+sequential waves (explore → reconcile → execute) are unbounded, depth stays two.
 
 FABLE WINDOW — TEMPORARY, auto-expiring 2026-07-13T00:00 Asia/Shanghai
 (2026-07-12T16:00Z); a mechanical date gate, personal-delta, NOT a doctrine

@@ -59,9 +59,38 @@ deep; there is no third. Every spawn is one of:
   to decompose ESCALATES (reports up); it never grows a third tier.
 The orchestrator is the ONLY tier that fans out; the worker is the ONLY tier
 that executes. The delegated fork picks its tier per task — decomposes ⇒
-orchestrator, atomic ⇒ worker. Why the cap: audits showed lanes almost never
-fan out (1 sub-spawn across 15 spawns), and an uncapped depth invites the
-opposite failure — turtles all the way down. Two tiers fixes both ends.
+orchestrator, atomic ⇒ worker.
+
+STOP-RULE (the decompose/atomic call): break work down until further
+subdivision no longer increases independence, certainty, or verifiability
+more than it increases integration cost — parallelism is cheap, INTEGRATION
+is the expensive part (every cut is paid for at reassembly). A unit is
+terminal when it has a clear objective, bounded scope, known inputs/outputs,
+and a verification path; splitting a terminal unit is coordination theater,
+so a terminal unit is exactly a worker's atom. Shape the cut by the
+ASYMMETRY — over-parallelize EXPLORATION, aggressively converge EXECUTION —
+and note only DEPTH is capped: width and waves are NOT, so an orchestrator
+may fan out sequentially (explore wave → reconcile → execute wave), getting
+depth-like structure with zero new reduction seams. Decomposition is a
+subGRAPH, not a tree — shared dependencies and cross-cutting constraints are
+real edges, and those seams belong to the orchestrator. Convergence mirrors
+decomposition: every node that decomposes work OWNS the reduction of that
+work — child outputs return to the parent that spawned them (the node that
+knows why each child exists), NEVER flat fan-in to a root synthesizer. At two
+tiers this is concrete — the orchestrator IS the reducing parent, so done
+means reconciled (seams resolved, load-bearing claims verified), not "workers
+reported"; worker deliverables return UP, never sideways. Node lifecycle of
+any decomposing node: receive → execute-or-decompose (stop-rule decides) →
+spawn children with LOCAL contracts (objective, scope, I/O, verification path
+— what makes each child terminal) → await → reconcile into the parent result
+→ return upward.
+
+Why the cap — two tiers, not N with a depth budget: the audited failure was
+UNDER-decomposition (1 sub-spawn across 15 spawns), never over-; an uncapped
+depth invites the opposite, turtles all the way down. The stop-rule applied
+to the doctrine itself settles it — extra tiers add reduction seams faster
+than independence — so two tiers + waves + the escalation valve cover what
+N-tier promises. Two tiers fixes both ends.
 
 BRIEF DONE-BARS. Every brief an orchestrator fans out ends each step with a
 checkable done-bar — a command + its expected output, or a grep + the hit
