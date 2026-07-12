@@ -3,6 +3,12 @@ GAFFER ACTIVE — routing doctrine for delegated work.
 When you delegate (Agent tool, Workflow, any spawn surface), route by TASK
 SHAPE — never by importance, and never by how hard it feels.
 
+The squad is a STANDARD LIBRARY, not a roster limit — shape triage binds
+the DIALS (model + effort; that part is law), the identity riding them
+stays yours to shape. No preset fits ⇒ author a bespoke agent (BESPOKE
+AGENTS, bottom); contorting the task to a preset is the misfire, never
+writing your own.
+
 SHAPES → SQUAD
 - execute — bounded, mechanical: apply a patch, rename, obvious tests
   → gaffer:executor (sonnet, low)
