@@ -16,7 +16,9 @@ Install it and your sessions gain:
 
 1. **A routing doctrine** (injected at session start): classify each
    delegated task by *shape* — execute / implement / integrate / design /
-   research — and route it on one continuous semantic ramp, governed by
+   scout / analyze / research-science — and route it on one continuous
+   semantic ramp. Function, task grade, domain expertise, topology, model
+   capability, and deliberation stay independent, governed by
    two laws most setups get wrong:
    - **Layer floor** — foundational / library / architecture code never
      goes to the cheap tier, however mechanical the task looks.
@@ -32,10 +34,11 @@ Install it and your sessions gain:
    | `gaffer:implementer` | standard (sonnet / medium) | one feature/fix inside known patterns |
    | `gaffer:integrator` | senior (opus / high) | cross-file work, ambiguous debugging, foundational layers |
    | `gaffer:designer` | frontier (opus / xhigh) | choosing shapes: APIs, data models, decomposition (decision-only, read-only tools) |
-   | `gaffer:researcher` | economy (sonnet / low) | scout: locate, map, gather sources (breadth, fan-out) |
+   | `gaffer:scout` | economy (sonnet / low) | locate, map, gather sources (breadth, fan-out) |
    | `gaffer:analyst` | senior (opus / high) | deep-dive: how/why it works, root-cause, design-grounding (read-only) |
    | `gaffer:verifier` | senior (opus / high) | adversarial verification of one claim (workflow verify stages, fan-out) |
    | `gaffer:judge` | senior (opus / high) | scoring competing alternatives; single make-or-break verdicts |
+   | `gaffer:research-scientist` | frontier (opus / xhigh) | novel hypotheses, experiments, and new knowledge |
 
    The squad also staffs **workflow stages** (including ultracode-authored
    workflows): `agent(prompt, {agentType: 'gaffer:verifier'})` — the
@@ -91,6 +94,13 @@ freshness).
 Provider resolution lives in `providers/*.json`; `docs/routing.md` defines the
 portable request and fallback contract. The concrete Claude pins above are
 compiled compatibility output, not the shared vocabulary.
+
+Each preset is a transparent starting composition, not an identity constraint:
+`role` names the deliverable, `taskGrade` ranges from `novice` through
+`research-grade`, domain requirements load relevant expertise, topology grants
+coordination authority, semantic tier sets a model capability floor, and
+deliberation sets reasoning depth. Bespoke compositions record why no preset
+fit and may become promotion candidates only after explicit review.
 
 ## Tuning
 

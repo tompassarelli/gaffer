@@ -1,8 +1,10 @@
 # Gaffer contributor instructions
 
 Gaffer is the provider-neutral routing doctrine for delegated agent work. Keep
-task shape, role, posture, semantic tier, and provider/model selection as
-separate concepts.
+task shape, role/function, task grade, domain requirements, topology, posture,
+semantic tier, deliberation, and provider/model selection as separate concepts.
+Human-readable task grades describe the work; semantic tiers describe model
+capability. Neither implies the other.
 
 - `doctrine.md` is the canonical runtime doctrine.
 - `docs/routing.md` defines the provider-neutral routing contract.

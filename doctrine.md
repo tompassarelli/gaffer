@@ -3,11 +3,26 @@ GAFFER ACTIVE — routing doctrine for delegated work.
 When you delegate (Agent tool, Workflow, any spawn surface), route by TASK
 SHAPE — never by importance, and never by how hard it feels.
 
-The squad is a STANDARD LIBRARY, not a roster limit — shape triage binds
-the DIALS (model + effort; that part is law), the identity riding them
-stays yours to shape. No preset fits ⇒ author a bespoke agent (BESPOKE
+The squad is a STANDARD LIBRARY, not a roster limit — shape triage proposes
+a preset, while the routing decision keeps its axes explicit: FUNCTION/ROLE,
+TASK GRADE, DOMAIN REQUIREMENTS, TOPOLOGY, SEMANTIC TIER, and DELIBERATION.
+No preset fits ⇒ author a bespoke agent (BESPOKE
 AGENTS, bottom); contorting the task to a preset is the misfire, never
 writing your own.
+
+ORTHOGONAL AXES — never smuggle one decision inside another:
+- FUNCTION/ROLE names the responsibility and deliverable: scout, engineer,
+  analyst, verifier, designer, research-scientist, and so on.
+- TASK GRADE names the prior for the work itself: novice, junior, mid, senior,
+  staff, principal, or research-grade. Grade is scope, autonomy, novelty, and
+  integration responsibility — not a model name and not a worker identity.
+- DOMAIN REQUIREMENTS name expertise/context the worker must receive.
+- TOPOLOGY names worker, verifier, or orchestrator/director authority.
+- SEMANTIC TIER names the required model capability floor: economy, standard,
+  senior, or frontier. Provider catalogs resolve it to a runtime.
+- DELIBERATION names the reasoning budget independently of capability.
+Presets fill common combinations of these axes. They are defaults, not types
+and not limits; an orchestrator may override any field and records why.
 
 SHAPES → SQUAD (semantic tier; provider adapters resolve concrete models)
 - execute — bounded, mechanical: apply a patch, rename, obvious tests
@@ -18,12 +33,15 @@ SHAPES → SQUAD (semantic tier; provider adapters resolve concrete models)
   at stake → gaffer:integrator (senior)
 - design — choose the shape: APIs, data models, decomposition, naming that
   commits the system → gaffer:designer (frontier)
-- research/scout — locate, map, gather sources; breadth, cheap, fan-out
-  → gaffer:researcher (economy)
+- scout — locate, map, gather sources; breadth, cheap, fan-out
+  → gaffer:scout (economy)
 - analyze — deep-dive: how does this work, why does it break, does this
   design hold against real behavior; depth, read-only → gaffer:analyst
   (senior). Fan out multiple over distinct subsystems when one can't be
   held at once.
+- research-science — novel hypothesis formation, experiment design, and work
+  whose result or method is not already known → gaffer:research-scientist
+  (frontier; research-grade). This is not ordinary source gathering.
 
 LAWS
 1. LAYER FLOOR: foundational / library / architecture code never routes below
@@ -46,7 +64,8 @@ LAWS
    workers' load-bearing claims yourself (spot-check; never trust a bare
    "done").
 
-ORCHESTRATION — two tiers, hard depth cap. Delegation is exactly TWO tiers
+ORCHESTRATION — topology is independent of function, grade, tier, and
+deliberation. Two tiers, hard depth cap. Delegation is exactly TWO tiers
 deep; there is no third. Every spawn is one of:
 - ORCHESTRATOR — a fork whose contract is DECOMPOSE AND FAN OUT. It does NOT
   execute subtasks itself; its only tools of substance are read/analyze,
@@ -114,10 +133,10 @@ tool. Invoke it through whatever spawn surface your harness gives you:
 
 WORKFLOWS (incl. ultracode): these laws govern STAFFING every stage of any
 workflow you author. Squad members plug in via agentType —
-agent(prompt, {agentType: 'gaffer:researcher'}) — or pin tier (and let the
+agent(prompt, {agentType: 'gaffer:scout'}) — or pin tier (and let the
 provider adapter resolve model+effort/reasoning)
 per stage yourself:
-- discovery/finder stages → gaffer:researcher (economy), fan out wide
+- discovery/finder stages → gaffer:scout (economy), fan out wide
 - deep-analysis/root-cause stages → gaffer:analyst (senior); fan out over
   distinct subsystems — parallel analysts cover what one coordinator can't
   hold at once
@@ -135,7 +154,9 @@ domain deserves a purpose-built agent, AUTHOR ONE — the laws above still
 bind it (pin tier, layer floor, shingle), and the blocks are parts,
 not requirements: borrow the comms norms and the model delta (almost
 always worth it), borrow role/posture when they fit, write the
-domain-specific remainder freely. One line in your plan saying why bespoke
-beat the preset. Extension spec: docs/extending.md · assemble parts: the
+domain-specific remainder freely. Record the nearest preset, why it failed,
+the bespoke role contract, and whether the composition may be a promotion
+candidate. Recurrence is evidence for review, never automatic promotion.
+Extension spec: docs/extending.md · assemble parts: the
 compose skill · calibrate a delta for a new model: the elicit skill.
 Presets are the floor of quality, never the ceiling of possibility.

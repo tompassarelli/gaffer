@@ -1,6 +1,6 @@
 ---
 name: compose
-description: Assemble a custom gaffer payload (role + posture + model delta) for a spawn the preset squad doesn't cover — e.g. Workflow agent() calls, an unusual role/posture pairing, or a different model tier. Use when delegating work that needs tuned prompting but no preset fits.
+description: Assemble a custom provider-neutral gaffer payload across independent role, task-grade, domain, topology, posture, semantic-tier, deliberation, comms, and model-delta axes when no preset fits.
 ---
 
 # Compose a custom spawn payload
@@ -11,9 +11,21 @@ prompt (or Workflow `agent()` prompt).
 
 ## Procedure
 
-1. **Pick the four blocks** (all under this skill's plugin root):
+1. **Classify the independent axes** before selecting blocks:
+   - Role/function — responsibility and deliverable: executor, implementer,
+     integrator, designer, scout, analyst, verifier, judge, or
+     research-scientist.
+   - `taskGrade` — novice, junior, mid, senior, staff, principal, or
+     research-grade.
+   - Domain requirements — expertise and context the brief must provide.
+   - Topology — worker, verifier, or orchestrator; never inferred from grade.
+   - Semantic tier — economy, standard, senior, or frontier capability floor.
+   - Deliberation — low, medium, high, or xhigh reasoning budget.
+   Done: each axis is stated explicitly; no role name doubles as a grade,
+   model, or manager permission.
+2. **Pick the four blocks** (all under this skill's plugin root):
    - Role — `docs/roles.md`: executor · implementer · integrator ·
-     designer · researcher · analyst · verifier · judge. Sets authority,
+     designer · scout · analyst · verifier · judge · research-scientist. Sets authority,
      deliverable, report format, redirects.
    - Posture — `docs/postures.md`: explore · deliver · preserve. Sets the
      collision priority order (what yields when values conflict).
@@ -22,24 +34,28 @@ prompt (or Workflow `agent()` prompt).
    - Model delta — `docs/deltas/<model>.md`: per-model prompt overrides.
      Pick by the model the spawn will actually run on.
    Done: all four block paths named (role, posture, comms, delta), none TBD.
-2. **Pin both dials** on the spawn: model AND effort, per the doctrine's
-   ramp (sonnet-low → sonnet-medium → opus-high → opus-xhigh; the
-   dominated middle — sonnet-high, opus-low/medium — is never the pick).
-   Remember the layer floor: foundational/library/architecture code never
-   runs on sonnet tier.
-   Done: both dials are literal values on the spawn — read it back, see a
-   model AND an effort, neither inherited.
-3. **Paste** the blocks above the task text. Trim the delta before trimming
+3. **Pin provider-neutral routing**: semantic tier and deliberation are
+   explicit; provider defaults to `auto`. The selected adapter resolves the
+   concrete model and effort/reasoning. Remember the layer floor:
+   foundational/library/architecture work never runs below senior tier.
+   Done: tier + deliberation + provider are literal spawn values, none inherited.
+4. **Paste** the blocks above the task text. Trim the delta before trimming
    role/posture.
    Done: `wc -l` of the assembled payload ≤ 60, every block above the task.
-4. If no block fits, drop the presets, say so in one line, and write the
-   constraints directly. A logged drop is the escape hatch working.
-   Done: every preset either maps to a block or the drop is logged in one
-   line naming what you wrote instead.
+5. If no block fits, write a bespoke role contract and record: nearest preset,
+   why it failed, responsibility/deliverable/authority/report contract, and a
+   stable composition name. Mark it as a promotion candidate only when useful;
+   recurrence is logged evidence and never auto-promotes the role.
+   Done: the bespoke reason and contract are present, with promotion status.
 
 ## Workflow example
 
 ```js
 const payload = roleBlock + postureBlock + deltaBlock;
-await agent(`${payload}\n\nTASK: ${task}`, {model: 'sonnet', effort: 'medium'})
+await spawn(`${payload}\n\nTASK: ${task}`, {
+  provider: 'auto', tier: 'standard', reasoning: 'medium',
+  role: 'implementer', taskGrade: 'mid', topology: 'worker',
+  domainRequirements: ['repository conventions'],
+  composition: {kind: 'preset', id: 'implementer'}
+})
 ```

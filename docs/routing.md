@@ -7,6 +7,9 @@ portable decision is:
 {
   "shape": "integrate",
   "role": "integrator",
+  "taskGrade": "senior",
+  "domainRequirements": ["repository architecture"],
+  "topology": "worker",
   "posture": "deliver",
   "tier": "senior",
   "provider": "auto",
@@ -22,12 +25,15 @@ portable decision is:
 | implement | implementer | standard | deliver |
 | integrate | integrator | senior | deliver |
 | design | designer | frontier | explore |
-| research/scout | researcher | economy | explore |
+| scout | scout | economy | explore |
 | analyze | analyst | senior | explore |
 | verify | verifier | senior | explore |
 | judge | judge | senior | explore |
+| research-science | research-scientist | frontier | explore |
 
-The layer floor raises foundational, library, and architecture work to at
+These are presets, not coupled identities. `taskGrade`, domain requirements,
+topology, semantic tier, and deliberation are independently reviewable and may
+override a row. The layer floor raises foundational, library, and architecture work to at
 least `senior`. Blast radius may raise a tier; importance alone does not.
 
 ## Resolution
@@ -50,10 +56,23 @@ The provider-neutral North adapter contract is:
 
 ```ts
 type RoutingRequest = {
+  shape?: string;
+  role: string;
+  posture?: "explore" | "deliver" | "preserve";
   provider: "auto" | "anthropic" | "openai";
   tier: "economy" | "standard" | "senior" | "frontier";
   transport?: string;
   reasoning?: "low" | "medium" | "high" | "xhigh";
+  taskGrade?: "novice" | "junior" | "mid" | "senior" | "staff" | "principal" | "research-grade";
+  domainRequirements?: string[];
+  topology?: "worker" | "verifier" | "orchestrator";
+  composition?: {
+    kind: "preset" | "bespoke";
+    id: string;
+    nearestPreset?: string;
+    bespokeReason?: string;
+    promotionCandidate?: boolean;
+  };
   constraints?: {
     maxCostUsd?: number;
     fallbackProviders?: Array<"anthropic" | "openai">;
@@ -61,6 +80,20 @@ type RoutingRequest = {
   };
 };
 ```
+
+`role`/function describes the deliverable; `taskGrade` describes the scope and
+judgment expected of the work; `tier` is the model capability floor;
+`reasoning` is deliberation; `domainRequirements` describes context/expertise;
+and `topology` describes coordination authority. Adapters must not infer one
+solely from another. A preset may propose all of them, but the recorded request
+keeps them distinct.
+
+Every bespoke composition supplies `composition.kind = "bespoke"`, a stable
+`id`, its nearest preset, and a one-line `bespokeReason`. North or another host
+records this requested composition beside the resolved route and verified
+outcome in its telemetry world. Repeated successful fingerprints may be
+surfaced as promotion candidates; runtime observations never rewrite Gaffer's
+standard library automatically.
 
 The resolution result includes `requestedProvider`, `provider`, `transport`,
 `tier`, `model`, `reasoning` or `effort`, `selectionReason`, and

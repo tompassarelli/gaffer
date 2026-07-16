@@ -9,24 +9,28 @@ native call (that is the recurring misfire).
   are included below so existing North behavior is unchanged
 - fan-out → one mcp__north__spawn per lane in the SAME turn; observe at web :8088
 - thread-driven → capture the thread, then mcp__north__dispatch (posture from claims)
-The five praxis roles pass a north `role` block; the read-only roles
-(analyst/verifier/judge) have none → pin tier+posture, role rides in the
+The North-native roles pass a north `role` block; the remaining read-only roles
+have none → pin task grade+tier+posture, role rides in the
 prompt. Use provider=auto unless policy or the caller explicitly overrides it.
 Contract v2 makes North resolve tier through a provider catalog and record the
 concrete model and reasoning/effort. Until North advertises v2, use its legacy
 shape and resolve before the call. Routing (canonical — generated from RECIPES,
 do not hand-edit):
 
-  gaffer role  tier      Claude bridge  north role   posture
-  -----------  --------  -------------  -----------  -------
-  executor     economy   sonnet/low     executor     deliver
-  implementer  standard  sonnet/medium  implementer  deliver
-  integrator   senior    opus/high      integrator   deliver
-  designer     frontier  opus/xhigh     designer     explore
-  researcher   economy   sonnet/low     researcher   explore
-  analyst      senior    opus/high      —            explore
-  verifier     senior    opus/high      —            explore
-  judge        senior    opus/high      —            explore
+  gaffer role         task grade      tier      Claude bridge  north role          posture
+  ------------------  --------------  --------  -------------  ------------------  -------
+  executor            novice          economy   sonnet/low     executor            deliver
+  implementer         mid             standard  sonnet/medium  implementer         deliver
+  integrator          senior          senior    opus/high      integrator          deliver
+  designer            staff           frontier  opus/xhigh     designer            explore
+  scout               junior          economy   sonnet/low     scout               explore
+  analyst             senior          senior    opus/high      —                   explore
+  verifier            senior          senior    opus/high      —                   explore
+  judge               staff           senior    opus/high      —                   explore
+  research-scientist  research-grade  frontier  opus/xhigh     research-scientist  explore
+
+Compatibility: `gaffer:researcher` remains an adapter alias for
+`gaffer:scout`; it is not a canonical routing role.
 
 ORCHESTRATION (two-tier law, see doctrine.md): the delegated fork is the
 ORCHESTRATOR when the task decomposes (≥2 independent subtasks ⇒ MUST fan out
