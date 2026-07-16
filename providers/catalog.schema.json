@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["provider", "transports", "tiers"],
+  "properties": {
+    "provider": { "type": "string" },
+    "transports": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "tiers": {
+      "type": "object",
+      "required": ["economy", "standard", "senior", "frontier"],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["model"],
+        "properties": { "model": { "type": "string" } }
+      }
+    }
+  }
+}

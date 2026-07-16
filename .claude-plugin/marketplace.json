@@ -8,7 +8,7 @@
     {
       "name": "gaffer",
       "source": "./",
-      "description": "Automatic model/effort routing for delegated work + per-model prompt payloads baked into pre-tuned agents."
+      "description": "Provider-neutral task-shape and semantic-tier routing, with a Claude adapter and calibrated agent payloads."
     }
   ]
 }

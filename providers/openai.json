@@ -1,0 +1,12 @@
+{
+  "$schema": "./catalog.schema.json",
+  "provider": "openai",
+  "transports": ["codex-cli", "openai-api"],
+  "tiers": {
+    "economy": { "model": "auto", "reasoning": ["low"], "defaultReasoning": "low" },
+    "standard": { "model": "auto", "reasoning": ["medium"], "defaultReasoning": "medium" },
+    "senior": { "model": "auto", "reasoning": ["high"], "defaultReasoning": "high" },
+    "frontier": { "model": "auto", "reasoning": ["xhigh"], "defaultReasoning": "xhigh" }
+  },
+  "notes": "Model auto is intentional: the Codex adapter resolves the current supported model for the selected transport. Pin a deployment-specific model in local North policy, not in Gaffer doctrine."
+}

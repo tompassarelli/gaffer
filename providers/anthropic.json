@@ -1,0 +1,11 @@
+{
+  "$schema": "./catalog.schema.json",
+  "provider": "anthropic",
+  "transports": ["claude-agent-sdk", "claude-code"],
+  "tiers": {
+    "economy": { "model": "sonnet", "efforts": ["low"], "defaultEffort": "low" },
+    "standard": { "model": "sonnet", "efforts": ["medium"], "defaultEffort": "medium" },
+    "senior": { "model": "opus", "efforts": ["high"], "defaultEffort": "high" },
+    "frontier": { "model": "opus", "efforts": ["xhigh", "max"], "defaultEffort": "xhigh" }
+  }
+}

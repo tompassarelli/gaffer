@@ -8,9 +8,9 @@ This is the specification for building on it.
 
 Three requirements, everything else is free:
 
-1. **Both dials pinned** — model AND effort, chosen per the doctrine's ramp
-   and laws (layer floor, shingle law). Never inherited implicitly from the
-   session.
+1. **Routing pinned** — semantic tier is always explicit; provider may be
+   explicit or `auto`. The selected provider adapter must resolve model AND
+   effort/reasoning rather than inheriting them from a session.
 2. **Comms norms respected** — compact reports, provenance marks
    (observed/inferred/assumed), not-done lists. Embed `docs/comms.md` or
    restate equivalent norms.
@@ -23,7 +23,7 @@ squad has no privileged status beyond being pre-built.
 
 ## Building a bespoke agent (the 10% the squad doesn't cover)
 
-1. Route first: shape + laws give you model/effort even for a novel agent.
+1. Route first: shape + laws give you a semantic tier even for a novel agent.
 2. Borrow blocks that fit: comms (almost always), the model delta (almost
    always — it's calibration, not style), role/posture (when apt).
 3. Write the domain-specific remainder freely — that's the point.
@@ -60,7 +60,8 @@ squad has no privileged status beyond being pre-built.
 
 | Axis | Sets | Enforcement | In gaffer | At runtime |
 |---|---|---|---|---|
-| Substrate | model + effort | hard (API params) | recipe frontmatter | spawn opts |
+| Routing | semantic tier + provider policy | hard at dispatch | recipe + provider catalog | spawn opts |
+| Substrate | model + effort/reasoning | hard (API params) | provider catalog / compiled adapter | resolved spawn opts |
 | Capability surface | tool set | hard (allowedTools) | recipe frontmatter `tools:` | spawn opts |
 | Role | authority / deliverable / report / redirect | advisory | `docs/roles.md` | — |
 | Posture | value-collision ordering | advisory | `docs/postures.md` | — |

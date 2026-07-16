@@ -7,15 +7,16 @@ effort(s)? Preset subagents or purpose-built ones? How should each worker
 be prompted, and what should each report back? **Let the gaffer figure it
 out.**
 
-A Claude Code plugin that routes every piece of delegated work: the right
-model, at the right effort, with prompting calibrated to that model —
-whether it's a single subagent or a multi-stage workflow.
+A provider-neutral routing doctrine with a Claude Code plugin adapter. It
+routes delegated work by semantic tier, then resolves that tier to the right
+provider, model, and reasoning/effort — whether it's a single subagent or a
+multi-stage workflow.
 
 Install it and your sessions gain:
 
 1. **A routing doctrine** (injected at session start): classify each
    delegated task by *shape* — execute / implement / integrate / design /
-   research — and route it on one continuous model×effort ramp, governed by
+   research — and route it on one continuous semantic ramp, governed by
    two laws most setups get wrong:
    - **Layer floor** — foundational / library / architecture code never
      goes to the cheap tier, however mechanical the task looks.
@@ -25,16 +26,16 @@ Install it and your sessions gain:
 2. **A pre-tuned squad** — agents with model + effort pinned and
    a *consumer-calibrated prompt payload* baked in:
 
-   | Agent | Model / effort | Shape it plays |
+   | Agent | Semantic tier (Claude adapter) | Shape it plays |
    |---|---|---|
-   | `gaffer:executor` | sonnet / low | bounded mechanical changes |
-   | `gaffer:implementer` | sonnet / medium | one feature/fix inside known patterns |
-   | `gaffer:integrator` | opus / high | cross-file work, ambiguous debugging, foundational layers |
-   | `gaffer:designer` | opus / xhigh | choosing shapes: APIs, data models, decomposition (decision-only, read-only tools) |
-   | `gaffer:researcher` | sonnet / low | scout: locate, map, gather sources (breadth, fan-out) |
-   | `gaffer:analyst` | opus / high | deep-dive: how/why it works, root-cause, design-grounding (read-only) |
-   | `gaffer:verifier` | opus / medium | adversarial verification of one claim (workflow verify stages, fan-out) |
-   | `gaffer:judge` | opus / high | scoring competing alternatives; single make-or-break verdicts |
+   | `gaffer:executor` | economy (sonnet / low) | bounded mechanical changes |
+   | `gaffer:implementer` | standard (sonnet / medium) | one feature/fix inside known patterns |
+   | `gaffer:integrator` | senior (opus / high) | cross-file work, ambiguous debugging, foundational layers |
+   | `gaffer:designer` | frontier (opus / xhigh) | choosing shapes: APIs, data models, decomposition (decision-only, read-only tools) |
+   | `gaffer:researcher` | economy (sonnet / low) | scout: locate, map, gather sources (breadth, fan-out) |
+   | `gaffer:analyst` | senior (opus / high) | deep-dive: how/why it works, root-cause, design-grounding (read-only) |
+   | `gaffer:verifier` | senior (opus / high) | adversarial verification of one claim (workflow verify stages, fan-out) |
+   | `gaffer:judge` | senior (opus / high) | scoring competing alternatives; single make-or-break verdicts |
 
    The squad also staffs **workflow stages** (including ultracode-authored
    workflows): `agent(prompt, {agentType: 'gaffer:verifier'})` — the
@@ -87,9 +88,13 @@ plugin format requires. Edit blocks, rebuild (`node
 scripts/build-agents.mjs`), never hand-edit agent files (`--check` verifies
 freshness).
 
+Provider resolution lives in `providers/*.json`; `docs/routing.md` defines the
+portable request and fallback contract. The concrete Claude pins above are
+compiled compatibility output, not the shared vocabulary.
+
 ## Tuning
 
-- Different top tier available (e.g. a model above opus)? The ramp extends
+- Different top tier available? The semantic ramp extends
   naturally — run `elicit` to calibrate a delta for it.
 - The squad is a **standard library, not a roster limit**: bespoke
   purpose-built agents are first-class — the laws still bind them, the

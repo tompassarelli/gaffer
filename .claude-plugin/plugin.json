@@ -1,6 +1,6 @@
 {
   "name": "gaffer",
-  "description": "The gaffer picks the squad: automatic model/effort routing for delegated work, plus per-model prompt payloads (praxis deltas) baked into pre-tuned agents.",
+  "description": "The gaffer picks the squad: provider-neutral task-shape and semantic-tier routing, with a Claude adapter and calibrated agent payloads.",
   "author": {
     "name": "Tom Passarelli",
     "url": "https://github.com/tompassarelli"

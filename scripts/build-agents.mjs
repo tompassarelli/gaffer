@@ -34,6 +34,7 @@ const firstFence = (text) => {
 const roles = read("docs/roles.md");
 const postures = read("docs/postures.md");
 const comms = block(read("docs/comms.md"), "universal");
+const anthropic = JSON.parse(read("providers/anthropic.json"));
 const deltas = {
   sonnet: firstFence(read("docs/deltas/sonnet.md")),
   opus: firstFence(read("docs/deltas/opus.md")),
@@ -41,51 +42,60 @@ const deltas = {
 
 const RECIPES = [
   {
-    name: "executor", model: "sonnet", effort: "low", posture: "deliver",
+    name: "executor", tier: "economy", posture: "deliver",
     tagline: "the specified change, applied exactly",
     description: "Execute-shaped tasks — bounded, mechanical, fully specified. Apply a patch, rename a symbol, add obvious tests, fix lint. Cheapest squad member (sonnet, low effort). Do NOT use when any judgment call is needed (→ implementer), or on foundational/library/architecture code (layer floor → integrator).",
   },
   {
-    name: "implementer", model: "sonnet", effort: "medium", posture: "deliver",
+    name: "implementer", tier: "standard", posture: "deliver",
     tagline: "a working feature or fix inside existing patterns",
     description: "Implement-shaped tasks — one feature or fix inside known patterns, in well-trodden non-foundational code. The junior/mid-level dev of the squad (sonnet, medium effort). Do NOT use on foundational/library/architecture layers however mechanical the task looks (layer floor → integrator), for ambiguous debugging (→ integrator), or for anything designing something new (→ designer).",
   },
   {
-    name: "integrator", model: "opus", effort: "high", posture: "deliver",
+    name: "integrator", tier: "senior", posture: "deliver",
     tagline: "a working change across seams, with the map of what moved",
     description: "Integrate-shaped tasks — cross-file changes, ambiguous debugging, refactors with behavior at stake, and ANY work on foundational/library/architecture code (the layer floor routes such work here even when it looks mechanical). Senior engineer of the squad (opus, high effort). For choosing a new design shape rather than working within one, use designer instead.",
   },
   {
-    name: "designer", model: "opus", effort: "xhigh",
+    name: "designer", tier: "frontier",
     tools: "Read, Grep, Glob, Bash",
     tagline: "a decision with trade-offs, not code",
     description: "Design-shaped tasks — choosing the shape of things: APIs, data models, decomposition, lifecycle semantics, naming that commits the system. Also small-looking decisions with large blast radius (a one-line naming choice that shapes an API is design, not execute). Tech-lead grade (opus, xhigh effort). Produces a DECISION with trade-offs, not code — read-only tools by design.",
   },
   {
-    name: "researcher", model: "sonnet", effort: "low", posture: "explore",
+    name: "researcher", tier: "economy", posture: "explore",
     tools: "Read, Grep, Glob, Bash, WebSearch, WebFetch",
     tagline: "gathered findings, with provenance",
     description: "Research SCOUT tier — locate, map, gather: where is X, what calls Y, sweep a codebase or the web for sources, map unknown territory. Read-only, cheap fan-out unit (sonnet, low effort) — spawn several in parallel for multi-angle sweeps. GATHERS and reports; does not deep-synthesize or conclude. For deep analysis / root-cause / grounding a design in real behavior, use analyst instead.",
   },
   {
-    name: "analyst", model: "opus", effort: "high", posture: "explore",
+    name: "analyst", tier: "senior", posture: "explore",
     tools: "Read, Grep, Glob, Bash, WebSearch, WebFetch",
     tagline: "understanding, grounded in real behavior",
     description: "Research DEEP-DIVE tier — how a system actually works, why it behaves as it does, root-cause, or grounding a proposed design against real behavior. Read-only, opus/high: depth over breadth, traces to ground truth rather than simulating from the text. Produces UNDERSTANDING, not a decision (→ designer) or a change (→ integrator). Fan out multiple analysts over distinct subsystems when the analysis needs more than one held at once. Do NOT use for mere location/gathering (→ researcher).",
   },
   {
-    name: "verifier", model: "opus", effort: "high",
+    name: "verifier", tier: "senior",
     tools: "Read, Grep, Glob, Bash",
     tagline: "one claim in, one adversarial verdict out",
     description: "Adversarial verification of a specific claim or finding — \"is this bug real\", \"does this fix actually hold\", \"try to refute this\". The standard fan-out unit for workflow verify stages (opus, high; for a single make-or-break verdict use judge instead). Never reuses the finder's model tier below opus.",
   },
   {
-    name: "judge", model: "opus", effort: "high",
+    name: "judge", tier: "senior",
     tools: "Read, Grep, Glob, Bash",
     tagline: "competing alternatives in, a ranked decision out",
     description: "Scoring and selection among competing alternatives — judge panels over N design attempts, ranking findings by severity, choosing a winner and synthesizing from runners-up. Also the single-verdict escalation above verifier when one make-or-break call decides the work (opus, high). Produces a ranked judgment, not code — read-only tools by design.",
   },
 ];
+
+// Generated Claude Code agents are an adapter artifact. Resolve their concrete
+// pins from the Anthropic catalog while keeping recipes provider-neutral.
+for (const recipe of RECIPES) {
+  const resolved = anthropic.tiers[recipe.tier];
+  if (!resolved) throw new Error(`Anthropic catalog does not resolve tier: ${recipe.tier}`);
+  recipe.model = resolved.model;
+  recipe.effort = resolved.defaultEffort;
+}
 
 function render(r) {
   const fm = [
@@ -121,11 +131,11 @@ function render(r) {
 const NORTH_ROLE = new Set(["executor", "implementer", "integrator", "designer", "researcher"]);
 function renderNorthAdapter() {
   const rows = RECIPES.map((r) => ({
-    role: r.name, model: r.model, effort: r.effort,
+    role: r.name, tier: r.tier, claude: `${r.model}/${r.effort}`,
     northRole: NORTH_ROLE.has(r.name) ? r.name : "—",
     posture: r.posture || "explore",
   }));
-  const cols = [["gaffer role", "role"], ["model", "model"], ["effort", "effort"], ["north role", "northRole"], ["posture", "posture"]];
+  const cols = [["gaffer role", "role"], ["tier", "tier"], ["Claude bridge", "claude"], ["north role", "northRole"], ["posture", "posture"]];
   const w = cols.map(([h, k]) => Math.max(h.length, ...rows.map((r) => String(r[k]).length)));
   const fmt = (cells) => ("  " + cells.map((c, i) => String(c).padEnd(w[i])).join("  ")).replace(/\s+$/, "");
   const table = [
@@ -133,17 +143,24 @@ function renderNorthAdapter() {
     fmt(w.map((n) => "-".repeat(n))),
     ...rows.map((r) => fmt(cols.map(([, k]) => r[k]))),
   ].join("\n");
-  return `SPAWN SURFACES (adapter: north) — a squad member is a (role, model, effort)
+  return `SPAWN SURFACES (adapter: north) — a squad member is a semantic routing
 tuple, delivered on the north substrate. Native Agent/Task/Workflow are DENIED
-here (dispatch=tern) — the harness still advertises gaffer:* + native agent
+here (dispatch=north) — the harness still advertises gaffer:* + native agent
 types, IGNORE that and go STRAIGHT to north; never let the advertised list bait a
 native call (that is the recurring misfire).
-- one job → mcp__north__spawn {prompt, model, effort, role, posture}, dials below
+- contract-v2 job → mcp__north__spawn {prompt, provider, tier, role, posture}
+- current/legacy North bridge → resolve the catalog first, then
+  mcp__north__spawn {prompt, model, effort, role, posture}; Claude resolutions
+  are included below so existing North behavior is unchanged
 - fan-out → one mcp__north__spawn per lane in the SAME turn; observe at web :8088
 - thread-driven → capture the thread, then mcp__north__dispatch (posture from claims)
-The five praxis roles pass a north \`role\` block; the read-only tiers
-(analyst/verifier/judge) have none → pin model+effort+posture, role rides in the
-prompt. Dials (canonical — generated from RECIPES, do not hand-edit):
+The five praxis roles pass a north \`role\` block; the read-only roles
+(analyst/verifier/judge) have none → pin tier+posture, role rides in the
+prompt. Use provider=auto unless policy or the caller explicitly overrides it.
+Contract v2 makes North resolve tier through a provider catalog and record the
+concrete model and reasoning/effort. Until North advertises v2, use its legacy
+shape and resolve before the call. Routing (canonical — generated from RECIPES,
+do not hand-edit):
 
 ${table}
 
@@ -160,16 +177,8 @@ child outputs reconcile in it, never flat fan-in; deliverables return UP,
 never sideways. Over-parallelize EXPLORATION, converge EXECUTION; width and
 sequential waves (explore → reconcile → execute) are unbounded, depth stays two.
 
-FABLE WINDOW — TEMPORARY, auto-expiring 2026-07-13T00:00 Asia/Shanghai
-(2026-07-12T16:00Z); a mechanical date gate, personal-delta, NOT a doctrine
-fork. While OPEN: orchestrator forks route model=fable effort=high; workers
-default to opus/xhigh and escalate to fable above opus/xhigh when opus spins.
-After it closes: orchestrators fall back to opus/xhigh, workers to the standard
-ramp — with zero code change. The gate lives in code (cli/agents-cli.clj, sdk
-fable-window.ts + ladder.ts); this note only documents it.
-
 If a native call slips through, the agent-spawn-guard hook denies with the exact
-mcp__north__spawn call pre-resolved for that role — one-paste recovery. A native
+mcp__north__spawn call pre-resolved for that role and tier — one-paste recovery. A native
 denial is a routing instruction, never a wall: translate, never abandon the
 squad pick or drop to an unrouted spawn.`;
 }

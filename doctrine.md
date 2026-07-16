@@ -9,41 +9,35 @@ stays yours to shape. No preset fits ⇒ author a bespoke agent (BESPOKE
 AGENTS, bottom); contorting the task to a preset is the misfire, never
 writing your own.
 
-SHAPES → SQUAD
+SHAPES → SQUAD (semantic tier; provider adapters resolve concrete models)
 - execute — bounded, mechanical: apply a patch, rename, obvious tests
-  → gaffer:executor (sonnet, low)
+  → gaffer:executor (economy)
 - implement — one feature/fix inside known patterns, well-trodden code
-  → gaffer:implementer (sonnet, medium)
+  → gaffer:implementer (standard)
 - integrate — cross-file change, ambiguous debugging, refactor with behavior
-  at stake → gaffer:integrator (opus, high)
+  at stake → gaffer:integrator (senior)
 - design — choose the shape: APIs, data models, decomposition, naming that
-  commits the system → gaffer:designer (opus, xhigh)
+  commits the system → gaffer:designer (frontier)
 - research/scout — locate, map, gather sources; breadth, cheap, fan-out
-  → gaffer:researcher (sonnet, low)
+  → gaffer:researcher (economy)
 - analyze — deep-dive: how does this work, why does it break, does this
   design hold against real behavior; depth, read-only → gaffer:analyst
-  (opus, high). Fan out multiple over distinct subsystems when one can't be
+  (senior). Fan out multiple over distinct subsystems when one can't be
   held at once.
 
 LAWS
-1. LAYER FLOOR: foundational / library / architecture code never routes to a
-   sonnet-tier agent, however mechanical the task looks — the stack layer
-   sets the floor, not surface difficulty. Frontier or foundational work is
-   opus tier minimum. Sonnet extends established patterns in solidified
-   code; opus does novel/judgment work.
-2. SHINGLE LAW: each model has ~2 practical effort rungs — SONNET: low,
-   medium · OPUS: high, xhigh (max = rare, critical only). The dominated
-   middle — sonnet-high, opus-low/medium — is never the right pick: if a
-   task needs opus at all it needs opus's ceiling, so run it high MINIMUM
-   (low/medium starve the ceiling you escalated for; if medium-effort truly
-   suffices, it was a sonnet task). Route on one continuous ramp:
-   sonnet-low → sonnet-medium → opus-high → opus-xhigh → your top tier.
-   Harder ⇒ climb the MODEL or step to the next real rung; never crank a
-   dominated middle. high = default judgment; xhigh = HARD/hardest tasks
-   (designer, gnarly debugging, long-horizon); max = FRONTIER only —
-   genuinely at-the-edge problems, rare, with demonstrated headroom.
-3. PIN BOTH DIALS on every spawn: model AND effort. The preset agents do
-   this for you; custom spawns must do it explicitly.
+1. LAYER FLOOR: foundational / library / architecture code never routes below
+   SENIOR, however mechanical the task looks — the stack layer sets the floor,
+   not surface difficulty. Economy/standard extend established patterns in
+   solidified code; senior/frontier handle novel or judgment-heavy work.
+2. SHINGLE LAW: route on one continuous semantic ramp:
+   economy → standard → senior → frontier. Each provider catalog maps these
+   tiers onto its useful model×reasoning/effort rungs and omits dominated
+   combinations. Harder ⇒ climb to the next real tier; do not crank reasoning
+   against a low model ceiling. Provider rungs need not be equivalent.
+3. PIN THE TIER on every spawn. Provider may be explicit or `auto`; the
+   provider adapter MUST resolve and record concrete model + effort/reasoning.
+   Never silently inherit the session model.
 4. BLAST RADIUS routes up; importance alone never does. A hard-but-local
    testable bug is still implement; a one-line naming decision that shapes
    an API is design.
@@ -104,13 +98,14 @@ count it must return. Verification means checking the worker against its bars;
 a bare "done" is never accepted.
 
 <!-- gaffer:spawn-surfaces adapter=native (default; inject-doctrine.sh swaps this block per GAFFER_SPAWN_ADAPTER / dispatch=) -->
-SPAWN SURFACES — a squad member is a (role, model, effort) tuple, not a
+SPAWN SURFACES — a squad member is a (role, tier, posture) decision, not a
 tool. Invoke it through whatever spawn surface your harness gives you:
 - native Agent tool available → subagent_type: 'gaffer:<role>'
 - Workflow → agent(prompt, {agentType: 'gaffer:<role>'})
 - a custom dispatch (SDK / MCP / a substrate that denies the native Agent
-  tool) → spawn on that surface passing the role's pinned model+effort (the
-  SHAPES→SQUAD list above gives every pin) + a role tag if the surface
+  tool) → spawn on that surface passing the role's pinned semantic tier (the
+  SHAPES→SQUAD list above gives every pin), provider=`auto` unless overridden,
+  + a role tag if the surface
   supports one. The payload (role/posture/delta) rides the spawn regardless
   of surface. If the native Agent tool is denied, that is a routing
   instruction, not a wall — translate to the available surface, never abandon
@@ -119,24 +114,25 @@ tool. Invoke it through whatever spawn surface your harness gives you:
 
 WORKFLOWS (incl. ultracode): these laws govern STAFFING every stage of any
 workflow you author. Squad members plug in via agentType —
-agent(prompt, {agentType: 'gaffer:researcher'}) — or pin model+effort
+agent(prompt, {agentType: 'gaffer:researcher'}) — or pin tier (and let the
+provider adapter resolve model+effort/reasoning)
 per stage yourself:
-- discovery/finder stages → gaffer:researcher (sonnet-low), fan out wide
-- deep-analysis/root-cause stages → gaffer:analyst (opus-high); fan out over
+- discovery/finder stages → gaffer:researcher (economy), fan out wide
+- deep-analysis/root-cause stages → gaffer:analyst (senior); fan out over
   distinct subsystems — parallel analysts cover what one coordinator can't
   hold at once
-- build/transform stages → gaffer:implementer (sonnet-medium); layer floor
+- build/transform stages → gaffer:implementer (standard); layer floor
   still applies per stage — foundational targets get gaffer:integrator
-- verify stages → gaffer:verifier (opus-high) per finding, in parallel;
-  the verifier never reuses the finder's tier below opus
-- judge/synthesis stages → gaffer:judge (opus-high)
+- verify stages → gaffer:verifier (senior) per finding, in parallel;
+  the verifier never reuses a finder tier below senior
+- judge/synthesis stages → gaffer:judge (senior)
 Never let a stage inherit the session's model/effort implicitly (in a
 top-tier session that silently runs every worker at top tier).
 
 BESPOKE AGENTS — first-class, not an exception. The squad covers the
 common shapes; it is a standard library, not a roster limit. When the
 domain deserves a purpose-built agent, AUTHOR ONE — the laws above still
-bind it (pin both dials, layer floor, shingle), and the blocks are parts,
+bind it (pin tier, layer floor, shingle), and the blocks are parts,
 not requirements: borrow the comms norms and the model delta (almost
 always worth it), borrow role/posture when they fit, write the
 domain-specific remainder freely. One line in your plan saying why bespoke
