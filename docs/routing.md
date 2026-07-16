@@ -40,6 +40,21 @@ topology, semantic tier, and deliberation are independently reviewable and may
 override a row. The layer floor raises foundational, library, and architecture work to at
 least `senior`. Blast radius may raise a tier; importance alone does not.
 
+The canonical machine-readable templates live in `staffing/catalog.json`
+(`staffing/catalog.schema.json` documents the format). Compose a portable
+payload without knowing a provider model name:
+
+```sh
+node scripts/compose-routing.mjs integrator --domain Nix --tier frontier
+node scripts/compose-routing.mjs migration-forensics --nearest analyst \
+  --rationale "needs provenance tracing plus schema recovery"
+```
+
+The command prints the JSON that follows a `GAFFER_ROUTING` marker. Preset
+values are defaults only: every explicit axis replaces only itself. Unknown
+roles are valid bespoke compositions, but require a rationale so recurring
+patterns can be reviewed for promotion.
+
 ## Resolution
 
 1. Honor an explicit provider or transport override.

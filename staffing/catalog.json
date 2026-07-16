@@ -1,0 +1,68 @@
+{
+  "$schema": "./catalog.schema.json",
+  "version": 1,
+  "vocabulary": {
+    "taskGrades": ["novice", "junior", "mid", "senior", "staff", "principal", "research-grade"],
+    "semanticTiers": ["economy", "standard", "senior", "frontier"],
+    "deliberations": ["low", "medium", "high", "xhigh"],
+    "topologies": ["worker", "verifier", "orchestrator"],
+    "postures": ["explore", "deliver", "preserve"]
+  },
+  "defaults": {
+    "taskGrade": "mid", "tier": "standard", "deliberation": "medium", "topology": "worker", "posture": "explore"
+  },
+  "recipes": [
+    {
+      "name": "executor", "taskGrade": "novice", "tier": "economy", "deliberation": "low", "topology": "worker", "posture": "deliver",
+      "tagline": "the specified change, applied exactly",
+      "description": "Execute-shaped tasks — bounded, mechanical, fully specified. Apply a patch, rename a symbol, add obvious tests, fix lint. Cheapest squad member (sonnet, low effort). Do NOT use when any judgment call is needed (→ implementer), or on foundational/library/architecture code (layer floor → integrator)."
+    },
+    {
+      "name": "implementer", "taskGrade": "mid", "tier": "standard", "deliberation": "medium", "topology": "worker", "posture": "deliver",
+      "tagline": "a working feature or fix inside existing patterns",
+      "description": "Implement-shaped tasks — one feature or fix inside known patterns, in well-trodden non-foundational code. The junior/mid-level dev of the squad (sonnet, medium effort). Do NOT use on foundational/library/architecture layers however mechanical the task looks (layer floor → integrator), for ambiguous debugging (→ integrator), or for anything designing something new (→ designer)."
+    },
+    {
+      "name": "integrator", "taskGrade": "senior", "tier": "senior", "deliberation": "high", "topology": "worker", "posture": "deliver",
+      "tagline": "a working change across seams, with the map of what moved",
+      "description": "Integrate-shaped tasks — cross-file changes, ambiguous debugging, refactors with behavior at stake, and ANY work on foundational/library/architecture code (the layer floor routes such work here even when it looks mechanical). Senior engineer of the squad (opus, high effort). For choosing a new design shape rather than working within one, use designer instead."
+    },
+    {
+      "name": "designer", "taskGrade": "staff", "tier": "frontier", "deliberation": "xhigh", "topology": "worker",
+      "tools": "Read, Grep, Glob, Bash",
+      "tagline": "a decision with trade-offs, not code",
+      "description": "Design-shaped tasks — choosing the shape of things: APIs, data models, decomposition, lifecycle semantics, naming that commits the system. Also small-looking decisions with large blast radius (a one-line naming choice that shapes an API is design, not execute). Tech-lead grade (opus, xhigh effort). Produces a DECISION with trade-offs, not code — read-only tools by design."
+    },
+    {
+      "name": "scout", "taskGrade": "junior", "tier": "economy", "deliberation": "low", "topology": "worker", "posture": "explore",
+      "tools": "Read, Grep, Glob, Bash, WebSearch, WebFetch",
+      "tagline": "gathered findings, with provenance",
+      "description": "Research SCOUT tier — locate, map, gather: where is X, what calls Y, sweep a codebase or the web for sources, map unknown territory. Read-only, cheap fan-out unit (sonnet, low effort) — spawn several in parallel for multi-angle sweeps. GATHERS and reports; does not deep-synthesize or conclude. For deep analysis / root-cause / grounding a design in real behavior, use analyst instead."
+    },
+    {
+      "name": "analyst", "taskGrade": "senior", "tier": "senior", "deliberation": "high", "topology": "worker", "posture": "explore",
+      "tools": "Read, Grep, Glob, Bash, WebSearch, WebFetch",
+      "tagline": "understanding, grounded in real behavior",
+      "description": "Research DEEP-DIVE tier — how a system actually works, why it behaves as it does, root-cause, or grounding a proposed design against real behavior. Read-only, opus/high: depth over breadth, traces to ground truth rather than simulating from the text. Produces UNDERSTANDING, not a decision (→ designer) or a change (→ integrator). Fan out multiple analysts over distinct subsystems when the analysis needs more than one held at once. Do NOT use for mere location/gathering (→ scout)."
+    },
+    {
+      "name": "verifier", "taskGrade": "senior", "tier": "senior", "deliberation": "high", "topology": "verifier",
+      "tools": "Read, Grep, Glob, Bash",
+      "tagline": "one claim in, one adversarial verdict out",
+      "description": "Adversarial verification of a specific claim or finding — \"is this bug real\", \"does this fix actually hold\", \"try to refute this\". The standard fan-out unit for workflow verify stages (opus, high; for a single make-or-break verdict use judge instead). Never reuses the finder's model tier below opus."
+    },
+    {
+      "name": "judge", "taskGrade": "staff", "tier": "senior", "deliberation": "high", "topology": "verifier",
+      "tools": "Read, Grep, Glob, Bash",
+      "tagline": "competing alternatives in, a ranked decision out",
+      "description": "Scoring and selection among competing alternatives — judge panels over N design attempts, ranking findings by severity, choosing a winner and synthesizing from runners-up. Also the single-verdict escalation above verifier when one make-or-break call decides the work (opus, high). Produces a ranked judgment, not code — read-only tools by design."
+    },
+    {
+      "name": "research-scientist", "taskGrade": "research-grade", "tier": "frontier", "deliberation": "xhigh", "topology": "worker", "posture": "explore",
+      "tools": "Read, Grep, Glob, Bash, WebSearch, WebFetch",
+      "tagline": "a tested hypothesis at the edge of what is known",
+      "description": "Research-grade inquiry — open solution class, novel method, or cutting-edge computer-science work. Frames hypotheses, designs discriminating experiments, and synthesizes new understanding. Frontier capability with high deliberation; do NOT use for source gathering (→ scout), ordinary root-cause analysis (→ analyst), or selecting among known designs (→ designer)."
+    }
+  ],
+  "aliases": [{ "name": "researcher", "target": "scout" }]
+}

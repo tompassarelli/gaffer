@@ -6,6 +6,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadStaffingCatalog } from "./staffing-catalog.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => readFileSync(resolve(ROOT, p), "utf8");
@@ -40,92 +41,20 @@ const deltas = {
   opus: firstFence(read("docs/deltas/opus.md")),
 };
 
-export const TASK_GRADES = ["novice", "junior", "mid", "senior", "staff", "principal", "research-grade"];
-export const SEMANTIC_TIERS = ["economy", "standard", "senior", "frontier"];
-
-const RECIPES = [
-  {
-    name: "executor", taskGrade: "novice", tier: "economy", posture: "deliver",
-    tagline: "the specified change, applied exactly",
-    description: "Execute-shaped tasks — bounded, mechanical, fully specified. Apply a patch, rename a symbol, add obvious tests, fix lint. Cheapest squad member (sonnet, low effort). Do NOT use when any judgment call is needed (→ implementer), or on foundational/library/architecture code (layer floor → integrator).",
-  },
-  {
-    name: "implementer", taskGrade: "mid", tier: "standard", posture: "deliver",
-    tagline: "a working feature or fix inside existing patterns",
-    description: "Implement-shaped tasks — one feature or fix inside known patterns, in well-trodden non-foundational code. The junior/mid-level dev of the squad (sonnet, medium effort). Do NOT use on foundational/library/architecture layers however mechanical the task looks (layer floor → integrator), for ambiguous debugging (→ integrator), or for anything designing something new (→ designer).",
-  },
-  {
-    name: "integrator", taskGrade: "senior", tier: "senior", posture: "deliver",
-    tagline: "a working change across seams, with the map of what moved",
-    description: "Integrate-shaped tasks — cross-file changes, ambiguous debugging, refactors with behavior at stake, and ANY work on foundational/library/architecture code (the layer floor routes such work here even when it looks mechanical). Senior engineer of the squad (opus, high effort). For choosing a new design shape rather than working within one, use designer instead.",
-  },
-  {
-    name: "designer", taskGrade: "staff", tier: "frontier",
-    tools: "Read, Grep, Glob, Bash",
-    tagline: "a decision with trade-offs, not code",
-    description: "Design-shaped tasks — choosing the shape of things: APIs, data models, decomposition, lifecycle semantics, naming that commits the system. Also small-looking decisions with large blast radius (a one-line naming choice that shapes an API is design, not execute). Tech-lead grade (opus, xhigh effort). Produces a DECISION with trade-offs, not code — read-only tools by design.",
-  },
-  {
-    name: "scout", taskGrade: "junior", tier: "economy", posture: "explore",
-    tools: "Read, Grep, Glob, Bash, WebSearch, WebFetch",
-    tagline: "gathered findings, with provenance",
-    description: "Research SCOUT tier — locate, map, gather: where is X, what calls Y, sweep a codebase or the web for sources, map unknown territory. Read-only, cheap fan-out unit (sonnet, low effort) — spawn several in parallel for multi-angle sweeps. GATHERS and reports; does not deep-synthesize or conclude. For deep analysis / root-cause / grounding a design in real behavior, use analyst instead.",
-  },
-  {
-    name: "analyst", taskGrade: "senior", tier: "senior", posture: "explore",
-    tools: "Read, Grep, Glob, Bash, WebSearch, WebFetch",
-    tagline: "understanding, grounded in real behavior",
-    description: "Research DEEP-DIVE tier — how a system actually works, why it behaves as it does, root-cause, or grounding a proposed design against real behavior. Read-only, opus/high: depth over breadth, traces to ground truth rather than simulating from the text. Produces UNDERSTANDING, not a decision (→ designer) or a change (→ integrator). Fan out multiple analysts over distinct subsystems when the analysis needs more than one held at once. Do NOT use for mere location/gathering (→ scout).",
-  },
-  {
-    name: "verifier", taskGrade: "senior", tier: "senior",
-    tools: "Read, Grep, Glob, Bash",
-    tagline: "one claim in, one adversarial verdict out",
-    description: "Adversarial verification of a specific claim or finding — \"is this bug real\", \"does this fix actually hold\", \"try to refute this\". The standard fan-out unit for workflow verify stages (opus, high; for a single make-or-break verdict use judge instead). Never reuses the finder's model tier below opus.",
-  },
-  {
-    name: "judge", taskGrade: "staff", tier: "senior",
-    tools: "Read, Grep, Glob, Bash",
-    tagline: "competing alternatives in, a ranked decision out",
-    description: "Scoring and selection among competing alternatives — judge panels over N design attempts, ranking findings by severity, choosing a winner and synthesizing from runners-up. Also the single-verdict escalation above verifier when one make-or-break call decides the work (opus, high). Produces a ranked judgment, not code — read-only tools by design.",
-  },
-  {
-    name: "research-scientist", taskGrade: "research-grade", tier: "frontier", posture: "explore",
-    tools: "Read, Grep, Glob, Bash, WebSearch, WebFetch",
-    tagline: "a tested hypothesis at the edge of what is known",
-    description: "Research-grade inquiry — open solution class, novel method, or cutting-edge computer-science work. Frames hypotheses, designs discriminating experiments, and synthesizes new understanding. Frontier capability with high deliberation; do NOT use for source gathering (→ scout), ordinary root-cause analysis (→ analyst), or selecting among known designs (→ designer).",
-  },
-];
-
-// Compatibility is intentionally outside RECIPES: aliases are accepted adapter
-// spellings, never canonical routing identities.
-const COMPAT_ALIASES = [{ name: "researcher", target: "scout" }];
-
-function validateRecipes() {
-  const seen = new Set();
-  for (const recipe of RECIPES) {
-    if (seen.has(recipe.name)) throw new Error(`duplicate recipe: ${recipe.name}`);
-    seen.add(recipe.name);
-    if (!TASK_GRADES.includes(recipe.taskGrade)) {
-      throw new Error(`${recipe.name}: invalid taskGrade ${JSON.stringify(recipe.taskGrade)}`);
-    }
-    if (!SEMANTIC_TIERS.includes(recipe.tier)) {
-      throw new Error(`${recipe.name}: invalid semantic tier ${JSON.stringify(recipe.tier)}`);
-    }
-  }
-  for (const alias of COMPAT_ALIASES) {
-    if (seen.has(alias.name)) throw new Error(`compat alias is canonical: ${alias.name}`);
-    if (!seen.has(alias.target)) throw new Error(`compat alias target is missing: ${alias.target}`);
-  }
-}
-
-validateRecipes();
+const staffing = loadStaffingCatalog();
+export const TASK_GRADES = staffing.vocabulary.taskGrades;
+export const SEMANTIC_TIERS = staffing.vocabulary.semanticTiers;
+export const RECIPES = staffing.recipes;
+const COMPAT_ALIASES = staffing.aliases;
 
 // Generated Claude Code agents are an adapter artifact. Resolve their concrete
 // pins from the Anthropic catalog while keeping recipes provider-neutral.
 for (const recipe of RECIPES) {
   const resolved = anthropic.tiers[recipe.tier];
   if (!resolved) throw new Error(`Anthropic catalog does not resolve tier: ${recipe.tier}`);
+  if (resolved.defaultEffort !== recipe.deliberation) {
+    throw new Error(`${recipe.name}: Claude adapter ${resolved.defaultEffort} would not preserve catalog deliberation ${recipe.deliberation}`);
+  }
   recipe.model = resolved.model;
   recipe.effort = resolved.defaultEffort;
 }

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Gaffer staffing catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "vocabulary", "defaults", "recipes", "aliases"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "vocabulary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["taskGrades", "semanticTiers", "deliberations", "topologies", "postures"],
+      "properties": {
+        "taskGrades": { "$ref": "#/$defs/uniqueStrings" },
+        "semanticTiers": { "$ref": "#/$defs/uniqueStrings" },
+        "deliberations": { "$ref": "#/$defs/uniqueStrings" },
+        "topologies": { "$ref": "#/$defs/uniqueStrings" },
+        "postures": { "$ref": "#/$defs/uniqueStrings" }
+      }
+    },
+    "defaults": {
+      "type": "object", "additionalProperties": false,
+      "required": ["taskGrade", "tier", "deliberation", "topology", "posture"],
+      "properties": {
+        "taskGrade": { "type": "string" }, "tier": { "type": "string" }, "deliberation": { "type": "string" },
+        "topology": { "type": "string" }, "posture": { "type": "string" }
+      }
+    },
+    "recipes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/recipe" } },
+    "aliases": { "type": "array", "items": { "$ref": "#/$defs/alias" } }
+  },
+  "$defs": {
+    "uniqueStrings": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "recipe": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "taskGrade", "tier", "deliberation", "topology", "tagline", "description"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 }, "taskGrade": { "type": "string" }, "tier": { "type": "string" },
+        "deliberation": { "type": "string" }, "topology": { "type": "string" }, "posture": { "type": "string" },
+        "tools": { "type": "string", "minLength": 1 }, "tagline": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 }
+      }
+    },
+    "alias": {
+      "type": "object", "additionalProperties": false, "required": ["name", "target"],
+      "properties": { "name": { "type": "string", "minLength": 1 }, "target": { "type": "string", "minLength": 1 } }
+    }
+  }
+}
