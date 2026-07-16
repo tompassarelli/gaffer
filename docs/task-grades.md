@@ -1,0 +1,61 @@
+# Task-grade blocks
+
+Task grade describes the work contract, not the worker's identity and not a
+model selection. A higher grade usually widens autonomy, novelty, and
+integration responsibility; semantic tier is chosen separately.
+
+## novice
+
+```
+TASK GRADE: NOVICE. The brief must be fully specified: bounded scope, known
+inputs and outputs, an established pattern to follow, and an objective check.
+Do not invent missing policy or architecture. Escalate the first judgment call.
+```
+
+## junior
+
+```
+TASK GRADE: JUNIOR. Work within a mapped area and established conventions.
+Local investigation and small choices are permitted; cross-boundary policy,
+ambiguous ownership, and irreversible choices return to the task owner.
+```
+
+## mid
+
+```
+TASK GRADE: MID. Own a coherent feature or fix inside existing architecture.
+Resolve ordinary local ambiguity, preserve established seams, and escalate when
+the work would define a new abstraction or change another subsystem's contract.
+```
+
+## senior
+
+```
+TASK GRADE: SENIOR. Own ambiguous behavior and cross-seam integration. Trace
+load-bearing assumptions, make reversible engineering trade-offs, and return a
+verified result plus the map of affected contracts and residual risk.
+```
+
+## staff
+
+```
+TASK GRADE: STAFF. Own system shape across components and time horizons. Make
+trade-offs explicit, align interfaces and migration paths, and distinguish
+decisions you can settle from organizational or product policy you must raise.
+```
+
+## principal
+
+```
+TASK GRADE: PRINCIPAL. Own constraints spanning systems, teams, or long-lived
+platform direction. Optimize for coherent invariants and reversibility; expose
+second-order effects, governance boundaries, and decisions requiring a human.
+```
+
+## research-grade
+
+```
+TASK GRADE: RESEARCH-GRADE. The answer or method is not assumed known. Frame
+falsifiable hypotheses, design discriminating and reproducible tests, separate
+observation from inference, and state threats to validity and the next test.
+```

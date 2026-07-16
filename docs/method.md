@@ -11,18 +11,18 @@ importance alone never does.
 Two empirical laws sharpen the routing:
 
 - **Layer floor.** Foundational / library / architecture code never routes
-  to the sonnet tier, however mechanical the task looks. Sonnet-tier models
-  extend established patterns in well-trodden code; frontier and
-  foundational work needs the opus tier's judgment even when the diff is
-  small. The stack layer sets the floor, not surface difficulty.
-- **Shingle law.** Each model has ~2 practical effort rungs, and a model's
-  top rung is dominated by the next model's bottom rung (sonnet-high is
-  almost never right — that's opus-medium's job; opus-max is mostly
-  dominated by the next tier). Routing happens on one continuous ramp.
-  When work is harder, climb the MODEL — don't crank effort against a low
-  ceiling. Corroborated by vendor guidance: higher-ceiling models at modest
-  effort beat lower-ceiling models at maxed effort, and max-effort modes
-  carry documented overthinking failure modes.
+  below the `senior` semantic tier, however mechanical the task looks. Lower
+  tiers extend established patterns in well-trodden code; foundational work
+  needs senior or frontier judgment even when the diff is small. The stack
+  layer sets the floor, not surface difficulty.
+- **Shingle law.** A provider catalog exposes only useful
+  model×deliberation rungs. When one model's upper deliberation rung is
+  dominated by the next capability tier's lower rung, the catalog omits the
+  dominated pair. Routing therefore follows one continuous semantic ramp:
+  harder work climbs capability rather than cranking deliberation against a
+  low ceiling. Concrete, current examples are generated from the catalogs in
+  [`docs/provider-matrix.md`](provider-matrix.md); they are evidence for the
+  mapping, not shared doctrine.
 
 ## Payloads: consumer-calibrated deltas
 

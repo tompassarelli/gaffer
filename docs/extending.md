@@ -8,9 +8,10 @@ This is the specification for building on it.
 
 Three requirements, everything else is free:
 
-1. **Routing pinned** — semantic tier is always explicit; provider may be
-   explicit or `auto`. The selected provider adapter must resolve model AND
-   effort/reasoning rather than inheriting them from a session.
+1. **Routing pinned** — semantic tier and deliberation are always explicit.
+   Provider/account selection belongs to the harness execution envelope; North
+   may leave provider `auto` or pin a target. The selected provider adapter must
+   resolve model AND effort/reasoning rather than inheriting them from a session.
 2. **Comms norms respected** — compact reports, provenance marks
    (observed/inferred/assumed), not-done lists. Embed `docs/comms.md` or
    restate equivalent norms.
@@ -26,27 +27,37 @@ squad has no privileged status beyond being pre-built.
 1. Name the axes: function/role, `taskGrade`, domain requirements, topology and
    dependency shape, leverage, quality floor, semantic tier, deliberation,
    posture, and authority. Do not derive one by renaming another.
-2. Borrow blocks that fit: comms (almost always), the model delta (almost
-   always — it's calibration, not style), role/posture (when apt).
+2. Borrow blocks that fit: comms (almost always), task grade, topology,
+   role/posture, and only the exact concrete model's delta when its provider
+   catalog supplies a calibrated path.
 3. Write the domain-specific remainder freely — that's the point.
-4. Record a bespoke contract: nearest preset, why it failed, the new role's
-   responsibility/deliverable/authority/report, and a stable composition name.
-5. Mark whether it is a promotion candidate. Recurrence adds evidence for a
+4. Record a bespoke contract: an optional nearest preset (when it genuinely
+   helps explain or seed the composition), why a standard recipe was not used, responsibility,
+   deliverable, canonical `capabilities[]`, `mayDecide[]`, `mustEscalate[]`,
+   `doneWhen[]`, report, and a stable composition name. Capabilities are always
+   explicit; a nearest preset does not silently donate its authority.
+   Stable role/composition IDs are lowercase kebab case, start with a letter,
+   and contain only lowercase letters, digits, and single hyphens. Retired IDs
+   remain reserved; use `scout`, `analyst`, or `research-scientist` instead of
+   the ambiguous former `researcher` role.
+5. `promotionCandidate` defaults false; nominate explicitly when useful.
+   Recurrence adds evidence for a
    later human/orchestrator review; it never promotes itself.
 
 ## Promoting a recurring pattern into the library
 
 - **New squad member**: add a role block to `docs/roles.md` (authority +
   deliverable + REPORT + REDIRECT), add a recipe to
-  `scripts/build-agents.mjs`, rebuild (`node scripts/build-agents.mjs`),
+  `staffing/catalog.json`, rebuild (`node scripts/build-agents.mjs`),
   and describe it in README. Agent files are generated — never hand-write
   one.
 - **New posture**: add a block to `docs/postures.md` (collision order +
   licensed + forbidden + done-bar).
 - **New model delta**: run the elicit skill — self-report (contamination
   guarded) → subtract what the model already does → compile the residue in
-  its own vocabulary. Save to `docs/deltas/<model>.md`, reference it in
-  recipes.
+   its own vocabulary. Save to `docs/deltas/<model>.md`, then record its repo
+   path under that exact model in `providers/<provider>.json`. Runtime models
+   without a calibration use an explicit `none`; they never inherit one.
 - Promotion rule of thumb: review after at least two successful uses with
   comparable contracts. Repetition is evidence, not authorization: promotion
   is always an explicit change to the standard library.
@@ -65,20 +76,20 @@ squad has no privileged status beyond being pre-built.
 
 | Axis | Sets | Enforcement | In gaffer | At runtime |
 |---|---|---|---|---|
-| Routing | semantic tier + provider policy | hard at dispatch | recipe + provider catalog | spawn opts |
+| Routing | semantic tier + deliberation | hard at dispatch | recipe + routing request | semantic spawn opts |
 | Substrate | model + effort/reasoning | hard (API params) | provider catalog / compiled adapter | resolved spawn opts |
-| Capability surface | tool set | hard (allowedTools) | recipe frontmatter `tools:` | spawn opts |
+| Capability surface | provider-neutral capability labels | hard, fail-closed adapter intersection | recipe `capabilities` | adapter tool + sandbox mapping |
 | Role | authority / deliverable / report / redirect | advisory | `docs/roles.md` | — |
 | Task grade | work scope / autonomy / novelty prior | advisory | preset or bespoke contract | spawn metadata |
-| Domain requirements | expertise + context required | advisory/hard when capability-gated | preset or bespoke contract | prompt / required capabilities |
-| Topology | worker / verifier / orchestrator authority | host-enforced | doctrine + contract | spawn opts / host orchestration |
-| Dependency shape | when topology pays for itself | advisory/host-enforced | doctrine + routing request | orchestration plan |
-| Leverage | value of improved judgment / cost of plausible error | advisory | routing request | selection reason |
-| Quality floor | minimum responsible semantic tier | hard at dispatch | doctrine + routing request | candidate filter |
-| Deliberation | reasoning budget independent of model capability | hard at dispatch | provider-neutral routing request | resolved spawn opts |
-| Allocation | preferential / balanced / reserved subscription use | host-enforced | provider-neutral policy | North resource pools |
+| Domain requirements | expertise + context the brief/adapter must supply | recorded; hard only when a harness has a real capability gate | preset or bespoke contract | prompt / required capabilities |
+| Topology | worker / orchestrator coordination authority (verifier/judge are worker roles) | host-enforced | doctrine + request | spawn opts / host orchestration |
+| Dependency shape | when topology pays for itself | planner input (advisory) | doctrine — derives topology | orchestration plan |
+| Leverage | value of improved judgment / cost of plausible error | planner input (advisory) | doctrine — derives tier | selection reason |
+| Quality floor | minimum responsible semantic tier | planner input (advisory) | doctrine — bounds tier | tier-selection bound |
+| Deliberation | reasoning budget independent of model capability | hard at dispatch | routing request | resolved spawn opts |
+| Allocation | preferential / balanced / reserved subscription use | host-enforced | NOT gaffer's — North policy | North resource pools |
 | Posture | value-collision ordering | advisory | `docs/postures.md` | — |
-| Calibration | substrate-specific compensations | advisory | `docs/deltas/<model>.md` | — |
+| Calibration | exact-concrete-model compensations | advisory | provider `modelDeltas` → `docs/deltas/<model>.md` or explicit none | prompt |
 | Comms | universal output norms | advisory | `docs/comms.md` | host may add layers (register, wire formats) |
 | Coordination membership | peer coexistence (presence, claims) | host-specific | NOT gaffer's | host harness |
 | Laws | house constitution | advisory | `doctrine.md` (routing laws only) | host config |
@@ -89,10 +100,22 @@ The compiler (`scripts/build-agents.mjs`) flattens the source-layer prompt and
 adapter axes into agent files where the adapter format requires it. Host
 coordination, hierarchy, and task identity remain runtime concerns: gaffer
 stays portable precisely by not encoding them as provider-specific doctrine.
+Capability labels describe enforceable authority, not decorative tool hints.
+`shell.readonly` requires a hard working-tree write denial; an adapter that
+cannot provide one withholds shell access. Claude plugin-agent frontmatter has
+no hard sandbox control, so generated non-authoring plugin agents omit Bash;
+North adapters can expose shell probes only under their provider's read-only
+sandbox. A tools allowlist without Edit/Write is not itself a write boundary.
+Topology and capabilities are validated together: orchestrators require
+`coordination` and forbid `filesystem.write` plus unrestricted `shell`; workers
+forbid `coordination`; `shell` and `shell.readonly` are mutually exclusive.
+Changing a preset's topology never projects a new capability set behind the
+scenes, so incompatible topology overrides are rejected.
 
-Resource policy follows the same boundary. A custom composition may propose an
-ordered list of semantic candidate rungs and a quality floor. It must not embed
-account names, entitlement balances, reset dates, or concrete model names.
-North owns those changing runtime facts and records which pool it selected.
+Resource policy follows the same boundary. A bespoke composition selects one
+semantic tier and one reasoning level; it does not carry an ordered fallback
+ladder. It must not embed account names, entitlement balances, reset dates, or
+concrete model names. North resolves that request through provider catalogs,
+owns the changing runtime alternatives, and records which pool it selected.
 Automatic alternatives remain same-capability substitutions before side
 effects; any degradation is explicit and evidenced.

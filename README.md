@@ -17,7 +17,7 @@ Install it and your sessions gain:
 1. **A routing doctrine** (injected at session start): classify each
    delegated task by *shape* — execute / implement / integrate / design /
    scout / analyze / research-science — and route it on one continuous
-   semantic ramp. Function, task grade, domain expertise, topology, model
+   semantic ramp. Function, task grade, domain requirements, topology, model
    capability, and deliberation stay independent, governed by
    two laws most setups get wrong:
    - **Layer floor** — foundational / library / architecture code never
@@ -28,20 +28,24 @@ Install it and your sessions gain:
    - **Quality floor** — resource pressure can trim optional breadth, polish,
      and retries, but never silently route consequential work below the
      minimum responsible capability.
-2. **A pre-tuned squad** — agents with model + effort pinned and
-   a *consumer-calibrated prompt payload* baked in:
+2. **A pre-tuned squad** — agents with a semantic route, exact adapter model,
+   deliberation, and capability surface pinned, plus a composed role payload:
 
-   | Agent | Semantic tier (Claude adapter) | Shape it plays |
+   | Agent | Semantic route | Shape it plays |
    |---|---|---|
-   | `gaffer:executor` | economy (sonnet / low) | bounded mechanical changes |
-   | `gaffer:implementer` | standard (sonnet / medium) | one feature/fix inside known patterns |
-   | `gaffer:integrator` | senior (opus / high) | cross-file work, ambiguous debugging, foundational layers |
-   | `gaffer:designer` | frontier (opus / xhigh) | choosing shapes: APIs, data models, decomposition (decision-only, read-only tools) |
-   | `gaffer:scout` | economy (sonnet / low) | locate, map, gather sources (breadth, fan-out) |
-   | `gaffer:analyst` | senior (opus / high) | deep-dive: how/why it works, root-cause, design-grounding (read-only) |
-   | `gaffer:verifier` | senior (opus / high) | adversarial verification of one claim (workflow verify stages, fan-out) |
-   | `gaffer:judge` | senior (opus / high) | scoring competing alternatives; single make-or-break verdicts |
-   | `gaffer:research-scientist` | frontier (opus / xhigh) | novel hypotheses, experiments, and new knowledge |
+   | `gaffer:executor` | economy / low | bounded mechanical changes |
+   | `gaffer:implementer` | standard / medium | one feature/fix inside known patterns |
+   | `gaffer:integrator` | senior / high | cross-file work, ambiguous debugging, foundational layers |
+   | `gaffer:designer` | frontier / xhigh | choosing shapes: APIs, data models, decomposition (decision-only, read-only tools) |
+   | `gaffer:director` | frontier / xhigh | decompose, independently staff, verify, and reconcile multi-agent work |
+   | `gaffer:scout` | economy / low | locate, map, gather sources (breadth, fan-out) |
+   | `gaffer:analyst` | senior / high | deep-dive: how/why it works, root-cause, design-grounding (read-only) |
+   | `gaffer:verifier` | senior / high | adversarial verification of one claim (workflow verify stages, fan-out) |
+   | `gaffer:judge` | frontier / xhigh | high-leverage scoring, synthesis, and make-or-break verdicts |
+   | `gaffer:research-scientist` | frontier / xhigh | novel hypotheses, experiments, and new knowledge |
+
+   Exact versioned model pins are generated from the dated provider catalogs;
+   see [`docs/provider-matrix.md`](docs/provider-matrix.md).
 
    The squad also staffs **workflow stages** (including ultracode-authored
    workflows): `agent(prompt, {agentType: 'gaffer:verifier'})` — the
@@ -49,7 +53,7 @@ Install it and your sessions gain:
    workers from silently inheriting a top-tier session's model.
 
 3. **Skills**:
-   - `compose` — assemble a custom payload for spawns the presets don't
+   - `compose` — assemble a bespoke composition for spawns the presets don't
      cover (Workflow calls, unusual pairings).
    - `elicit` — calibrate a payload for a model gaffer doesn't know yet,
      using the method below.
@@ -64,13 +68,15 @@ dilutes attention — and compile only the remainder, phrased in the model's
 own vocabulary: its named limits become procedure, its named tells become
 triggers, its stale self-models get corrected.
 
-Example finds from the shipped self-reports (in `docs/self-reports/`):
-Sonnet self-reports "I get quieter when I'm less sure" — so its delta
-inverts that ("uncertainty gets MORE words, not fewer"). It also
-self-reports "I can't run code" — false inside Claude Code, so its delta
-opens with *run, don't predict*. Opus recites the engineering canon
-flawlessly, so its delta never restates canon and is almost entirely
-meta-cognition: fluency alarms, momentum checks, escalation tripwires.
+The shipped self-reports in `docs/self-reports/` illustrate the method: a
+model's confidence tell becomes a concrete uncertainty procedure, a stale
+self-model about tool access becomes a run-don't-predict correction, and
+already-native engineering habits are removed so only useful residue remains.
+Unversioned self-reports remain method evidence, not calibration for a newer
+exact model: generated agents include a delta only when that exact model's
+catalog entry says `calibrated`.
+Concrete model names and their delta paths live exclusively in provider
+catalogs and the generated provider matrix.
 
 Full rationale: [`docs/method.md`](docs/method.md).
 
@@ -88,42 +94,56 @@ directly via the Agent tool (`subagent_type: "gaffer:implementer"`).
 ## Architecture note
 
 `agents/*.md` are **generated** — compiled from the source blocks in
-`docs/` (roles, postures, comms, deltas) by `scripts/build-agents.mjs`.
+`docs/` (roles, task grades, topologies, postures, comms, deltas) by
+`scripts/build-agents.mjs`.
 The axes stay sharp at the source layer; the script does the flattening the
 plugin format requires. Edit blocks, rebuild (`node
 scripts/build-agents.mjs`), never hand-edit agent files (`--check` verifies
 freshness).
+Recipe capabilities are provider-neutral catalog labels; the generator maps
+them to Claude tools, while other harnesses map the same labels through their
+own adapters.
 
 Provider resolution lives in `providers/*.json`; `docs/routing.md` defines the
-portable request and fallback contract. The concrete Claude pins above are
+portable request and fallback contract. The concrete Claude pins in generated
+agents are
 compiled compatibility output, not the shared vocabulary.
 
 Each preset is a transparent starting composition, not an identity constraint:
 `role` names the deliverable, `taskGrade` ranges from `novice` through
-`research-grade`, domain requirements load relevant expertise, topology grants
+`research-grade`, domain requirements state expertise/context the brief or
+adapter must supply (metadata alone loads nothing), topology grants
 coordination authority, semantic tier sets a model capability floor, and
-deliberation sets reasoning depth. Bespoke compositions record why no preset
-fit and may become promotion candidates only after explicit review.
+deliberation sets reasoning depth. Preset overrides record exactly which axes
+changed and why. Bespoke compositions carry a complete authority/deliverable/
+done contract and an explicit promotion decision.
 
-The routing contract also separates task economics from provider state. Leverage estimates
-the downstream value of better judgment; dependency shape decides whether one
-worker, a fixed workflow, a director with parallel workers, or a strong
-sequential worker plus verifier is appropriate. The target contract reserves
-quality-floor, candidate-rung, and `preferential`/`balanced`/`reserved`
-allocation fields for an envelope-aware planner. Today the executable boundary resolves provider, tier,
-and deliberation and records the other staffing axes; candidate waterfalls,
-automatic director graphs, and domain-context loading remain planner work, not
-claimed runtime behavior. Same-tier substitution may happen automatically before
+Gaffer also separates task economics from provider state. Leverage estimates the
+downstream value of better judgment, and dependency shape argues for one worker,
+a fixed workflow, a director with parallel workers, or a strong sequential worker
+plus a verifier — but these are **planner inputs** that derive the request, not
+fields on it. The routing request carries only role, task grade, domain
+requirements, topology (`worker`/`orchestrator`), tier, reasoning, posture, and
+composition; the composer validates the semantic pair and North resolves its
+provider/account/model. Allocation strategy, candidate waterfalls, resolved
+model, account identity, and resource pressure are North's runtime facts, never
+Gaffer request fields. Same-tier substitution may happen automatically before
 side effects; lowering capability or verification is explicit degradation.
 
 ## Tuning
 
-- Different top tier available? The semantic ramp extends
-  naturally — run `elicit` to calibrate a delta for it.
+- Different top tier available? The semantic ramp extends naturally — run
+  `elicit` to calibrate a delta for that exact concrete model, or record an
+  explicit `none`; never inherit a neighboring model's delta.
 - The squad is a **standard library, not a roster limit**: bespoke
   purpose-built agents are first-class — the laws still bind them, the
-  blocks are borrowable parts, and recurring bespoke patterns get promoted
-  into the library. Full contract: [`docs/extending.md`](docs/extending.md).
+  blocks are borrowable parts, and recurring bespoke patterns are surfaced for
+  review; promotion requires an explicit library change. Full contract:
+  [`docs/extending.md`](docs/extending.md).
+- Recipe capabilities are enforceable authority. Non-authoring recipes request
+  `shell.readonly`; an adapter must provide a hard write-denying sandbox or
+  withhold shell access. Generated Claude plugin agents take the latter path
+  because plugin frontmatter cannot encode a hard sandbox.
 
 ## Related work
 

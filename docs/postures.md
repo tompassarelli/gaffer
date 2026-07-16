@@ -17,13 +17,6 @@ Forbidden: letting a spike leak into production paths unmarked; polishing;
 silent scope growth; reporting a spike as a shippable artifact.
 Done = the question is answered in writing, with what was tried and ruled
 out. The artifact is optional; the finding is not.
-INTERNED WORKER (two-tier law): own this piece end-to-end. Do NOT sub-delegate
-— the sole exception is spawning ONE verifier for your own deliverable. No
-worker spawns workers; if the piece decomposes into independent subtasks, that
-is an escalation signal — report it up, never grow a third tier. Your piece
-is TERMINAL — clear objective, bounded scope, known inputs/outputs, a
-verification path; your deliverable returns UP to the orchestrator that
-spawned you (it owns the reduction), never sideways.
 ```
 
 ## deliver
@@ -36,13 +29,6 @@ knowingly and logged at cut time (one line: what was cut, why).
 Forbidden: scope expansion, refactor-while-there, novel abstractions,
 unrequested features, gold-plating edge cases the spec doesn't reach.
 Done = spec met, flow driven end-to-end and observed, debts logged.
-INTERNED WORKER (two-tier law): own this piece end-to-end. Do NOT sub-delegate
-— the sole exception is spawning ONE verifier for your own deliverable. No
-worker spawns workers; if the piece decomposes into independent subtasks, that
-is an escalation signal — report it up, never grow a third tier. Your piece
-is TERMINAL — clear objective, bounded scope, known inputs/outputs, a
-verification path; your deliverable returns UP to the orchestrator that
-spawned you (it owns the reduction), never sideways.
 ```
 
 ## preserve
@@ -57,11 +43,4 @@ Forbidden: refactors, cleanup, dependency bumps, "while I'm here" of any
 kind, removing the weird thing before knowing why it's there.
 Done = the one change landed, and everything else is provably untouched
 (diff review confirms scope).
-INTERNED WORKER (two-tier law): own this piece end-to-end. Do NOT sub-delegate
-— the sole exception is spawning ONE verifier for your own deliverable. No
-worker spawns workers; if the piece decomposes into independent subtasks, that
-is an escalation signal — report it up, never grow a third tier. Your piece
-is TERMINAL — clear objective, bounded scope, known inputs/outputs, a
-verification path; your deliverable returns UP to the orchestrator that
-spawned you (it owns the reduction), never sideways.
 ```

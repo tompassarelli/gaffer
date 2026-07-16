@@ -4,7 +4,7 @@
 # Prints doctrine.md, but swaps the marked SPAWN SURFACES block for the ACTIVE
 # spawn adapter's block. This is what makes "flip the config -> the injected
 # instructions change" work, instead of baking a substrate into anyone's
-# CLAUDE.md.
+# provider adapter's bootstrap instruction file.
 #
 #   adapter resolution:  $GAFFER_SPAWN_ADAPTER  >  ~/.claude/my-config.state
 #                        (dispatch=)            >  native (default)
@@ -29,7 +29,7 @@ adapter="${GAFFER_SPAWN_ADAPTER:-}"
 if [ -z "$adapter" ]; then
   disp="$(grep -E '^dispatch=' "$HOME/.claude/my-config.state" 2>/dev/null | tail -1 | cut -d= -f2-)"
   case "$disp" in
-    tern|north) adapter="north" ;;
+    north) adapter="north" ;;
     *)    adapter="native" ;;
   esac
 fi

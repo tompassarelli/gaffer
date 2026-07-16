@@ -1,11 +1,47 @@
 {
   "$schema": "./catalog.schema.json",
   "provider": "anthropic",
+  "provenance": {
+    "asOf": "2026-07-16",
+    "reviewAfter": "2026-08-16",
+    "sources": [
+      {
+        "url": "https://www.anthropic.com/claude/fable",
+        "modelFamilies": ["claude-fable-5"],
+        "scopes": ["model-family", "availability"]
+      },
+      {
+        "url": "https://www.anthropic.com/news/claude-sonnet-5",
+        "modelFamilies": ["claude-sonnet-5"],
+        "scopes": ["model-family", "availability", "effort-support"]
+      },
+      {
+        "url": "https://platform.claude.com/docs/en/about-claude/models/whats-new-claude-4-8",
+        "modelFamilies": ["claude-opus-4-8"],
+        "scopes": ["model-family", "availability", "effort-support"]
+      },
+      {
+        "url": "https://platform.claude.com/docs/en/build-with-claude/effort",
+        "modelFamilies": ["claude-sonnet-5", "claude-opus-4-8"],
+        "scopes": ["effort-support"]
+      }
+    ]
+  },
   "transports": ["claude-agent-sdk", "claude-code"],
+  "modelAliases": {
+    "sonnet": "claude-sonnet-5",
+    "opus": "claude-opus-4-8",
+    "fable": "claude-fable-5"
+  },
+  "modelDeltas": {
+    "claude-sonnet-5": { "kind": "none", "reason": "the existing unversioned Sonnet self-report does not establish an exact Sonnet 5 calibration" },
+    "claude-opus-4-8": { "kind": "none", "reason": "the existing unversioned Opus self-report does not establish an exact Opus 4.8 calibration" },
+    "claude-fable-5": { "kind": "none", "reason": "temporary runtime promotion has no calibrated Gaffer delta" }
+  },
   "tiers": {
-    "economy": { "model": "sonnet", "efforts": ["low"], "defaultEffort": "low" },
-    "standard": { "model": "sonnet", "efforts": ["medium"], "defaultEffort": "medium" },
-    "senior": { "model": "opus", "efforts": ["high"], "defaultEffort": "high" },
-    "frontier": { "model": "opus", "efforts": ["xhigh", "max"], "defaultEffort": "xhigh" }
+    "economy": { "model": "claude-sonnet-5", "efforts": ["low"], "defaultEffort": "low" },
+    "standard": { "model": "claude-sonnet-5", "efforts": ["medium"], "defaultEffort": "medium" },
+    "senior": { "model": "claude-opus-4-8", "efforts": ["high", "xhigh"], "defaultEffort": "high" },
+    "frontier": { "model": "claude-opus-4-8", "efforts": ["high", "xhigh", "max"], "defaultEffort": "xhigh" }
   }
 }

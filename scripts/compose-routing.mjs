@@ -1,18 +1,24 @@
 #!/usr/bin/env node
 import { loadStaffingCatalog } from "./staffing-catalog.mjs";
+import { readFileSync } from "node:fs";
+import { presetOverrides, validateRoutingRequest } from "./routing-request.mjs";
+import { canonicalRoleId } from "./role-id.mjs";
 
 const usage = `usage: node scripts/compose-routing.mjs <role> [options]
 
 Options (each axis overrides independently):
-  --taskGrade <grade>       novice|junior|mid|senior|staff|principal|research-grade
+  --task-grade <grade>      novice|junior|mid|senior|staff|principal|research-grade
   --domain <name[,name]>    repeatable domain requirement
-  --topology <kind>         worker|verifier|orchestrator
+  --topology <kind>         worker|orchestrator (coordination authority)
   --tier <tier>             economy|standard|senior|frontier
-  --deliberation <level>    low|medium|high|xhigh (emitted as reasoning)
+  --deliberation <level>    low|medium|high|xhigh|max (alias: --reasoning; emitted as reasoning)
   --posture <posture>       explore|deliver|preserve
-  --nearest <preset>        nearest standard template for a bespoke role
+  --nearest <preset>        optional standard template reference/defaults for a bespoke role
   --rationale <reason>      required when <role> is not a preset or alias
-  --promotion-candidate     explicitly nominate a bespoke composition for review
+  --contract <JSON|@file>   bespoke authority/deliverable/done contract
+  --promotion-candidate     nominate a bespoke composition for review
+  --no-promotion-candidate  explicit false (the default; accepted for clarity)
+  --override-reason <why>   required when changing any preset axis
 
 Prints one provider-neutral GAFFER_ROUTING JSON payload.`;
 
@@ -28,15 +34,21 @@ function argumentsOf(argv) {
   const values = { domains: [], promotionCandidate: false };
   const names = {
     "--taskGrade": "taskGrade", "--task-grade": "taskGrade", "--domain": "domain",
-    "--topology": "topology", "--tier": "tier", "--deliberation": "deliberation",
+    "--topology": "topology", "--tier": "tier", "--deliberation": "deliberation", "--reasoning": "deliberation",
     "--posture": "posture", "--nearest": "nearest", "--rationale": "rationale",
-    "--promotion-candidate": "promotionCandidate",
+    "--contract": "contract", "--override-reason": "overrideReason",
+    "--promotion-candidate": "promotionCandidate", "--no-promotion-candidate": "noPromotionCandidate",
   };
   for (let index = 1; index < argv.length; index++) {
     const [rawName, inline] = argv[index].split(/=(.*)/s, 2);
     const name = names[rawName];
     if (!name) die(`unknown option: ${rawName}`);
-    if (name === "promotionCandidate") { values.promotionCandidate = true; continue; }
+    if (name === "promotionCandidate" || name === "noPromotionCandidate") {
+      if (values.promotionSpecified) die("choose exactly one promotion decision");
+      values.promotionSpecified = true;
+      values.promotionCandidate = name === "promotionCandidate";
+      continue;
+    }
     const value = inline ?? argv[++index];
     if (!value || value.startsWith("--")) die(`${rawName} requires a value`);
     if (name === "domain") values.domains.push(...value.split(",").map((part) => part.trim()).filter(Boolean));
@@ -47,12 +59,24 @@ function argumentsOf(argv) {
 
 const catalog = loadStaffingCatalog();
 const args = argumentsOf(process.argv.slice(2));
+try { canonicalRoleId(args.role, "role"); }
+catch (error) { die(error.message); }
 const alias = catalog.aliases.find(({ name }) => name === args.role);
 const canonicalRole = alias?.target ?? args.role;
 const preset = catalog.recipes.find(({ name }) => name === canonicalRole);
 const nearest = args.nearest && catalog.recipes.find(({ name }) => name === args.nearest);
 if (args.nearest && !nearest) die(`unknown nearest preset: ${args.nearest}`);
+if (preset && (args.nearest || args.rationale || args.contract || args.promotionSpecified))
+  die("--nearest, --rationale, --contract, and promotion decisions apply only to bespoke roles");
 if (!preset && !args.rationale?.trim()) die(`bespoke role ${JSON.stringify(args.role)} requires --rationale`);
+if (!preset && !args.contract) die(`bespoke role ${JSON.stringify(args.role)} requires --contract JSON|@file`);
+if (!preset && args.overrideReason) die("--override-reason applies only to preset axis overrides");
+
+function parseContract(input) {
+  const source = input.startsWith("@") ? readFileSync(input.slice(1), "utf8") : input;
+  try { return JSON.parse(source); }
+  catch (error) { die(`--contract must be valid JSON or @file: ${error.message}`); }
+}
 
 const template = preset ?? nearest ?? catalog.defaults;
 const selected = {
@@ -67,22 +91,34 @@ for (const [field, axis] of [["taskGrade", "taskGrades"], ["tier", "semanticTier
 
 const payload = {
   role: canonicalRole,
-  ...(alias ? { invokedAs: args.role } : {}),
   taskGrade: selected.taskGrade,
   domainRequirements: [...new Set(args.domains)],
   topology: selected.topology,
   tier: selected.tier,
   posture: selected.posture,
-  provider: "auto",
   reasoning: selected.deliberation,
   composition: preset
-    ? { kind: "preset", id: canonicalRole }
+    ? { kind: "preset", id: canonicalRole, overrides: [] }
     : {
         kind: "bespoke", id: args.role,
         ...(nearest ? { nearestPreset: nearest.name } : {}),
         bespokeReason: args.rationale.trim(),
         promotionCandidate: args.promotionCandidate,
+        contract: parseContract(args.contract),
       },
 };
+
+if (preset) {
+  const overrides = presetOverrides(payload, preset, catalog);
+  payload.composition.overrides = overrides;
+  if (overrides.length && !args.overrideReason?.trim())
+    die(`preset axis override requires --override-reason (changed: ${overrides.join(", ")})`);
+  if (!overrides.length && args.overrideReason)
+    die("unchanged preset must not carry --override-reason");
+  if (overrides.length) payload.composition.overrideReason = args.overrideReason.trim();
+}
+
+try { validateRoutingRequest(payload, catalog); }
+catch (error) { die(error.message); }
 
 console.log(JSON.stringify(payload));

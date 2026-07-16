@@ -1,9 +1,26 @@
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { canonicalRoleId } from "./role-id.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const STAFFING_CATALOG_PATH = resolve(ROOT, "staffing/catalog.json");
+
+export function validateTopologyCapabilities(topology, capabilities, label = "capabilities") {
+  const has = (capability) => capabilities.includes(capability);
+  if (has("shell") && has("shell.readonly"))
+    throw new Error(`${label}: shell and shell.readonly are mutually exclusive`);
+  if (topology === "orchestrator") {
+    if (!has("coordination"))
+      throw new Error(`${label}: orchestrator topology requires coordination capability`);
+    if (has("filesystem.write"))
+      throw new Error(`${label}: orchestrator topology forbids filesystem.write capability`);
+    if (has("shell"))
+      throw new Error(`${label}: orchestrator topology forbids unrestricted shell capability`);
+  } else if (topology === "worker" && has("coordination")) {
+    throw new Error(`${label}: worker topology forbids coordination capability`);
+  }
+}
 
 function keysOnly(value, allowed, label) {
   const unknown = Object.keys(value ?? {}).filter((key) => !allowed.includes(key));
@@ -14,7 +31,7 @@ export function validateStaffingCatalog(catalog) {
   if (catalog?.version !== 1) throw new Error("staffing catalog: version must be 1");
   keysOnly(catalog, ["$schema", "version", "vocabulary", "defaults", "recipes", "aliases"], "top level");
   const vocabulary = catalog?.vocabulary;
-  const axes = ["taskGrades", "semanticTiers", "deliberations", "topologies", "postures"];
+  const axes = ["taskGrades", "semanticTiers", "deliberations", "topologies", "postures", "capabilities"];
   keysOnly(vocabulary, axes, "vocabulary");
   for (const axis of axes) {
     const values = vocabulary?.[axis];
@@ -28,14 +45,20 @@ export function validateStaffingCatalog(catalog) {
   if (!Array.isArray(catalog.recipes) || !catalog.recipes.length) throw new Error("staffing catalog: recipes must be non-empty");
   const names = new Set();
   for (const recipe of catalog.recipes) {
-    keysOnly(recipe, ["name", "taskGrade", "tier", "deliberation", "topology", "posture", "tools", "tagline", "description"], `recipe ${recipe?.name ?? "<unknown>"}`);
-    if (!recipe?.name || names.has(recipe.name)) throw new Error(`staffing catalog: duplicate or empty recipe ${recipe?.name ?? ""}`);
+    keysOnly(recipe, ["name", "taskGrade", "tier", "deliberation", "topology", "posture", "capabilities", "tagline", "description"], `recipe ${recipe?.name ?? "<unknown>"}`);
+    canonicalRoleId(recipe?.name, "staffing catalog recipe name");
+    if (names.has(recipe.name)) throw new Error(`staffing catalog: duplicate recipe name ${recipe.name}`);
     names.add(recipe.name);
     for (const [field, axis] of [["taskGrade", "taskGrades"], ["tier", "semanticTiers"], ["deliberation", "deliberations"], ["topology", "topologies"]]) {
       if (!vocabulary[axis].includes(recipe[field])) throw new Error(`${recipe.name}: invalid ${field} ${JSON.stringify(recipe[field])}`);
     }
     if (recipe.posture !== undefined && !vocabulary.postures.includes(recipe.posture))
       throw new Error(`${recipe.name}: invalid posture ${JSON.stringify(recipe.posture)}`);
+    if (!Array.isArray(recipe.capabilities) || !recipe.capabilities.length ||
+        recipe.capabilities.some((capability) => !vocabulary.capabilities.includes(capability)) ||
+        new Set(recipe.capabilities).size !== recipe.capabilities.length)
+      throw new Error(`${recipe.name}: capabilities must contain unique canonical capability labels`);
+    validateTopologyCapabilities(recipe.topology, recipe.capabilities, `${recipe.name}.capabilities`);
     for (const field of ["tagline", "description"])
       if (typeof recipe[field] !== "string" || !recipe[field].trim()) throw new Error(`${recipe.name}: missing ${field}`);
   }
@@ -43,7 +66,9 @@ export function validateStaffingCatalog(catalog) {
   const aliases = new Set();
   for (const alias of catalog.aliases) {
     keysOnly(alias, ["name", "target"], `alias ${alias?.name ?? "<unknown>"}`);
-    if (!alias?.name || aliases.has(alias.name) || names.has(alias.name)) throw new Error(`staffing catalog: invalid alias ${alias?.name ?? ""}`);
+    canonicalRoleId(alias?.name, "staffing catalog alias name");
+    canonicalRoleId(alias?.target, `staffing catalog alias ${alias.name} target`);
+    if (aliases.has(alias.name) || names.has(alias.name)) throw new Error(`staffing catalog: duplicate or colliding alias ${alias.name}`);
     aliases.add(alias.name);
     if (!names.has(alias.target)) throw new Error(`staffing catalog: alias target missing: ${alias.target}`);
   }

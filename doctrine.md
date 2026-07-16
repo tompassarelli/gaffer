@@ -17,15 +17,21 @@ ORTHOGONAL AXES — never smuggle one decision inside another:
   staff, principal, or research-grade. Grade is scope, autonomy, novelty, and
   integration responsibility — not a model name and not a worker identity.
 - DOMAIN REQUIREMENTS name expertise/context the worker must receive.
-- TOPOLOGY names worker, verifier, or orchestrator/director authority.
+- TOPOLOGY names worker or orchestrator coordination authority. Director is
+  the canonical orchestrator role.
+  verifier and judge are worker-topology ROLES, not a third topology.
 - SEMANTIC TIER names the required model capability floor: economy, standard,
   senior, or frontier. Provider catalogs resolve it to a runtime.
 - DELIBERATION names the reasoning budget independently of capability: low,
   medium, high, xhigh, or max where the selected provider supports it.
 Presets fill common combinations of these axes. They are defaults, not types
-and not limits; an orchestrator may override any field and records why.
+and not limits; every changed preset axis is listed in `overrides[]` with one
+`overrideReason`. An unchanged preset carries neither a fake override nor a
+reason.
 
 SHAPES → SQUAD (semantic tier; provider adapters resolve concrete models)
+- direct — decompose, staff, verify, and reconcile ≥2 independent pieces;
+  never execute the worker pieces → gaffer:director (frontier; orchestrator)
 - execute — bounded, mechanical: apply a patch, rename, obvious tests
   → gaffer:executor (economy)
 - implement — one feature/fix inside known patterns, well-trodden code
@@ -88,27 +94,31 @@ the cheapest rung that clears its quality floor.
   RESERVED (protect frontier capacity for high-leverage work). Subscription
   entitlements and their pressure are runtime facts, not API-credit balances.
 
-GAFFER owns the semantic request: work shape, role, grade, leverage, quality
-floor, topology, deliberation, and ordered candidate rungs. NORTH owns runtime
-availability: authenticated accounts, subscription envelopes and reserves,
-allocation, safe substitution, and decision/outcome telemetry. Provider model
+GAFFER owns the semantic request — role, grade, domain, topology, tier,
+deliberation, posture, composition — and the planner reasoning that DERIVES it:
+shape, leverage, quality floor, dependency shape. Those planner inputs shape the
+request; they are not fields on the wire. NORTH owns runtime allocation:
+authenticated accounts, subscription envelopes and reserves, allocation, safe
+substitution, resolved model, and decision/outcome telemetry. Provider model
 names remain adapter facts. Neither layer silently rewrites the other's facts.
 
 ORCHESTRATION — topology is independent of function, grade, tier, and
 deliberation. Two tiers, hard depth cap. Delegation is exactly TWO tiers
 deep; there is no third. Every spawn is one of:
-- ORCHESTRATOR — a fork whose contract is DECOMPOSE AND FAN OUT. It does NOT
+- ORCHESTRATOR — normally the gaffer:director function, a fork whose contract
+  is DECOMPOSE AND FAN OUT. It does NOT
   execute subtasks itself; its only tools of substance are read/analyze,
   spawn, steer, verify, integrate. Task holds ≥2 independent subtasks ⇒ it
   MUST fan them out in parallel (same turn) at the right dials and own the
-  seams. Task is atomic ⇒ it drops to worker behavior and does the piece.
+  seams. Task is atomic ⇒ it redirects/restaffs to the appropriate worker;
+  it never executes the piece itself.
 - WORKER (INTERNED) — owns its piece end-to-end and is FORBIDDEN to
-  sub-delegate, with ONE exception: it may spawn a single VERIFIER for its
-  own deliverable. No worker spawns workers. A worker whose piece turns out
+  sub-delegate. Verification is a sibling lane spawned by the orchestrator,
+  never a worker child. A worker whose piece turns out
   to decompose ESCALATES (reports up); it never grows a third tier.
-The orchestrator is the ONLY tier that fans out; the worker is the ONLY tier
-that executes. The delegated fork picks its tier per task — decomposes ⇒
-orchestrator, atomic ⇒ worker.
+The orchestrator is the ONLY tier that spawns; the worker is the ONLY tier
+that executes. The router picks topology per task — decomposes ⇒ director;
+atomic ⇒ worker.
 
 Choose topology by dependency shape, not ceremony. This is an orchestrator
 decision today: North records topology but does not synthesize the graph:
@@ -140,9 +150,9 @@ work — child outputs return to the parent that spawned them (the node that
 knows why each child exists), NEVER flat fan-in to a root synthesizer. At two
 tiers this is concrete — the orchestrator IS the reducing parent, so done
 means reconciled (seams resolved, load-bearing claims verified), not "workers
-reported"; worker deliverables return UP, never sideways. Node lifecycle of
-any decomposing node: receive → execute-or-decompose (stop-rule decides) →
-spawn children with LOCAL contracts (objective, scope, I/O, verification path
+reported"; worker deliverables return UP, never sideways. Director lifecycle:
+receive → classify → redirect/restaff atomic work OR decompose composite work
+(stop-rule decides) → spawn workers with LOCAL contracts (objective, scope, I/O, verification path
 — what makes each child terminal) → await → reconcile into the parent result
 → return upward.
 
@@ -159,16 +169,18 @@ count it must return. Verification means checking the worker against its bars;
 a bare "done" is never accepted.
 
 <!-- gaffer:spawn-surfaces adapter=native (default; inject-doctrine.sh swaps this block per GAFFER_SPAWN_ADAPTER / dispatch=) -->
-SPAWN SURFACES — a squad member is a (role, tier, posture) decision, not a
-tool. Invoke it through whatever spawn surface your harness gives you:
+SPAWN SURFACES — a squad member is an eight-field Gaffer request: role,
+taskGrade, domainRequirements, topology, tier, reasoning, posture, and
+composition. It is not a tool. Invoke it through whatever spawn surface your
+harness gives you:
 - native Agent tool available → subagent_type: 'gaffer:<role>'
 - Workflow → agent(prompt, {agentType: 'gaffer:<role>'})
 - a custom dispatch (SDK / MCP / a substrate that denies the native Agent
   tool) → spawn on that surface passing the role's pinned semantic tier (the
   SHAPES→SQUAD list above gives every pin), provider=`auto` unless overridden,
-  + a role tag if the surface
-  supports one. The payload (role/posture/delta) rides the spawn regardless
-  of surface. If the native Agent tool is denied, that is a routing
+  + a role tag if the surface supports one. The prompt carries the applicable
+  role, task-grade, topology, posture, comms, and exact-model calibration
+  blocks regardless of surface. If the native Agent tool is denied, that is a routing
   instruction, not a wall — translate to the available surface, never abandon
   the squad pick or drop to an unrouted spawn.
 <!-- /gaffer:spawn-surfaces -->
@@ -186,7 +198,7 @@ per stage yourself:
   still applies per stage — foundational targets get gaffer:integrator
 - verify stages → gaffer:verifier (senior) per finding, in parallel;
   the verifier never reuses a finder tier below senior
-- judge/synthesis stages → gaffer:judge (senior)
+- high-leverage judge/synthesis stages → gaffer:judge (frontier)
 Never let a stage inherit the session's model/effort implicitly (in a
 top-tier session that silently runs every worker at top tier).
 
@@ -194,11 +206,15 @@ BESPOKE AGENTS — first-class, not an exception. The squad covers the
 common shapes; it is a standard library, not a roster limit. When the
 domain deserves a purpose-built agent, AUTHOR ONE — the laws above still
 bind it (pin tier, layer floor, shingle), and the blocks are parts,
-not requirements: borrow the comms norms and the model delta (almost
-always worth it), borrow role/posture when they fit, write the
-domain-specific remainder freely. Record the nearest preset, why it failed,
-the bespoke role contract, and whether the composition may be a promotion
-candidate. Nomination defaults false and is explicit. Recurrence is evidence
+not requirements: borrow the comms norms and only the exact concrete model's
+calibrated delta when its provider catalog supplies one; an explicit `none`
+never inherits a neighboring model's delta. Borrow role/posture when they fit,
+then write the domain-specific remainder freely. Record an optional nearest
+preset only when it is a useful reference, why a standard recipe was not used,
+and a structured contract: responsibility, deliverable, canonical capabilities,
+mayDecide, mustEscalate, doneWhen, and report. A nearest preset may seed
+composition but never grants capabilities implicitly. Promotion-candidate defaults
+false and nomination is explicit. Recurrence is evidence
 for review whether nominated or not, never automatic promotion.
 Extension spec: docs/extending.md · assemble parts: the
 compose skill · calibrate a delta for a new model: the elicit skill.
