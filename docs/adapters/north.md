@@ -9,9 +9,10 @@ native call (that is the recurring misfire).
   are included below so existing North behavior is unchanged
 - fan-out → one mcp__north__spawn per lane in the SAME turn; observe at web :8088
 - thread-driven → capture the thread, then mcp__north__dispatch (posture from claims)
-The North-native roles pass a north `role` block; the remaining read-only roles
-have none → pin task grade+tier+posture, role rides in the
-prompt. Use provider=auto unless policy or the caller explicitly overrides it.
+Every canonical role passes North's open `role` string so its block is loaded
+and the choice is observable. Bespoke role names are also allowed; their
+authority/deliverable contract rides in the prompt. Pin task grade+tier+posture.
+Use provider=auto unless policy or the caller explicitly overrides it.
 Contract v2 makes North resolve tier through a provider catalog and record the
 concrete model and reasoning/effort. Until North advertises v2, use its legacy
 shape and resolve before the call. Routing (canonical — generated from RECIPES,
@@ -24,9 +25,9 @@ do not hand-edit):
   integrator          senior          senior    opus/high      integrator          deliver
   designer            staff           frontier  opus/xhigh     designer            explore
   scout               junior          economy   sonnet/low     scout               explore
-  analyst             senior          senior    opus/high      —                   explore
-  verifier            senior          senior    opus/high      —                   explore
-  judge               staff           senior    opus/high      —                   explore
+  analyst             senior          senior    opus/high      analyst             explore
+  verifier            senior          senior    opus/high      verifier            explore
+  judge               staff           senior    opus/high      judge               explore
   research-scientist  research-grade  frontier  opus/xhigh     research-scientist  explore
 
 Compatibility: `gaffer:researcher` remains an adapter alias for

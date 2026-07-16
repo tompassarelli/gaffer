@@ -179,13 +179,13 @@ function renderAlias(alias) {
 // The north spawn-adapter's SPAWN SURFACES doctrine block — generated from the
 // SAME RECIPES so the dials never drift from the agents. scripts/inject-doctrine.sh
 // swaps this in for the native block when GAFFER_SPAWN_ADAPTER=north (legacy tern accepted, or
-// dispatch=north). North-native roles pass a north `role` block; other roles
-// ride in the prompt until the runtime contract supports them directly.
-const NORTH_ROLE = new Set(["executor", "implementer", "integrator", "designer", "scout", "research-scientist"]);
+// dispatch=north). Every role passes through North's open role string; the
+// matching Gaffer block is loaded when present and bespoke contracts ride in
+// the prompt.
 function renderNorthAdapter() {
   const rows = RECIPES.map((r) => ({
     role: r.name, grade: r.taskGrade, tier: r.tier, claude: `${r.model}/${r.effort}`,
-    northRole: NORTH_ROLE.has(r.name) ? r.name : "—",
+    northRole: r.name,
     posture: r.posture || "explore",
   }));
   const cols = [["gaffer role", "role"], ["task grade", "grade"], ["tier", "tier"], ["Claude bridge", "claude"], ["north role", "northRole"], ["posture", "posture"]];
@@ -207,9 +207,10 @@ native call (that is the recurring misfire).
   are included below so existing North behavior is unchanged
 - fan-out → one mcp__north__spawn per lane in the SAME turn; observe at web :8088
 - thread-driven → capture the thread, then mcp__north__dispatch (posture from claims)
-The North-native roles pass a north \`role\` block; the remaining read-only roles
-have none → pin task grade+tier+posture, role rides in the
-prompt. Use provider=auto unless policy or the caller explicitly overrides it.
+Every canonical role passes North's open \`role\` string so its block is loaded
+and the choice is observable. Bespoke role names are also allowed; their
+authority/deliverable contract rides in the prompt. Pin task grade+tier+posture.
+Use provider=auto unless policy or the caller explicitly overrides it.
 Contract v2 makes North resolve tier through a provider catalog and record the
 concrete model and reasoning/effort. Until North advertises v2, use its legacy
 shape and resolve before the call. Routing (canonical — generated from RECIPES,
