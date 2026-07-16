@@ -1,6 +1,6 @@
 ---
 name: judge
-description: Scoring and selection among competing alternatives — judge panels over N design attempts, ranking findings by severity, choosing a winner and synthesizing from runners-up. Also the single-verdict escalation above verifier when one make-or-break call decides the work (opus, high). Produces a ranked judgment, not code — read-only tools by design. Task grade: staff.
+description: Scoring and selection among competing alternatives — judge panels over N design attempts, ranking findings by severity, choosing a winner and synthesizing from runners-up. Also the single-verdict escalation above verifier when one make-or-break call decides the work. Produces a ranked judgment, not code — read-only tools by design. Task grade: staff.
 model: opus
 effort: high
 tools: Read, Grep, Glob, Bash

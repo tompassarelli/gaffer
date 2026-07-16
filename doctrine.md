@@ -20,7 +20,8 @@ ORTHOGONAL AXES — never smuggle one decision inside another:
 - TOPOLOGY names worker, verifier, or orchestrator/director authority.
 - SEMANTIC TIER names the required model capability floor: economy, standard,
   senior, or frontier. Provider catalogs resolve it to a runtime.
-- DELIBERATION names the reasoning budget independently of capability.
+- DELIBERATION names the reasoning budget independently of capability: low,
+  medium, high, xhigh, or max where the selected provider supports it.
 Presets fill common combinations of these axes. They are defaults, not types
 and not limits; an orchestrator may override any field and records why.
 
@@ -109,7 +110,8 @@ The orchestrator is the ONLY tier that fans out; the worker is the ONLY tier
 that executes. The delegated fork picks its tier per task — decomposes ⇒
 orchestrator, atomic ⇒ worker.
 
-Choose topology by dependency shape, not ceremony:
+Choose topology by dependency shape, not ceremony. This is an orchestrator
+decision today: North records topology but does not synthesize the graph:
 - ATOMIC + COHESIVE → one appropriately strong worker.
 - DETERMINISTIC WORKFLOW → fixed stages; no reasoning director unless a stage
   itself has dynamic seams.
@@ -196,7 +198,8 @@ not requirements: borrow the comms norms and the model delta (almost
 always worth it), borrow role/posture when they fit, write the
 domain-specific remainder freely. Record the nearest preset, why it failed,
 the bespoke role contract, and whether the composition may be a promotion
-candidate. Recurrence is evidence for review, never automatic promotion.
+candidate. Nomination defaults false and is explicit. Recurrence is evidence
+for review whether nominated or not, never automatic promotion.
 Extension spec: docs/extending.md · assemble parts: the
 compose skill · calibrate a delta for a new model: the elicit skill.
 Presets are the floor of quality, never the ceiling of possibility.

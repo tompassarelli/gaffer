@@ -12,6 +12,7 @@ Options (each axis overrides independently):
   --posture <posture>       explore|deliver|preserve
   --nearest <preset>        nearest standard template for a bespoke role
   --rationale <reason>      required when <role> is not a preset or alias
+  --promotion-candidate     explicitly nominate a bespoke composition for review
 
 Prints one provider-neutral GAFFER_ROUTING JSON payload.`;
 
@@ -24,16 +25,18 @@ function argumentsOf(argv) {
   }
   const role = argv[0];
   if (role.startsWith("-")) die("role must be the first argument");
-  const values = { domains: [] };
+  const values = { domains: [], promotionCandidate: false };
   const names = {
     "--taskGrade": "taskGrade", "--task-grade": "taskGrade", "--domain": "domain",
     "--topology": "topology", "--tier": "tier", "--deliberation": "deliberation",
     "--posture": "posture", "--nearest": "nearest", "--rationale": "rationale",
+    "--promotion-candidate": "promotionCandidate",
   };
   for (let index = 1; index < argv.length; index++) {
     const [rawName, inline] = argv[index].split(/=(.*)/s, 2);
     const name = names[rawName];
     if (!name) die(`unknown option: ${rawName}`);
+    if (name === "promotionCandidate") { values.promotionCandidate = true; continue; }
     const value = inline ?? argv[++index];
     if (!value || value.startsWith("--")) die(`${rawName} requires a value`);
     if (name === "domain") values.domains.push(...value.split(",").map((part) => part.trim()).filter(Boolean));
@@ -78,7 +81,7 @@ const payload = {
         kind: "bespoke", id: args.role,
         ...(nearest ? { nearestPreset: nearest.name } : {}),
         bespokeReason: args.rationale.trim(),
-        promotionCandidate: true,
+        promotionCandidate: args.promotionCandidate,
       },
 };
 

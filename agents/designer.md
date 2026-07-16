@@ -1,6 +1,6 @@
 ---
 name: designer
-description: Design-shaped tasks — choosing the shape of things: APIs, data models, decomposition, lifecycle semantics, naming that commits the system. Also small-looking decisions with large blast radius (a one-line naming choice that shapes an API is design, not execute). Tech-lead grade (opus, xhigh effort). Produces a DECISION with trade-offs, not code — read-only tools by design. Task grade: staff.
+description: Design-shaped tasks — choosing the shape of things: APIs, data models, decomposition, lifecycle semantics, naming that commits the system. Also small-looking decisions with large blast radius (a one-line naming choice that shapes an API is design, not execute). Tech-lead grade. Produces a DECISION with trade-offs, not code — read-only tools by design. Task grade: staff.
 model: opus
 effort: xhigh
 tools: Read, Grep, Glob, Bash

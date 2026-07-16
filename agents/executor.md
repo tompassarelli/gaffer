@@ -1,6 +1,6 @@
 ---
 name: executor
-description: Execute-shaped tasks — bounded, mechanical, fully specified. Apply a patch, rename a symbol, add obvious tests, fix lint. Cheapest squad member (sonnet, low effort). Do NOT use when any judgment call is needed (→ implementer), or on foundational/library/architecture code (layer floor → integrator). Task grade: novice.
+description: Execute-shaped tasks — bounded, mechanical, fully specified. Apply a patch, rename a symbol, add obvious tests, fix lint. Lowest-cost capability tier. Do NOT use when any judgment call is needed (→ implementer), or on foundational/library/architecture code (layer floor → integrator). Task grade: novice.
 model: sonnet
 effort: low
 ---

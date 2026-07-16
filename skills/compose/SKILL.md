@@ -20,7 +20,8 @@ prompt (or Workflow `agent()` prompt).
    - Domain requirements — expertise and context the brief must provide.
    - Topology — worker, verifier, or orchestrator; never inferred from grade.
    - Semantic tier — economy, standard, senior, or frontier capability floor.
-   - Deliberation — low, medium, high, or xhigh reasoning budget.
+   - Deliberation — low, medium, high, xhigh, or max reasoning budget where
+     supported by the selected provider tier.
    Done: each axis is stated explicitly; no role name doubles as a grade,
    model, or manager permission.
 2. **Pick the four blocks** (all under this skill's plugin root):
@@ -44,7 +45,8 @@ prompt (or Workflow `agent()` prompt).
    Done: `wc -l` of the assembled payload ≤ 60, every block above the task.
 5. If no block fits, write a bespoke role contract and record: nearest preset,
    why it failed, responsibility/deliverable/authority/report contract, and a
-   stable composition name. Mark it as a promotion candidate only when useful;
+   stable composition name. `--promotion-candidate` is an explicit nomination
+   and defaults false. Mark it only when useful;
    recurrence is logged evidence and never auto-promotes the role.
    Done: the bespoke reason and contract are present, with promotion status.
 

@@ -105,13 +105,15 @@ coordination authority, semantic tier sets a model capability floor, and
 deliberation sets reasoning depth. Bespoke compositions record why no preset
 fit and may become promotion candidates only after explicit review.
 
-Routing also separates task economics from provider state. Leverage estimates
+The routing contract also separates task economics from provider state. Leverage estimates
 the downstream value of better judgment; dependency shape decides whether one
 worker, a fixed workflow, a director with parallel workers, or a strong
-sequential worker plus verifier is appropriate. Gaffer supplies the quality
-floor and semantic candidate rungs. North applies `preferential`, `balanced`,
-or `reserved` allocation against authenticated subscription entitlements and
-records the resolution. Same-tier substitution may happen automatically before
+sequential worker plus verifier is appropriate. The target contract reserves
+quality-floor, candidate-rung, and `preferential`/`balanced`/`reserved`
+allocation fields for an envelope-aware planner. Today the executable boundary resolves provider, tier,
+and deliberation and records the other staffing axes; candidate waterfalls,
+automatic director graphs, and domain-context loading remain planner work, not
+claimed runtime behavior. Same-tier substitution may happen automatically before
 side effects; lowering capability or verification is explicit degradation.
 
 ## Tuning

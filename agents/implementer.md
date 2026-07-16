@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: Implement-shaped tasks — one feature or fix inside known patterns, in well-trodden non-foundational code. The junior/mid-level dev of the squad (sonnet, medium effort). Do NOT use on foundational/library/architecture layers however mechanical the task looks (layer floor → integrator), for ambiguous debugging (→ integrator), or for anything designing something new (→ designer). Task grade: mid.
+description: Implement-shaped tasks — one feature or fix inside known patterns, in well-trodden non-foundational code. The junior/mid-level development preset. Do NOT use on foundational/library/architecture layers however mechanical the task looks (layer floor → integrator), for ambiguous debugging (→ integrator), or for anything designing something new (→ designer). Task grade: mid.
 model: sonnet
 effort: medium
 ---

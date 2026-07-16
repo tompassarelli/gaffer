@@ -1,6 +1,6 @@
 ---
 name: scout
-description: Research SCOUT tier — locate, map, gather: where is X, what calls Y, sweep a codebase or the web for sources, map unknown territory. Read-only, cheap fan-out unit (sonnet, low effort) — spawn several in parallel for multi-angle sweeps. GATHERS and reports; does not deep-synthesize or conclude. For deep analysis / root-cause / grounding a design in real behavior, use analyst instead. Task grade: junior.
+description: Research-assistant/scout work — locate, map, gather: where is X, what calls Y, sweep a codebase or the web for sources, map unknown territory. Read-only, low-cost fan-out unit — spawn several in parallel for multi-angle sweeps. GATHERS and reports; does not deep-synthesize or conclude. For deep analysis / root-cause / grounding a design in real behavior, use analyst instead; for cutting-edge inquiry use research-scientist. Task grade: junior.
 model: sonnet
 effort: low
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch

@@ -1,6 +1,6 @@
 ---
 name: analyst
-description: Research DEEP-DIVE tier — how a system actually works, why it behaves as it does, root-cause, or grounding a proposed design against real behavior. Read-only, opus/high: depth over breadth, traces to ground truth rather than simulating from the text. Produces UNDERSTANDING, not a decision (→ designer) or a change (→ integrator). Fan out multiple analysts over distinct subsystems when the analysis needs more than one held at once. Do NOT use for mere location/gathering (→ scout). Task grade: senior.
+description: Research deep-dive work — how a system actually works, why it behaves as it does, root-cause, or grounding a proposed design against real behavior. Read-only: depth over breadth, traces to ground truth rather than simulating from the text. Produces UNDERSTANDING, not a decision (→ designer) or a change (→ integrator). Fan out multiple analysts over distinct subsystems when the analysis needs more than one held at once. Do NOT use for mere location/gathering (→ scout). Task grade: senior.
 model: opus
 effort: high
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch

@@ -3,7 +3,8 @@ tuple, delivered on the north substrate. Native Agent/Task/Workflow are DENIED
 here (dispatch=north) — the harness still advertises gaffer:* + native agent
 types, IGNORE that and go STRAIGHT to north; never let the advertised list bait a
 native call (that is the recurring misfire).
-- contract-v2 job → mcp__north__spawn {prompt, provider, tier, role, posture}
+- contract-v2 job → mcp__north__spawn {prompt, provider, tier, role, posture,
+  taskGrade, domainRequirements, topology, reasoning, composition}
 - current/legacy North bridge → resolve the catalog first, then
   mcp__north__spawn {prompt, model, effort, role, posture}; Claude resolutions
   are included below so existing North behavior is unchanged
@@ -12,7 +13,10 @@ native call (that is the recurring misfire).
 Every canonical role passes North's open `role` string so its block is loaded
 and the choice is observable. Bespoke role names are also allowed; their
 authority/deliverable contract rides in the prompt. Pin task grade+tier+posture.
-Use provider=auto unless policy or the caller explicitly overrides it.
+Use provider=auto unless policy or the caller explicitly overrides it. These
+fields are recorded routing inputs. Today North executes provider/tier/reasoning
+resolution; task grade, domains, topology, and composition are validated and
+telemetred but do not themselves load expertise or create a director DAG.
 Contract v2 makes North resolve tier through a provider catalog and record the
 concrete model and reasoning/effort. Until North advertises v2, use its legacy
 shape and resolve before the call. Routing (canonical — generated from RECIPES,

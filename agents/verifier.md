@@ -1,6 +1,6 @@
 ---
 name: verifier
-description: Adversarial verification of a specific claim or finding — "is this bug real", "does this fix actually hold", "try to refute this". The standard fan-out unit for workflow verify stages (opus, high; for a single make-or-break verdict use judge instead). Never reuses the finder's model tier below opus. Task grade: senior.
+description: Adversarial verification of a specific claim or finding — "is this bug real", "does this fix actually hold", "try to refute this". The standard fan-out unit for workflow verify stages; for a single make-or-break verdict use judge instead. Never runs below the senior semantic tier. Task grade: senior.
 model: opus
 effort: high
 tools: Read, Grep, Glob, Bash

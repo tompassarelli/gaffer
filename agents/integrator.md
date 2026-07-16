@@ -1,6 +1,6 @@
 ---
 name: integrator
-description: Integrate-shaped tasks — cross-file changes, ambiguous debugging, refactors with behavior at stake, and ANY work on foundational/library/architecture code (the layer floor routes such work here even when it looks mechanical). Senior engineer of the squad (opus, high effort). For choosing a new design shape rather than working within one, use designer instead. Task grade: senior.
+description: Integrate-shaped tasks — cross-file changes, ambiguous debugging, refactors with behavior at stake, and ANY work on foundational/library/architecture code (the layer floor routes such work here even when it looks mechanical). Senior engineering preset. For choosing a new design shape rather than working within one, use designer instead. Task grade: senior.
 model: opus
 effort: high
 ---

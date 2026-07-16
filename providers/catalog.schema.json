@@ -1,18 +1,44 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
+  "additionalProperties": false,
   "required": ["provider", "transports", "tiers"],
   "properties": {
-    "provider": { "type": "string" },
+    "$schema": { "type": "string" },
+    "provider": { "type": "string", "enum": ["anthropic", "openai"] },
     "transports": { "type": "array", "minItems": 1, "items": { "type": "string" } },
     "tiers": {
       "type": "object",
       "required": ["economy", "standard", "senior", "frontier"],
-      "additionalProperties": {
-        "type": "object",
-        "required": ["model"],
-        "properties": { "model": { "type": "string" } }
+      "additionalProperties": false,
+      "properties": {
+        "economy": { "$ref": "#/$defs/tier" },
+        "standard": { "$ref": "#/$defs/tier" },
+        "senior": { "$ref": "#/$defs/tier" },
+        "frontier": { "$ref": "#/$defs/tier" }
       }
     }
+  },
+  "$defs": {
+    "tier": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["model"],
+        "properties": {
+          "model": { "type": "string", "minLength": 1 },
+          "efforts": { "$ref": "#/$defs/reasoning" },
+          "defaultEffort": { "type": "string" },
+          "reasoning": { "$ref": "#/$defs/reasoning" },
+          "defaultReasoning": { "type": "string" }
+        },
+        "oneOf": [
+          { "required": ["efforts", "defaultEffort"] },
+          { "required": ["reasoning", "defaultReasoning"] }
+        ]
+      },
+      "reasoning": {
+        "type": "array", "minItems": 1, "uniqueItems": true,
+        "items": { "enum": ["low", "medium", "high", "xhigh", "max"] }
+      }
   }
 }
