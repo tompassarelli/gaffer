@@ -23,9 +23,9 @@ squad has no privileged status beyond being pre-built.
 
 ## Building a bespoke agent (the 10% the squad doesn't cover)
 
-1. Name the axes: function/role, `taskGrade`, domain requirements, topology,
-   semantic tier, deliberation, posture, and authority. Do not derive one by
-   renaming another.
+1. Name the axes: function/role, `taskGrade`, domain requirements, topology and
+   dependency shape, leverage, quality floor, semantic tier, deliberation,
+   posture, and authority. Do not derive one by renaming another.
 2. Borrow blocks that fit: comms (almost always), the model delta (almost
    always — it's calibration, not style), role/posture (when apt).
 3. Write the domain-specific remainder freely — that's the point.
@@ -72,7 +72,11 @@ squad has no privileged status beyond being pre-built.
 | Task grade | work scope / autonomy / novelty prior | advisory | preset or bespoke contract | spawn metadata |
 | Domain requirements | expertise + context required | advisory/hard when capability-gated | preset or bespoke contract | prompt / required capabilities |
 | Topology | worker / verifier / orchestrator authority | host-enforced | doctrine + contract | spawn opts / host orchestration |
+| Dependency shape | when topology pays for itself | advisory/host-enforced | doctrine + routing request | orchestration plan |
+| Leverage | value of improved judgment / cost of plausible error | advisory | routing request | selection reason |
+| Quality floor | minimum responsible semantic tier | hard at dispatch | doctrine + routing request | candidate filter |
 | Deliberation | reasoning budget independent of model capability | hard at dispatch | provider-neutral routing request | resolved spawn opts |
+| Allocation | preferential / balanced / reserved subscription use | host-enforced | provider-neutral policy | North resource pools |
 | Posture | value-collision ordering | advisory | `docs/postures.md` | — |
 | Calibration | substrate-specific compensations | advisory | `docs/deltas/<model>.md` | — |
 | Comms | universal output norms | advisory | `docs/comms.md` | host may add layers (register, wire formats) |
@@ -85,3 +89,10 @@ The compiler (`scripts/build-agents.mjs`) flattens the source-layer prompt and
 adapter axes into agent files where the adapter format requires it. Host
 coordination, hierarchy, and task identity remain runtime concerns: gaffer
 stays portable precisely by not encoding them as provider-specific doctrine.
+
+Resource policy follows the same boundary. A custom composition may propose an
+ordered list of semantic candidate rungs and a quality floor. It must not embed
+account names, entitlement balances, reset dates, or concrete model names.
+North owns those changing runtime facts and records which pool it selected.
+Automatic alternatives remain same-capability substitutions before side
+effects; any degradation is explicit and evidenced.

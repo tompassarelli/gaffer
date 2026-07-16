@@ -25,6 +25,9 @@ Install it and your sessions gain:
    - **Shingle law** — each model has ~2 useful effort rungs, and a model's
      top rung is dominated by the next model's bottom rung. Harder ⇒ climb
      the model, don't crank effort against a low ceiling.
+   - **Quality floor** — resource pressure can trim optional breadth, polish,
+     and retries, but never silently route consequential work below the
+     minimum responsible capability.
 2. **A pre-tuned squad** — agents with model + effort pinned and
    a *consumer-calibrated prompt payload* baked in:
 
@@ -101,6 +104,15 @@ Each preset is a transparent starting composition, not an identity constraint:
 coordination authority, semantic tier sets a model capability floor, and
 deliberation sets reasoning depth. Bespoke compositions record why no preset
 fit and may become promotion candidates only after explicit review.
+
+Routing also separates task economics from provider state. Leverage estimates
+the downstream value of better judgment; dependency shape decides whether one
+worker, a fixed workflow, a director with parallel workers, or a strong
+sequential worker plus verifier is appropriate. Gaffer supplies the quality
+floor and semantic candidate rungs. North applies `preferential`, `balanced`,
+or `reserved` allocation against authenticated subscription entitlements and
+records the resolution. Same-tier substitution may happen automatically before
+side effects; lowering capability or verification is explicit degradation.
 
 ## Tuning
 

@@ -64,6 +64,35 @@ LAWS
    workers' load-bearing claims yourself (spot-check; never trust a bare
    "done").
 
+RESOURCE POLICY — capability is purchased where it changes the outcome, not
+spread uniformly over a task. Estimate LEVERAGE separately from difficulty:
+leverage rises with blast radius, irreversibility, downstream reuse, ambiguity,
+and the cost of a plausible wrong answer. High leverage may justify a premium
+director or worker even when execution is short; low-leverage volume should use
+the cheapest rung that clears its quality floor.
+
+- QUALITY FLOOR is the minimum semantic tier that can responsibly own the
+  decision. It is set by task grade, layer floor, required capabilities, and
+  risk. A resource limit never silently lowers it.
+- When resources tighten, reduce speculative breadth, polish, retry count, and
+  optional verification before violating the quality floor. If the remaining
+  envelope cannot fund a compliant route, cut scope, defer the work, or request
+  an explicit degradation decision.
+- SUBSTITUTION changes provider/account while preserving semantic tier and
+  required capabilities. It may be automatic only before side effects.
+  DEGRADATION lowers capability, deliberation, scope, or verification and is an
+  explicit, recorded policy decision — never a disguised fallback.
+- Allocation may be PREFERENTIAL (ordered provider waterfall), BALANCED
+  (distributed consumption across eligible subscription entitlements), or
+  RESERVED (protect frontier capacity for high-leverage work). Subscription
+  entitlements and their pressure are runtime facts, not API-credit balances.
+
+GAFFER owns the semantic request: work shape, role, grade, leverage, quality
+floor, topology, deliberation, and ordered candidate rungs. NORTH owns runtime
+availability: authenticated accounts, subscription envelopes and reserves,
+allocation, safe substitution, and decision/outcome telemetry. Provider model
+names remain adapter facts. Neither layer silently rewrites the other's facts.
+
 ORCHESTRATION — topology is independent of function, grade, tier, and
 deliberation. Two tiers, hard depth cap. Delegation is exactly TWO tiers
 deep; there is no third. Every spawn is one of:
@@ -79,6 +108,17 @@ deep; there is no third. Every spawn is one of:
 The orchestrator is the ONLY tier that fans out; the worker is the ONLY tier
 that executes. The delegated fork picks its tier per task — decomposes ⇒
 orchestrator, atomic ⇒ worker.
+
+Choose topology by dependency shape, not ceremony:
+- ATOMIC + COHESIVE → one appropriately strong worker.
+- DETERMINISTIC WORKFLOW → fixed stages; no reasoning director unless a stage
+  itself has dynamic seams.
+- PARALLEL BREADTH → director plus cheaper independently scoped workers.
+- DYNAMIC DECOMPOSITION / HIGH-INTEGRATION SYNTHESIS → frontier director; route
+  each worker independently rather than inheriting the director's tier.
+- TIGHTLY COUPLED SEQUENTIAL WORK → one strong worker, optionally followed by
+  an independent verifier. Splitting shared context into many workers is a
+  coordination penalty, not parallelism.
 
 STOP-RULE (the decompose/atomic call): break work down until further
 subdivision no longer increases independence, certainty, or verifiability
