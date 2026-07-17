@@ -48,7 +48,7 @@ export function effectivePreset(preset, catalog) {
     topology: preset.topology,
     tier: preset.tier,
     reasoning: preset.deliberation,
-    posture: preset.posture ?? catalog.defaults.posture,
+    posture: preset.posture,
   };
 }
 
@@ -87,7 +87,7 @@ export function validateRoutingRequest(value, catalog = loadStaffingCatalog()) {
   const composition = object(request.composition, "composition");
   const alias = catalog.aliases.find(({ name }) => name === role);
   const canonicalRole = alias?.target ?? role;
-  if (canonicalRole !== role) throw new Error(`role must use canonical preset name ${canonicalRole}`);
+  if (canonicalRole !== role) throw new Error(`role must use canonical stock-template name ${canonicalRole}`);
   const preset = catalog.presets.find(({ name }) => name === role);
 
   if (composition.kind === "preset") {
@@ -101,13 +101,13 @@ export function validateRoutingRequest(value, catalog = loadStaffingCatalog()) {
       throw new Error(`composition.overrides may contain only: ${OVERRIDE_FIELDS.join(", ")}`);
     const actual = presetOverrides(request, preset, catalog);
     if (!equal([...declared].sort(), [...actual].sort()))
-      throw new Error(`composition.overrides must exactly record changed preset axes: ${actual.join(", ") || "none"}`);
+      throw new Error(`composition.overrides must exactly record changed stock-template axes: ${actual.join(", ") || "none"}`);
     if (actual.length) nonEmptyString(composition.overrideReason, "composition.overrideReason");
     else if (composition.overrideReason !== undefined)
-      throw new Error("unchanged preset must omit composition.overrideReason");
+      throw new Error("unchanged stock template must omit composition.overrideReason");
     if (role === "director" && request.topology === "worker")
       throw new Error("director cannot use worker topology; choose a worker role for atomic work");
-    validateTopologyCapabilities(request.topology, preset.capabilities, `routing preset ${role}`);
+    validateTopologyCapabilities(request.topology, preset.capabilities, `routing stock template ${role}`);
   } else if (composition.kind === "bespoke") {
     const allowed = ["kind", "id", "nearestPreset", "bespokeReason", "promotionCandidate", "contract"];
     const unknown = Object.keys(composition).filter((key) => !allowed.includes(key));
@@ -115,13 +115,13 @@ export function validateRoutingRequest(value, catalog = loadStaffingCatalog()) {
       .filter((key) => !Object.hasOwn(composition, key));
     if (unknown.length) throw new Error(`composition has unknown field(s): ${unknown.join(", ")}`);
     if (missing.length) throw new Error(`composition is missing field(s): ${missing.join(", ")}`);
-    if (preset) throw new Error(`known role ${role} requires a preset composition`);
+    if (preset) throw new Error(`known stock-template role ${role} requires composition.kind "preset"`);
     const compositionId = canonicalRoleId(composition.id, "composition.id");
     if (compositionId !== role) throw new Error(`composition.id must match canonical role ${role}`);
     if (composition.nearestPreset !== undefined) {
       const nearest = canonicalRoleId(composition.nearestPreset, "composition.nearestPreset");
       if (!catalog.presets.some(({ name }) => name === nearest))
-        throw new Error(`composition.nearestPreset must name a canonical preset`);
+        throw new Error(`composition.nearestPreset must name a canonical stock template`);
     }
     nonEmptyString(composition.bespokeReason, "composition.bespokeReason");
     if (typeof composition.promotionCandidate !== "boolean")

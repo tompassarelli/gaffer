@@ -23,7 +23,7 @@ is an error, not a silently-ignored no-op — the composer rejects unknown optio
 
 | Planner input | What it captures | Derives |
 |---|---|---|
-| task shape | execute / implement / integrate / design / scout / analyze / verify / judge / research-science | role + preset defaults |
+| task shape | execute / implement / integrate / design / direct / scout / analyze / verify / judge / research-science | role + stock-template defaults |
 | leverage | how much better judgment changes downstream outcomes (distinct from difficulty and grade) | argues tier / quality floor up |
 | dependency shape | atomic-cohesive, deterministic-workflow, parallel-breadth, dynamic-decomposition, tightly-coupled-sequential | topology |
 | quality floor | lowest responsible tier for the decision | bounds tier selection; refuses degraded routes |
@@ -50,13 +50,13 @@ importance. These stay an orchestrator's reasoning today — North records
 
 ```ts
 type RoutingRequest = {
-  role: string;                 // function / deliverable; canonical preset or bespoke name
+  role: string;                 // function / deliverable; stock-template or bespoke name
   taskGrade: "novice" | "junior" | "mid" | "senior" | "staff" | "principal" | "research-grade";
   domainRequirements: string[];
   topology: "worker" | "orchestrator";                       // coordination authority; verifier/judge are worker ROLES
   tier: "economy" | "standard" | "senior" | "frontier";      // model capability floor
   reasoning: "low" | "medium" | "high" | "xhigh" | "max";    // deliberation
-  posture: "explore" | "deliver" | "preserve";
+  posture: "explore" | "deliver" | "preserve" | "evaluate";
   composition:
     | { kind: "preset"; id: string; overrides: OverrideField[]; overrideReason?: string }
     | {
@@ -75,18 +75,21 @@ type RoutingRequest = {
 `role`/function describes the deliverable; `taskGrade` describes the scope and
 judgment expected of the work; `tier` is the model capability floor; `reasoning`
 is deliberation; `domainRequirements` names context/expertise the brief or
-adapter must supply (recording it alone loads nothing); and
+adapter must supply, including named external-access prerequisites when the
+deliverable depends on another system (recording a requirement alone grants
+nothing); and
 `topology` describes coordination authority. An adapter must not infer one
-solely from another. A preset may propose all of them, but the recorded request
-keeps them distinct. A changed preset axis is listed in `overrides[]` and
-requires `overrideReason`; an unchanged preset uses `overrides: []` and must
-not carry a reason. The canonical JSON Schema and cross-harness examples are
+solely from another. A stock template may propose all of them, but the recorded
+request keeps them distinct. A changed stock-template axis is listed in
+`overrides[]` and requires `overrideReason`; an unchanged stock template uses
+`overrides: []` and must not carry a reason. The canonical JSON Schema and
+cross-harness examples are
 [`contracts/routing-request.schema.json`](../contracts/routing-request.schema.json)
 and [`contracts/routing-request.fixtures.json`](../contracts/routing-request.fixtures.json).
 
 Role and composition IDs use one lowercase kebab-case namespace
 (`^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$`). Composer-only compatibility aliases are
-normalized to their canonical preset before emission; an alias is not a valid
+normalized to their canonical stock template before emission; an alias is not a valid
 wire-level `role`. Retired IDs such as `researcher` remain invalid rather than
 silently returning as bespoke roles.
 
@@ -105,24 +108,26 @@ worker topology, not topologies: `topology` is only `worker` or `orchestrator`.
 | direct | director | frontier | orchestrator | deliver |
 | scout | scout | economy | worker | explore |
 | analyze | analyst | senior | worker | explore |
-| verify | verifier | senior | worker | explore |
-| judge | judge | frontier | worker | explore |
+| verify | verifier | senior | worker | evaluate |
+| judge | judge | frontier | worker | evaluate |
 | research-science | research-scientist | frontier | worker | explore |
 
-These are presets, not coupled identities. `taskGrade`, domain requirements,
-topology, semantic tier, and deliberation are independently reviewable and may
-override a row subject to their actual invariants. A preset topology override
-does not rewrite that preset's capabilities: it is accepted only when the fixed
-capabilities already satisfy the requested topology. Otherwise choose a
-compatible preset or a bespoke contract with explicit capabilities. The layer
-floor raises foundational, library, and architecture work to at least `senior`.
+These are stock templates, not coupled identities. `taskGrade`, domain
+requirements, topology, semantic tier, and deliberation are conceptually
+independent. Current stock templates nevertheless ship fixed, enforceable
+topology/capability pairings. A topology override does not rewrite a stock
+template's capabilities: it is accepted only when the fixed capabilities
+already satisfy the requested topology. Otherwise choose a compatible stock
+template or a bespoke composition with explicit capabilities. The layer floor
+raises foundational, library, and architecture work to at least `senior`.
 Blast radius may raise a tier; importance alone does not.
 
-The canonical machine-readable preset definitions live in
+The canonical machine-readable stock-template definitions live in
 `staffing/catalog.json` (`staffing/catalog.schema.json` documents the format).
 Catalog v2 has exactly `$schema`, `version`, `vocabulary`, `defaults`,
 `presets`, and `aliases` at its top level; `version` is `2` and `presets` is
-the named standard library. Compose a portable payload without knowing a
+the compatibility key for the named stock-template library. Compose a portable
+payload without knowing a
 provider model name:
 
 ```sh
@@ -133,12 +138,23 @@ node scripts/compose-routing.mjs migration-forensics --nearest analyst \
   --contract @/absolute/path/to/migration-contract.json --no-promotion-candidate
 ```
 
-The command prints the JSON that follows a `GAFFER_ROUTING` marker. Preset
+The command prints the JSON that follows a `GAFFER_ROUTING` marker. Stock-template
 values are defaults only: every changed axis replaces only itself and is
 auditable. Unknown roles are valid bespoke compositions only with a reason,
 promotion status, structured authority / deliverable / done contract, and an
-optional nearest-preset reference when one genuinely helps explain or seed the
-composition.
+optional `nearestPreset` reference when a stock template genuinely helps
+explain or seed the composition. Without `--nearest`, the composer requires
+explicit task grade, topology, tier, deliberation, and posture; it never fills
+an unknown role from generic defaults. Domain requirements may explicitly be
+an empty list.
+
+Selection ladder: use a stock template unchanged when its deliverable and
+authority fit; use a justified stock-template override when task grade,
+domains, tier, reasoning, or posture change but its fixed topology/capability
+boundary still fits. A topology/authority change requires a bespoke/custom
+composition, as does a different responsibility, done-criteria, or report
+shape. Machine payloads retain the v2 `presets`, `kind: "preset"`, and
+`nearestPreset` names for compatibility.
 
 ## Tier × deliberation resolution
 
@@ -146,11 +162,12 @@ composition.
 dispatchable if a provider catalog resolves it. Each `providers/<provider>.json`
 maps the semantic ramp (economy → standard → senior → frontier) onto that
 provider's useful model×deliberation rungs and OMITS dominated combinations —
-the shingle law: a model's top reasoning rung is dominated by the next model's
-bottom rung, so it is not offered. A `(tier, reasoning)` pair is provider-neutral
-and dispatchable iff some catalog offers it; the composer rejects any pair no
+the shingle law. One exact model×deliberation rung belongs to only one tier; a
+provider's strongest model may span adjacent tiers only through disjoint
+deliberation levels. A `(tier, reasoning)` pair is provider-neutral and
+dispatchable iff some catalog offers it; the composer rejects any pair no
 catalog resolves — before dispatch, never by silently substituting a level.
-Overriding `tier` alone onto a preset whose `reasoning` the new tier does not
+Overriding `tier` alone onto a stock template whose `reasoning` the new tier does not
 offer is therefore rejected: set both axes, or set a `reasoning` the tier
 supports. This rejects unsupported and dominated routes without collapsing the
 two axes into one.
@@ -176,21 +193,22 @@ but those are North inputs rather than Gaffer fields. The harness:
 1. Honors an explicit provider/account pin from its execution envelope, else
    selects freely among compatible accounts.
 2. Removes providers lacking required capabilities, authentication, or capacity.
-3. Rejects candidates below the quality floor the caller reasoned to, or missing
-   required capabilities.
+3. Rejects candidates below the quality floor the caller reasoned to, missing
+   required capabilities, or unable to prove a named external-access
+   prerequisite before the model turn.
 4. Applies its own subscription-allocation policy and resource pressure; pressure
    trims optional breadth, polish, and retries before capability.
 5. Resolves the semantic `tier` + `reasoning` through `providers/<provider>.json`
    to a concrete model and effort/reasoning control.
 6. Records the requested route beside the resolved one for audit.
 
-Preset capabilities are provider-neutral requirements. An adapter may expose
+Stock-template capabilities are provider-neutral requirements. An adapter may expose
 only the intersection it can enforce, and must fail closed when a required
 boundary is unavailable. In particular, `shell.readonly` means an OS-enforced
 working-tree write denial; removing Edit/Write while leaving an unrestricted
 shell does not satisfy it. An adapter without a hard read-only shell omits the
 shell rather than silently widening authority. This is also why capabilities
-are preset facts rather than a ninth routing field: named presets supply them,
+are stock-template facts rather than a ninth routing field: named stock templates supply them,
 while a bespoke contract states the authority its adapter must realize.
 
 Automatic fallback is SUBSTITUTION only: it preserves the semantic tier and
@@ -209,30 +227,36 @@ equivalent between providers.
 
 Composition provenance has five deliberately distinct presentation states:
 
-- `gaffer:<preset>` — an unchanged standard preset.
-- `gaffer:<preset>+override` — a standard preset with recorded axis changes and
+- `gaffer:<preset>` — an unchanged stock template.
+- `gaffer:<preset>+override` — a stock template with recorded axis changes and
   an `overrideReason`.
 - `gaffer:bespoke:<id>` — an improvised, structured composition with its own
   capabilities and authority contract.
 - `gaffer:not-selected` — a native session that did not select Gaffer at all.
 - `gaffer:legacy-debt` — a pre-contract record whose provenance cannot yet be
-  reconstructed; this is migration debt, not a preset.
+  reconstructed; this is migration debt, not a stock template.
 
 `gaffer:none` is not a valid display state because it collapses intentional
 non-selection, bespoke composition, and missing legacy data into one ambiguous
 label. A refreshed legacy record should be reclassified into one of the first
-four states; it is never guessed into a preset.
+four states; it is never guessed into a stock template.
 
 Every bespoke composition supplies `composition.kind = "bespoke"`, a stable
-`id`, an optional nearest-preset reference, a one-line `bespokeReason`, a boolean
+`id`, an optional `nearestPreset` stock-template reference, a one-line
+`bespokeReason`, a boolean
 `promotionCandidate` (false by default; nomination is explicit), and a structured contract: responsibility, deliverable,
 canonical `capabilities[]`, `mayDecide[]`, `mustEscalate[]`, `doneWhen[]`, and
 report. The capabilities are explicit even when `nearestPreset` is present:
-the nearest preset can seed composition defaults but never grants authority by
+the nearest stock template can seed composition defaults but never grants authority by
 implication. A harness records the
 requested composition beside the resolved route and verified outcome. Repeated
 successful fingerprints are visible for review regardless of nomination; runtime observations never
-rewrite Gaffer's standard library automatically.
+rewrite Gaffer's stock-template library automatically. Comparable successful
+recurrence means the same responsibility, deliverable, capability/authority
+boundary, done criteria, and report shape has been used more than once and each
+use has evidence against its done criteria. Domain wording alone does not make
+two compositions comparable, and recurrence triggers review rather than
+promotion.
 
 ## Current consumption boundary
 

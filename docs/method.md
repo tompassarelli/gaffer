@@ -2,10 +2,13 @@
 
 ## Routing: shape, not difficulty
 
-Tasks are routed by SHAPE — execute / implement / integrate / design /
-research — because shape predicts reasoning demand and difficulty-as-felt
-does not. A hard-but-local testable bug is still *implement*; a one-line
-naming decision that shapes an API is *design*. Blast radius routes up;
+Initial role triage follows the deliverable SHAPE — execute / implement /
+integrate / design / direct / scout / analyze / verify / judge /
+research-science — because shape is a better prior than difficulty-as-felt.
+Role does not choose the other axes: task grade, domain requirements,
+topology, semantic tier, deliberation, and posture remain explicit. A
+hard-but-local testable bug is still *implement*; a one-line naming decision
+that shapes an API is *design*. Blast radius may route capability up;
 importance alone never does.
 
 Two empirical laws sharpen the routing:
@@ -16,11 +19,13 @@ Two empirical laws sharpen the routing:
   needs senior or frontier judgment even when the diff is small. The stack
   layer sets the floor, not surface difficulty.
 - **Shingle law.** A provider catalog exposes only useful
-  model×deliberation rungs. When one model's upper deliberation rung is
-  dominated by the next capability tier's lower rung, the catalog omits the
-  dominated pair. Routing therefore follows one continuous semantic ramp:
-  harder work climbs capability rather than cranking deliberation against a
-  low ceiling. Concrete, current examples are generated from the catalogs in
+  model×deliberation rungs and assigns each exact rung to only one semantic
+  tier. When an upper rung is dominated by the next route's lower rung, the
+  catalog omits the overlap; a provider's strongest model may span adjacent
+  tiers only through disjoint deliberation levels. Routing therefore follows
+  one continuous semantic ramp: harder work climbs the route rather than
+  cranking deliberation against a low ceiling. Concrete, current examples are
+  generated from the catalogs in
   [`docs/provider-matrix.md`](provider-matrix.md); they are evidence for the
   mapping, not shared doctrine.
 

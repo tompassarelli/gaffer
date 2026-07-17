@@ -39,7 +39,7 @@
     },
     "preset": {
       "type": "object", "additionalProperties": false,
-      "required": ["name", "taskGrade", "tier", "deliberation", "topology", "capabilities", "tagline", "description"],
+      "required": ["name", "taskGrade", "tier", "deliberation", "topology", "posture", "capabilities", "tagline", "description"],
       "properties": {
         "name": { "$ref": "#/$defs/roleId" }, "taskGrade": { "type": "string" }, "tier": { "type": "string" },
         "deliberation": { "type": "string" }, "topology": { "type": "string" }, "posture": { "type": "string" },

@@ -22,14 +22,30 @@ const staffingSchema = JSON.parse(readFileSync(resolve(root, "staffing/catalog.s
 const routingSchema = JSON.parse(readFileSync(resolve(root, "contracts/routing-request.schema.json"), "utf8"));
 const staffingKeys = ["$schema", "version", "vocabulary", "defaults", "presets", "aliases"];
 const staffingDefinitionKeys = ["uniqueStrings", "capabilities", "preset", "alias", "roleId"];
+const staffingPresetKeys = [
+  "name", "taskGrade", "tier", "deliberation", "topology", "posture",
+  "capabilities", "tagline", "description",
+];
+const stockTemplateNames = [
+  "executor", "implementer", "integrator", "designer", "director",
+  "scout", "analyst", "verifier", "judge", "research-scientist",
+];
 if (staffing.version !== 2 || staffingSchema.properties?.version?.const !== 2 ||
     JSON.stringify(Object.keys(staffing).sort()) !== JSON.stringify([...staffingKeys].sort()) ||
     JSON.stringify([...staffingSchema.required].sort()) !== JSON.stringify(staffingKeys.filter((key) => key !== "$schema").sort()) ||
     JSON.stringify(Object.keys(staffingSchema.properties ?? {}).sort()) !== JSON.stringify([...staffingKeys].sort()) ||
-    JSON.stringify(Object.keys(staffingSchema.$defs ?? {}).sort()) !== JSON.stringify([...staffingDefinitionKeys].sort()))
+    JSON.stringify(Object.keys(staffingSchema.$defs ?? {}).sort()) !== JSON.stringify([...staffingDefinitionKeys].sort()) ||
+    JSON.stringify([...(staffingSchema.$defs?.preset?.required ?? [])].sort()) !== JSON.stringify([...staffingPresetKeys].sort()) ||
+    JSON.stringify(Object.keys(staffingSchema.$defs?.preset?.properties ?? {}).sort()) !== JSON.stringify([...staffingPresetKeys].sort()))
   throw new Error("canonical staffing catalog/schema must use the exact v2 preset shape");
 if (JSON.stringify([...routingSchema.required].sort()) !== JSON.stringify([...ROUTING_FIELDS].sort()))
   throw new Error("canonical routing schema must require exactly the eight Gaffer fields");
+if (JSON.stringify(staffing.presets.map(({ name }) => name).sort()) !==
+    JSON.stringify([...stockTemplateNames].sort()))
+  throw new Error("stock-template library changed without an explicit catalog/validator review");
+if (JSON.stringify([...(routingSchema.properties?.posture?.enum ?? [])].sort()) !==
+    JSON.stringify([...staffing.vocabulary.postures].sort()))
+  throw new Error("routing JSON Schema posture enum must match the staffing vocabulary");
 
 // Role/composition identity is one safe namespace across catalog, routing,
 // schemas, UI projection, and generated filenames. Schema copies are checked
@@ -100,6 +116,7 @@ for (const preset of staffing.presets)
 for (const invalid of [
   { ...staffing, version: 1 },
   { ...staffing, defaults: { ...staffing.defaults, topology: "manager" } },
+  { ...staffing, presets: [{ ...staffing.presets[0], posture: undefined }, ...staffing.presets.slice(1)] },
   { ...staffing, presets: [{ ...staffing.presets[0], tier: "cheap" }, ...staffing.presets.slice(1)] },
   { ...staffing, presets: [{ ...staffing.presets[0], name: { bad: true } }, ...staffing.presets.slice(1)] },
   { ...staffing, presets: [{ ...staffing.presets[0], capabilities: ["filesystem.telepathy"] }, ...staffing.presets.slice(1)] },
@@ -162,12 +179,23 @@ for (const catalog of Object.values(providerCatalogs)) {
     modelDeltaFor(catalog, exact);
   }
 }
-const fable = resolveModelAlias(providerCatalogs.anthropic, "fable");
-if (fable === "fable" || Object.values(providerCatalogs.anthropic.tiers).some(({ model }) => model === fable) ||
-    modelDeltaFor(providerCatalogs.anthropic, fable).kind !== "none")
-  throw new Error("temporary Fable promotion must resolve catalog alias → runtime-only exact model with explicit-none delta");
-try { modelDeltaFor(providerCatalogs.anthropic, "unlisted-runtime-model"); throw new Error("missing exact model delta was inherited"); }
-catch (error) { if (error.message === "missing exact model delta was inherited") throw error; }
+// A catalog may advertise exact runtime candidates without making them a
+// default semantic-tier mapping. Every such candidate still needs its own
+// exact delta decision; it may never inherit a neighboring model's prompt.
+const runtimeCandidates = Object.values(providerCatalogs).flatMap((catalog) => {
+  const defaultModels = new Set(Object.values(catalog.tiers).map(({ model }) => model));
+  return [...new Set(Object.values(catalog.modelAliases))]
+    .filter((model) => !defaultModels.has(model))
+    .map((model) => ({ catalog, model }));
+});
+for (const { catalog, model } of runtimeCandidates) {
+  if (!Object.hasOwn(catalog.modelDeltas, model) || !["calibrated", "none"].includes(modelDeltaFor(catalog, model).kind))
+    throw new Error(`${catalog.provider}: runtime-only candidate ${model} lacks an exact delta decision`);
+}
+for (const catalog of Object.values(providerCatalogs)) {
+  try { modelDeltaFor(catalog, "unlisted-runtime-model"); throw new Error("missing exact model delta was inherited"); }
+  catch (error) { if (error.message === "missing exact model delta was inherited") throw error; }
+}
 const providerNames = /\b(?:sonnet|opus|luna|terra|sol)\b/i;
 for (const preset of staffing.presets) {
   if (providerNames.test(preset.description)) throw new Error(`${preset.name}: provider model leaked into neutral staffing description`);
@@ -185,6 +213,12 @@ for (const [label, invalid] of [
   } }],
   ["unsupported default", { ...openaiFixture, tiers: { ...openaiFixture.tiers,
     economy: { ...openaiFixture.tiers.economy, defaultReasoning: "high" },
+  } }],
+  ["duplicate concrete rung", { ...openaiFixture, tiers: { ...openaiFixture.tiers,
+    frontier: {
+      ...openaiFixture.tiers.frontier,
+      reasoning: [...openaiFixture.tiers.frontier.reasoning, "high"],
+    },
   } }],
   ["duplicate transports", { ...openaiFixture, transports: ["codex-cli", "codex-cli"] }],
   ["missing model delta", { ...openaiFixture, modelDeltas: missingModelDeltas }],
@@ -329,8 +363,12 @@ if (!director || director.taskGrade !== "staff" || director.tier !== "frontier" 
     director.deliberation !== "xhigh" || director.topology !== "orchestrator" || director.posture !== "deliver")
   throw new Error("director must remain the staff/frontier/xhigh orchestrator preset");
 const judge = staffing.presets.find(({ name }) => name === "judge");
-if (!judge || judge.taskGrade !== "staff" || judge.tier !== "frontier" || judge.deliberation !== "xhigh" || judge.topology !== "worker")
-  throw new Error("judge must remain the staff/frontier/xhigh high-leverage verdict preset");
+if (!judge || judge.taskGrade !== "staff" || judge.tier !== "frontier" ||
+    judge.deliberation !== "xhigh" || judge.topology !== "worker" || judge.posture !== "evaluate")
+  throw new Error("judge must remain the staff/frontier/xhigh evaluate stock template");
+const verifier = staffing.presets.find(({ name }) => name === "verifier");
+if (!verifier || verifier.topology !== "worker" || verifier.posture !== "evaluate")
+  throw new Error("verifier must remain a worker/evaluate stock template");
 for (const preset of staffing.presets.filter(({ name }) => name !== "director"))
   if (preset.topology !== "worker") throw new Error(`${preset.name} unexpectedly grants orchestrator topology`);
 const nonAuthoringPresets = ["designer", "director", "scout", "analyst", "verifier", "judge", "research-scientist"];
@@ -430,10 +468,21 @@ for (const alias of staffing.aliases) {
     mayDecide: ["read-only probes"], mustEscalate: ["destructive recovery"],
     doneWhen: ["every transition is sourced"], report: "timeline, evidence, and gaps",
   });
-  const badCapabilities = compose(["migration-forensics", "--rationale", "invalid capability probe",
+  const badCapabilities = compose(["migration-forensics", "--nearest", "analyst",
+    "--rationale", "invalid capability probe",
     "--contract", JSON.stringify({ ...JSON.parse(contract), capabilities: ["filesystem.telepathy"] })]);
   if (badCapabilities.status === 0 || !badCapabilities.stderr.includes("unknown canonical capability"))
     throw new Error("bespoke contract accepted a capability outside the canonical vocabulary");
+  const mutatingEvaluation = compose(["evaluation-author", "--task-grade", "mid",
+    "--topology", "worker", "--tier", "standard", "--deliberation", "medium",
+    "--posture", "evaluate", "--rationale", "posture authority probe",
+    "--contract", JSON.stringify({ ...JSON.parse(contract),
+      capabilities: ["filesystem.read", "filesystem.write", "shell"],
+    })]);
+  if (mutatingEvaluation.status !== 0 ||
+      mutatingEvaluation.payload.posture !== "evaluate" ||
+      !mutatingEvaluation.payload.composition.contract.capabilities.includes("filesystem.write"))
+    throw new Error(`evaluate posture was incorrectly fused to capability authority: ${mutatingEvaluation.stderr}`);
   for (const [label, topology, capabilities, error] of [
     ["worker coordination", "worker", ["filesystem.read", "coordination"], "worker topology forbids coordination"],
     ["orchestrator missing coordination", "orchestrator", ["filesystem.read", "shell.readonly"], "orchestrator topology requires coordination"],
@@ -441,7 +490,7 @@ for (const alias of staffing.aliases) {
     ["orchestrator unrestricted shell", "orchestrator", ["filesystem.read", "shell", "coordination"], "orchestrator topology forbids unrestricted shell"],
     ["dual shell authority", "worker", ["filesystem.read", "shell", "shell.readonly"], "shell and shell.readonly are mutually exclusive"],
   ]) {
-    const result = compose([`${label.replaceAll(" ", "-")}-probe`, "--topology", topology,
+    const result = compose([`${label.replaceAll(" ", "-")}-probe`, "--nearest", "analyst", "--topology", topology,
       "--rationale", label, "--contract", JSON.stringify({ ...JSON.parse(contract), capabilities })]);
     if (result.status === 0 || !result.stderr.includes(error))
       throw new Error(`${label} capability/topology invariant was not enforced: ${result.stderr}`);
@@ -449,7 +498,9 @@ for (const alias of staffing.aliases) {
   const orchestratorContract = JSON.stringify({ ...JSON.parse(contract),
     capabilities: ["filesystem.read", "shell.readonly", "coordination"],
   });
-  const validOrchestrator = compose(["migration-director", "--topology", "orchestrator",
+  const validOrchestrator = compose(["migration-director", "--task-grade", "staff",
+    "--topology", "orchestrator", "--tier", "frontier", "--deliberation", "xhigh",
+    "--posture", "deliver",
     "--rationale", "bespoke coordination", "--contract", orchestratorContract]);
   if (validOrchestrator.status !== 0)
     throw new Error(`valid bespoke orchestrator contract was rejected: ${validOrchestrator.stderr}`);
@@ -458,11 +509,29 @@ for (const alias of staffing.aliases) {
   if (nominated.status !== 0 || nominated.payload.composition.kind !== "bespoke" ||
       nominated.payload.composition.promotionCandidate !== true || nominated.payload.composition.contract.doneWhen.length !== 1)
     throw new Error(`bespoke contract/promotion decision failed: ${nominated.stderr}`);
-  const novel = compose(["novel-systems-inquiry", "--rationale", "no existing preset is a truthful reference",
+  const explicitAxes = ["--task-grade", "research-grade", "--topology", "worker",
+    "--tier", "frontier", "--deliberation", "xhigh", "--posture", "explore"];
+  const novel = compose(["novel-systems-inquiry", ...explicitAxes,
+    "--rationale", "no existing stock template is a truthful reference",
     "--contract", contract]);
   if (novel.status !== 0 || novel.payload.composition.nearestPreset !== undefined ||
       novel.payload.composition.promotionCandidate !== false)
-    throw new Error(`truly novel bespoke composition must not invent nearest-preset provenance: ${novel.stderr}`);
+    throw new Error(`truly novel bespoke composition must not invent nearest-template provenance: ${novel.stderr}`);
+  for (const flag of [
+    "--task-grade", "--topology", "--tier", "--deliberation", "--posture",
+  ]) {
+    const missingAxisArgs = explicitAxes.filter((_, index, all) => {
+      const flagIndex = all.indexOf(flag);
+      return index !== flagIndex && index !== flagIndex + 1;
+    });
+    const result = compose(["novel-systems-inquiry", ...missingAxisArgs,
+      "--rationale", `missing ${flag} probe`, "--contract", contract]);
+    if (result.status === 0 || !result.stderr.includes("without --nearest must explicitly set") ||
+        !result.stderr.includes(flag === "--deliberation" ? "--deliberation/--reasoning" : flag))
+      throw new Error(`bespoke composition silently defaulted omitted ${flag}: ${result.stderr}`);
+  }
+  if (novel.payload.domainRequirements.length !== 0)
+    throw new Error("bespoke composition without --domain must emit an explicit empty domainRequirements list");
   const directory = mkdtempSync(resolve(tmpdir(), "gaffer-contract-"));
   try {
     const path = resolve(directory, "contract.json");
@@ -476,9 +545,15 @@ for (const alias of staffing.aliases) {
 }
 
 // Independent single-axis overrides change ONLY their axis (no orthogonal collapse).
-const base = compose(["integrator"]).payload;
-for (const [flag, value, field] of [["--taskGrade", "principal", "taskGrade"], ["--posture", "preserve", "posture"], ["--domain", "Nix", "domainRequirements"], ["--tier", "frontier", "tier"], ["--deliberation", "xhigh", "reasoning"]]) {
-  const { status, payload, stderr } = compose(["integrator", flag, value, "--override-reason", `test ${field} override`]);
+for (const [role, flag, value, field] of [
+  ["integrator", "--taskGrade", "principal", "taskGrade"],
+  ["integrator", "--posture", "preserve", "posture"],
+  ["integrator", "--domain", "Nix", "domainRequirements"],
+  ["implementer", "--tier", "senior", "tier"],
+  ["designer", "--deliberation", "max", "reasoning"],
+]) {
+  const base = compose([role]).payload;
+  const { status, payload, stderr } = compose([role, flag, value, "--override-reason", `test ${field} override`]);
   if (status !== 0) throw new Error(`single-axis override ${flag} failed: ${stderr}`);
   const expected = field === "domainRequirements" ? ["Nix"] : value;
   if (JSON.stringify(payload[field]) !== JSON.stringify(expected)) throw new Error(`override ${flag} was not honored`);
@@ -510,15 +585,25 @@ for (const [flag, value, field] of [["--taskGrade", "principal", "taskGrade"], [
       payload.taskGrade !== "senior" || payload.topology !== "worker" || payload.domainRequirements?.[0] !== "Nix")
     throw new Error("independent tier+deliberation override to a valid pair must preserve the other axes");
 }
+// Layer raises the capability floor; it never silently renames the function.
+{
+  const { status, payload, stderr } = compose(["executor", "--tier", "senior", "--deliberation", "high",
+    "--override-reason", "fully specified edit on a foundational library"]);
+  if (status !== 0 || payload.role !== "executor" || payload.taskGrade !== "novice" ||
+      payload.tier !== "senior" || payload.reasoning !== "high" ||
+      JSON.stringify(payload.composition.overrides) !== JSON.stringify(["tier", "reasoning"]))
+    throw new Error(`layer-floor override fused function with capability: ${stderr}`);
+}
 
 // Exhaust the 4×5 semantic matrix: a pair composes iff at least one provider
 // catalog resolves it. This prevents producer/catalog drift and proves that
 // independence means separately chosen axes, not an unchecked Cartesian product.
+const matrixBase = compose(["integrator"]).payload;
 for (const tier of staffing.vocabulary.semanticTiers) {
   const supported = resolvableDeliberations(tier);
   for (const deliberation of staffing.vocabulary.deliberations) {
     const args = ["integrator", "--tier", tier, "--deliberation", deliberation];
-    if (tier !== base.tier || deliberation !== base.reasoning)
+    if (tier !== matrixBase.tier || deliberation !== matrixBase.reasoning)
       args.push("--override-reason", "matrix probe");
     const { status, stderr } = compose(args);
     if (supported.has(deliberation) && status !== 0)
@@ -549,7 +634,7 @@ for (const tier of staffing.vocabulary.semanticTiers) {
     ["integrator", "--promotion-candidate"],
   ]) {
     const result = compose(args);
-    if (result.status === 0 || !result.stderr.includes("apply only to bespoke roles"))
+    if (result.status === 0 || !result.stderr.includes("apply only to bespoke compositions"))
       throw new Error(`preset accepted bespoke-only flag: ${args.slice(1).join(" ")}`);
   }
   const contradictoryDirector = compose(["director", "--topology", "worker", "--override-reason", "contradiction probe"]);
@@ -574,6 +659,15 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
   const readme = readFileSync(resolve(root, "README.md"), "utf8");
   const providerMatrix = readFileSync(resolve(root, "docs/provider-matrix.md"), "utf8");
   const northAdapter = readFileSync(resolve(root, "docs/adapters/north.md"), "utf8");
+  const taskGradeSource = readFileSync(resolve(root, "docs/task-grades.md"), "utf8");
+  const internedWorker = /\binterned worker\b|worker\s*\(\s*interned\s*\)/i;
+  if (internedWorker.test(doctrine) || internedWorker.test(northAdapter))
+    throw new Error("obsolete interned-worker jargon returned; use terminal worker");
+  if (/\b(?:feature or fix|existing architecture|cross-seam integration|engineering trade-offs|migration paths)\b/i.test(taskGradeSource))
+    throw new Error("shared task-grade blocks leaked authoring-role semantics");
+  if (/layer floor\s*(?:→|->)\s*integrator|foundational targets? get gaffer:integrator|ANY work on foundational/i.test(
+    `${readme}\n${doctrine}\n${JSON.stringify(staffing.presets)}`))
+    throw new Error("layer floor must raise capability without renaming the task function");
   if (/root CLAUDE\.md/.test(roles)) throw new Error("role blocks must route to canonical AGENTS.md");
   if (/\b(?:Fable|Sonnet|Opus|Terra|Luna|Sol)\b/.test(routing))
     throw new Error("provider-neutral routing prose leaked a concrete model name");
@@ -584,15 +678,37 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
     if (!doctrine.includes(field)) throw new Error(`doctrine spawn contract omits ${field}`);
   for (const block of ["gradeBlock", "topologyBlock", "commsBlock"])
     if (!composeSkill.includes(block)) throw new Error(`compose example omits ${block}`);
-  if (!/gaffer:judge[\s\S]{0,180}frontier\/xhigh/.test(roles))
-    throw new Error("verifier must explicitly escalate high-leverage verdicts to frontier/xhigh judge");
+  if (!/single claim remains verifier work at[\s\S]{0,120}any leverage/i.test(roles) ||
+      !/confirmed[\s\S]{0,120}affirmative evidence[\s\S]{0,120}refuted[\s\S]{0,120}counterevidence/i.test(roles) ||
+      !/ambiguous evidence[\s\S]{0,160}cannot-determine/i.test(roles))
+    throw new Error("verifier role lost its single-claim boundary or strict verdict epistemics");
+  if (!/JUDGE[\s\S]{0,120}two or more supplied alternatives/.test(roles) ||
+      /JUDGE[\s\S]{0,1000}(?:single make-or-break|ranking findings by severity)/i.test(roles))
+    throw new Error("judge must rank multiple supplied alternatives only");
+  if (!/DESIGNER[\s\S]{0,500}Must escalate: implementation/i.test(roles) ||
+      !/DIRECTOR[\s\S]{0,1200}independent verifier when leverage warrants one/i.test(roles))
+    throw new Error("designer/director authority and verification boundaries drifted");
+  const postures = readFileSync(resolve(root, "docs/postures.md"), "utf8");
+  if (!/POSTURE: EVALUATE[\s\S]{0,700}non-mutating|POSTURE: EVALUATE[\s\S]{0,700}mutating the subject/.test(postures))
+    throw new Error("evaluate posture must be evidence-first and non-mutating");
+  if (!/evidence quality\/validity > decision correctness > coverage\s+of the stated question > speed > polish/.test(postures))
+    throw new Error("evaluate posture collision order drifted");
+  if (!/Posture never expands[\s\S]{0,120}capability contract/i.test(postures) ||
+      !/read-only probes and written hypotheses for non-authoring\s+agents/i.test(postures))
+    throw new Error("explore posture must not grant authoring authority to read-only stock templates");
+  if (!/new (?:experimental )?apparatus[\s\S]{0,100}code[\s\S]{0,160}(?:authoring role|handoff)/i.test(
+    staffing.presets.find(({ name }) => name === "research-scientist")?.description ?? ""))
+    throw new Error("research-scientist must escalate new apparatus/code authoring");
   if (!providerMatrix.includes("sources do not") || !providerMatrix.includes("exact rung economics"))
     throw new Error("generated provider matrix must distinguish official provenance from Gaffer calibration judgments");
   if (!providerMatrix.includes("advisory freshness signals") ||
       !providerMatrix.includes("warning but remains reproducible and nonfatal"))
     throw new Error("generated provider matrix must explain nonfatal review freshness");
-  for (const enforcement of ["shell.readonly", "--sandbox read-only", "failIfUnavailable=true",
-    "allowUnsandboxedCommands=false", "filesystem.denyWrite", "withholds Bash"])
+  for (const enforcement of ["shell.readonly", "mcp__north-readonly-shell__run",
+    "bwrap-backed read-only host/checkout", "ephemeral `/tmp`", "no network",
+    "cleared environment", "fails closed at preflight", "--sandbox read-only",
+    "North MCP required", "OpenAI orchestration", "fails pre-turn",
+    "withholds Bash", "not proof of arbitrary external-service authority", "`north linear`"])
     if (!northAdapter.includes(enforcement))
       throw new Error(`North adapter omits fail-closed non-authoring enforcement: ${enforcement}`);
   for (const provenanceState of ["gaffer:<preset>", "gaffer:<preset>+override", "gaffer:bespoke:<id>",

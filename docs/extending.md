@@ -1,12 +1,12 @@
-# Extending gaffer — the standard-library contract
+# Extending Gaffer — stock templates and bespoke compositions
 
-Gaffer is a stdlib, not a framework: the squad is precompiled convenience
+Gaffer is a stdlib, not a framework: the templates are precompiled convenience
 for hot paths, the blocks are parts, and only the LAWS bind everything.
 This is the specification for building on it.
 
 ## The contract — what makes an agent "gaffer-valid"
 
-Three requirements, everything else is free:
+Four requirements, everything else is free:
 
 1. **Routing pinned** — semantic tier and deliberation are always explicit.
    Provider/account selection belongs to the harness execution envelope; North
@@ -18,39 +18,62 @@ Three requirements, everything else is free:
 3. **Bounded authority** — the agent states what it may decide, what it
    must escalate, and what "done" is. Borrow a role block or write your
    own; an agent with unstated authority is unreviewable.
+4. **Executable access** — every side effect required by the deliverable is
+   licensed by the declared capabilities. External systems and operations are
+   named as domain requirements and matched to an authenticated adapter, CLI,
+   or context before a model turn is purchased. Metadata never grants access;
+   an unavailable surface is a preflight result, not a task for the worker to
+   improvise.
 
-A bespoke domain-specific-ops agent that satisfies these is a full citizen — the
-squad has no privileged status beyond being pre-built.
+A bespoke domain-specific composition that satisfies these is a full citizen —
+the template library has no privileged status beyond being pre-built.
 
-## Building a bespoke agent (the 10% the squad doesn't cover)
+## Building a bespoke/custom composition
+
+Selection ladder: use a stock template unchanged when its deliverable and
+authority fit; use a justified stock-template override when task grade,
+domains, tier, reasoning, or posture change but its fixed topology/capability
+boundary still fits. A topology/authority change requires a bespoke
+composition, as does a different responsibility, done-criteria, or report
+shape. The v2 machine schema retains `presets`, `kind: "preset"`, and
+`nearestPreset` for compatibility.
 
 1. Name the axes: function/role, `taskGrade`, domain requirements, topology and
    dependency shape, leverage, quality floor, semantic tier, deliberation,
    posture, and authority. Do not derive one by renaming another.
-2. Borrow blocks that fit: comms (almost always), task grade, topology,
+2. Audit required side effects and external access. Each side effect must fit
+   the declared canonical capabilities; each external system and operation
+   must be a named domain requirement with an execution surface the harness
+   can prove before dispatch. Read-only authority plus a write deliverable is
+   an invalid composition.
+3. Borrow blocks that fit: comms (almost always), task grade, topology,
    role/posture, and only the exact concrete model's delta when its provider
    catalog supplies a calibrated path.
-3. Write the domain-specific remainder freely — that's the point.
-4. Record a bespoke contract: an optional nearest preset (when it genuinely
-   helps explain or seed the composition), why a standard preset was not used, responsibility,
+4. Write the domain-specific remainder freely — that's the point.
+5. Record a bespoke contract: an optional `nearestPreset` (when a stock
+   template genuinely helps explain or seed the composition), why a stock
+   template was not used, responsibility,
    deliverable, canonical `capabilities[]`, `mayDecide[]`, `mustEscalate[]`,
    `doneWhen[]`, report, and a stable composition name. Capabilities are always
-   explicit; a nearest preset does not silently donate its authority.
+   explicit; a nearest stock template does not silently donate its authority.
    Stable role/composition IDs are lowercase kebab case, start with a letter,
    and contain only lowercase letters, digits, and single hyphens. Retired IDs
    remain reserved; use `scout`, `analyst`, or `research-scientist` instead of
    the ambiguous former `researcher` role.
-5. `promotionCandidate` defaults false; nominate explicitly when useful.
-   Recurrence adds evidence for a
-   later human/orchestrator review; it never promotes itself.
+6. `promotionCandidate` defaults false; nominate explicitly when useful.
+   Recurrence adds evidence for a later human/orchestrator review; it never
+   promotes itself. Comparable successful recurrence means the same
+   responsibility, deliverable, capability/authority boundary, done criteria,
+   and report shape has been used more than once, with evidence for each use's
+   done criteria. Shared domain wording alone is not enough.
 
 ## Promoting a recurring pattern into the library
 
-- **New squad member**: add a role block to `docs/roles.md` (authority +
-  deliverable + REPORT + REDIRECT), add a preset to
-  `staffing/catalog.json`, rebuild (`node scripts/build-agents.mjs`),
-  and describe it in README. Agent files are generated — never hand-write
-  one.
+- **New stock template**: add a role block to `docs/roles.md` (authority +
+  deliverable + REPORT + REDIRECT), add a machine `preset` entry to
+  `staffing/catalog.json`, update the reviewed stock-template set in
+  `scripts/validate.mjs`, rebuild (`node scripts/build-agents.mjs`), and
+  describe it in README. Agent files are generated — never hand-write one.
 - **New posture**: add a block to `docs/postures.md` (collision order +
   licensed + forbidden + done-bar).
 - **New model delta**: run the elicit skill — self-report (contamination
@@ -58,9 +81,9 @@ squad has no privileged status beyond being pre-built.
    its own vocabulary. Save to `docs/deltas/<model>.md`, then record its repo
    path under that exact model in `providers/<provider>.json`. Runtime models
    without a calibration use an explicit `none`; they never inherit one.
-- Promotion rule of thumb: review after at least two successful uses with
-  comparable contracts. Repetition is evidence, not authorization: promotion
-  is always an explicit change to the standard library.
+- Promotion rule of thumb: review after comparable successful recurrence as
+  defined above. Repetition is evidence, not authorization: promotion is always
+  an explicit change to the stock-template library.
 
 ## What NOT to do
 
@@ -69,19 +92,19 @@ squad has no privileged status beyond being pre-built.
   changes it everywhere.
 - Don't hand-edit `agents/*.md` — compiled artifacts; `--check` will call
   it out.
-- Don't add squad members speculatively — the library grows from recurring
+- Don't add stock templates speculatively — the library grows from recurring
   bespoke need, not from taxonomy completionism.
 
 ## Anatomy of an agent — the axes and where each is encoded
 
 | Axis | Sets | Enforcement | In gaffer | At runtime |
 |---|---|---|---|---|
-| Routing | semantic tier + deliberation | hard at dispatch | preset + routing request | semantic spawn opts |
+| Routing | semantic tier + deliberation | hard at dispatch | stock template + routing request | semantic spawn opts |
 | Substrate | model + effort/reasoning | hard (API params) | provider catalog / compiled adapter | resolved spawn opts |
-| Capability surface | provider-neutral capability labels | hard, fail-closed adapter intersection | preset `capabilities` | adapter tool + sandbox mapping |
+| Capability surface | provider-neutral capability labels | hard, fail-closed adapter intersection | stock-template `capabilities` | adapter tool + sandbox mapping |
 | Role | authority / deliverable / report / redirect | advisory | `docs/roles.md` | — |
-| Task grade | work scope / autonomy / novelty prior | advisory | preset or bespoke contract | spawn metadata |
-| Domain requirements | expertise + context the brief/adapter must supply | recorded; hard only when a harness has a real capability gate | preset or bespoke contract | prompt / required capabilities |
+| Task grade | work scope / autonomy / novelty prior | advisory | stock template or bespoke contract | spawn metadata |
+| Domain requirements | expertise + context the brief/adapter must supply | recorded; hard only when a harness has a real capability gate | stock template or bespoke contract | prompt / required capabilities |
 | Topology | worker / orchestrator coordination authority (verifier/judge are worker roles) | host-enforced | doctrine + request | spawn opts / host orchestration |
 | Dependency shape | when topology pays for itself | planner input (advisory) | doctrine — derives topology | orchestration plan |
 | Leverage | value of improved judgment / cost of plausible error | planner input (advisory) | doctrine — derives tier | selection reason |
@@ -109,7 +132,7 @@ sandbox. A tools allowlist without Edit/Write is not itself a write boundary.
 Topology and capabilities are validated together: orchestrators require
 `coordination` and forbid `filesystem.write` plus unrestricted `shell`; workers
 forbid `coordination`; `shell` and `shell.readonly` are mutually exclusive.
-Changing a preset's topology never projects a new capability set behind the
+Changing a stock template's topology never projects a new capability set behind the
 scenes, so incompatible topology overrides are rejected.
 
 Resource policy follows the same boundary. A bespoke composition selects one

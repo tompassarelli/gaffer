@@ -12,15 +12,20 @@ Options (each axis overrides independently):
   --topology <kind>         worker|orchestrator (coordination authority)
   --tier <tier>             economy|standard|senior|frontier
   --deliberation <level>    low|medium|high|xhigh|max (alias: --reasoning; emitted as reasoning)
-  --posture <posture>       explore|deliver|preserve
-  --nearest <preset>        optional standard template reference/defaults for a bespoke role
-  --rationale <reason>      required when <role> is not a preset or alias
+  --posture <posture>       explore|deliver|preserve|evaluate
+  --nearest <template>      optional stock-template reference/defaults for a bespoke composition
+  --rationale <reason>      required when <role> is not a stock template or alias
   --contract <JSON|@file>   bespoke authority/deliverable/done contract
   --promotion-candidate     nominate a bespoke composition for review
   --no-promotion-candidate  explicit false (the default; accepted for clarity)
-  --override-reason <why>   required when changing any preset axis
+  --override-reason <why>   required when changing any stock-template axis
 
-Prints one provider-neutral GAFFER_ROUTING JSON payload.`;
+Without --nearest, a bespoke composition must explicitly set --task-grade,
+--topology, --tier, --deliberation/--reasoning, and --posture. Domain
+requirements remain an explicit empty list when no --domain is supplied.
+
+Prints one provider-neutral GAFFER_ROUTING JSON payload. Machine output retains
+the v2 keys kind:"preset" and nearestPreset for compatibility.`;
 
 function die(message) { console.error(message); console.error(usage); process.exit(1); }
 
@@ -65,12 +70,21 @@ const alias = catalog.aliases.find(({ name }) => name === args.role);
 const canonicalRole = alias?.target ?? args.role;
 const preset = catalog.presets.find(({ name }) => name === canonicalRole);
 const nearest = args.nearest && catalog.presets.find(({ name }) => name === args.nearest);
-if (args.nearest && !nearest) die(`unknown nearest preset: ${args.nearest}`);
+if (args.nearest && !nearest) die(`unknown nearest stock template: ${args.nearest}`);
 if (preset && (args.nearest || args.rationale || args.contract || args.promotionSpecified))
-  die("--nearest, --rationale, --contract, and promotion decisions apply only to bespoke roles");
-if (!preset && !args.rationale?.trim()) die(`bespoke role ${JSON.stringify(args.role)} requires --rationale`);
-if (!preset && !args.contract) die(`bespoke role ${JSON.stringify(args.role)} requires --contract JSON|@file`);
-if (!preset && args.overrideReason) die("--override-reason applies only to preset axis overrides");
+  die("--nearest, --rationale, --contract, and promotion decisions apply only to bespoke compositions");
+if (!preset && !args.rationale?.trim()) die(`bespoke composition ${JSON.stringify(args.role)} requires --rationale`);
+if (!preset && !args.contract) die(`bespoke composition ${JSON.stringify(args.role)} requires --contract JSON|@file`);
+if (!preset && args.overrideReason) die("--override-reason applies only to stock-template axis overrides");
+if (!preset && !nearest) {
+  const required = [
+    ["taskGrade", "--task-grade"], ["topology", "--topology"], ["tier", "--tier"],
+    ["deliberation", "--deliberation/--reasoning"], ["posture", "--posture"],
+  ];
+  const missing = required.filter(([field]) => args[field] === undefined).map(([, option]) => option);
+  if (missing.length)
+    die(`bespoke composition without --nearest must explicitly set: ${missing.join(", ")}`);
+}
 
 function parseContract(input) {
   const source = input.startsWith("@") ? readFileSync(input.slice(1), "utf8") : input;
@@ -112,9 +126,9 @@ if (preset) {
   const overrides = presetOverrides(payload, preset, catalog);
   payload.composition.overrides = overrides;
   if (overrides.length && !args.overrideReason?.trim())
-    die(`preset axis override requires --override-reason (changed: ${overrides.join(", ")})`);
+    die(`stock-template axis override requires --override-reason (changed: ${overrides.join(", ")})`);
   if (!overrides.length && args.overrideReason)
-    die("unchanged preset must not carry --override-reason");
+    die("unchanged stock template must not carry --override-reason");
   if (overrides.length) payload.composition.overrideReason = args.overrideReason.trim();
 }
 

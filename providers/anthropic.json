@@ -36,12 +36,12 @@
   "modelDeltas": {
     "claude-sonnet-5": { "kind": "none", "reason": "the existing unversioned Sonnet self-report does not establish an exact Sonnet 5 calibration" },
     "claude-opus-4-8": { "kind": "none", "reason": "the existing unversioned Opus self-report does not establish an exact Opus 4.8 calibration" },
-    "claude-fable-5": { "kind": "none", "reason": "temporary runtime promotion has no calibrated Gaffer delta" }
+    "claude-fable-5": { "kind": "none", "reason": "runtime-only catalog candidate has no calibrated Gaffer delta" }
   },
   "tiers": {
     "economy": { "model": "claude-sonnet-5", "efforts": ["low"], "defaultEffort": "low" },
     "standard": { "model": "claude-sonnet-5", "efforts": ["medium"], "defaultEffort": "medium" },
-    "senior": { "model": "claude-opus-4-8", "efforts": ["high", "xhigh"], "defaultEffort": "high" },
-    "frontier": { "model": "claude-opus-4-8", "efforts": ["high", "xhigh", "max"], "defaultEffort": "xhigh" }
+    "senior": { "model": "claude-opus-4-8", "efforts": ["high"], "defaultEffort": "high" },
+    "frontier": { "model": "claude-opus-4-8", "efforts": ["xhigh", "max"], "defaultEffort": "xhigh" }
   }
 }

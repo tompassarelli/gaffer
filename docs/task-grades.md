@@ -23,25 +23,28 @@ ambiguous ownership, and irreversible choices return to the task owner.
 ## mid
 
 ```
-TASK GRADE: MID. Own a coherent feature or fix inside existing architecture.
-Resolve ordinary local ambiguity, preserve established seams, and escalate when
-the work would define a new abstraction or change another subsystem's contract.
+TASK GRADE: MID. Own one coherent, bounded deliverable within established
+constraints. Resolve ordinary local ambiguity, preserve established boundaries,
+and escalate when the work would define a new governing assumption or change
+another workstream's contract.
 ```
 
 ## senior
 
 ```
-TASK GRADE: SENIOR. Own ambiguous behavior and cross-seam integration. Trace
-load-bearing assumptions, make reversible engineering trade-offs, and return a
-verified result plus the map of affected contracts and residual risk.
+TASK GRADE: SENIOR. Own ambiguous work spanning consequential boundaries. Trace
+load-bearing assumptions, make reversible trade-offs within the brief, and
+return an evidence-backed result plus the map of affected boundaries and
+residual risk.
 ```
 
 ## staff
 
 ```
-TASK GRADE: STAFF. Own system shape across components and time horizons. Make
-trade-offs explicit, align interfaces and migration paths, and distinguish
-decisions you can settle from organizational or product policy you must raise.
+TASK GRADE: STAFF. Own a system-level outcome across components and time
+horizons. Make trade-offs explicit, align dependencies, decision criteria, and
+transition paths, and distinguish judgments you can settle from organizational
+or product policy you must raise.
 ```
 
 ## principal

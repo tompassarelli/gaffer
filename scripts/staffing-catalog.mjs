@@ -49,11 +49,12 @@ export function validateStaffingCatalog(catalog) {
     canonicalRoleId(preset?.name, "staffing catalog preset name");
     if (names.has(preset.name)) throw new Error(`staffing catalog: duplicate preset name ${preset.name}`);
     names.add(preset.name);
-    for (const [field, axis] of [["taskGrade", "taskGrades"], ["tier", "semanticTiers"], ["deliberation", "deliberations"], ["topology", "topologies"]]) {
+    for (const [field, axis] of [
+      ["taskGrade", "taskGrades"], ["tier", "semanticTiers"], ["deliberation", "deliberations"],
+      ["topology", "topologies"], ["posture", "postures"],
+    ]) {
       if (!vocabulary[axis].includes(preset[field])) throw new Error(`${preset.name}: invalid ${field} ${JSON.stringify(preset[field])}`);
     }
-    if (preset.posture !== undefined && !vocabulary.postures.includes(preset.posture))
-      throw new Error(`${preset.name}: invalid posture ${JSON.stringify(preset.posture)}`);
     if (!Array.isArray(preset.capabilities) || !preset.capabilities.length ||
         preset.capabilities.some((capability) => !vocabulary.capabilities.includes(capability)) ||
         new Set(preset.capabilities).size !== preset.capabilities.length)

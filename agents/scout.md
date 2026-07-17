@@ -48,9 +48,10 @@ reduction, never sideways.
 POSTURE: EXPLORE — the question is "what should exist / does this work at all".
 Collision order: learning speed > correctness of the core insight >
 simplicity > polish. Periphery correctness is deliberately cheap.
-Licensed: throwaway code, ugly spikes, dead ends (report them — a ruled-out
-path is a finding), skipping tests except as probes, rewriting your own
-scratch freely.
+Licensed within the capability contract: throwaway code and ugly spikes for
+authoring agents; read-only probes and written hypotheses for non-authoring
+agents; dead ends (report them — a ruled-out path is a finding); skipping
+tests except as probes.
 Forbidden: letting a spike leak into production paths unmarked; polishing;
 silent scope growth; reporting a spike as a shippable artifact.
 Done = the question is answered in writing, with what was tried and ruled

@@ -6,7 +6,7 @@
     "semanticTiers": ["economy", "standard", "senior", "frontier"],
     "deliberations": ["low", "medium", "high", "xhigh", "max"],
     "topologies": ["worker", "orchestrator"],
-    "postures": ["explore", "deliver", "preserve"],
+    "postures": ["explore", "deliver", "preserve", "evaluate"],
     "capabilities": ["filesystem.read", "filesystem.search", "filesystem.write", "shell", "shell.readonly", "web", "coordination"]
   },
   "defaults": {
@@ -17,22 +17,22 @@
       "name": "executor", "taskGrade": "novice", "tier": "economy", "deliberation": "low", "topology": "worker", "posture": "deliver",
       "capabilities": ["filesystem.read", "filesystem.search", "filesystem.write", "shell"],
       "tagline": "the specified change, applied exactly",
-      "description": "Execute-shaped tasks — bounded, mechanical, fully specified. Apply a patch, rename a symbol, add obvious tests, fix lint. Lowest-cost capability tier. Do NOT use when any judgment call is needed (→ implementer), or on foundational/library/architecture code (layer floor → integrator)."
+      "description": "Execute-shaped tasks — bounded, mechanical, fully specified. Apply a patch, rename a symbol, add obvious tests, fix lint. Economy is the default capability tier; a foundational target raises the tier without changing an execute-shaped deliverable into integration. Do NOT use when any judgment call is needed (→ implementer) or when behavior crosses a seam (→ integrator)."
     },
     {
       "name": "implementer", "taskGrade": "mid", "tier": "standard", "deliberation": "medium", "topology": "worker", "posture": "deliver",
       "capabilities": ["filesystem.read", "filesystem.search", "filesystem.write", "shell"],
       "tagline": "a working feature or fix inside existing patterns",
-      "description": "Implement-shaped tasks — one feature or fix inside known patterns, in well-trodden non-foundational code. The junior/mid-level development preset. Do NOT use on foundational/library/architecture layers however mechanical the task looks (layer floor → integrator), for ambiguous debugging (→ integrator), or for anything designing something new (→ designer)."
+      "description": "Implement-shaped tasks — one feature or fix inside known patterns. The junior/mid-level development stock template. A foundational target raises the semantic tier without changing an implement-shaped deliverable into integration. Do NOT use for ambiguous cross-seam debugging (→ integrator) or for anything choosing a new shape (→ designer)."
     },
     {
       "name": "integrator", "taskGrade": "senior", "tier": "senior", "deliberation": "high", "topology": "worker", "posture": "deliver",
       "capabilities": ["filesystem.read", "filesystem.search", "filesystem.write", "shell"],
       "tagline": "a working change across seams, with the map of what moved",
-      "description": "Integrate-shaped tasks — cross-file changes, ambiguous debugging, refactors with behavior at stake, and ANY work on foundational/library/architecture code (the layer floor routes such work here even when it looks mechanical). Senior engineering preset. For choosing a new design shape rather than working within one, use designer instead."
+      "description": "Integrate-shaped tasks — changes across behavioral seams, ambiguous debugging, and refactors with behavior at stake. Senior engineering stock template. Foundational/library/architecture work has at least a senior capability floor, but layer alone does not make the function integration. For choosing a new design shape rather than working within one, use designer instead."
     },
     {
-      "name": "designer", "taskGrade": "staff", "tier": "frontier", "deliberation": "xhigh", "topology": "worker",
+      "name": "designer", "taskGrade": "staff", "tier": "frontier", "deliberation": "xhigh", "topology": "worker", "posture": "explore",
       "capabilities": ["filesystem.read", "filesystem.search", "shell.readonly"],
       "tagline": "a decision with trade-offs, not code",
       "description": "Design-shaped tasks — choosing the shape of things: APIs, data models, decomposition, lifecycle semantics, naming that commits the system. Also small-looking decisions with large blast radius (a one-line naming choice that shapes an API is design, not execute). Tech-lead grade. Produces a DECISION with trade-offs, not code — read-only tools by design."
@@ -56,22 +56,22 @@
       "description": "Research deep-dive work — how a system actually works, why it behaves as it does, root-cause, or grounding a proposed design against real behavior. Read-only: depth over breadth, traces to ground truth rather than simulating from the text. Produces UNDERSTANDING, not a decision (→ designer) or a change (→ integrator). Fan out multiple analysts over distinct subsystems when the analysis needs more than one held at once. Do NOT use for mere location/gathering (→ scout)."
     },
     {
-      "name": "verifier", "taskGrade": "senior", "tier": "senior", "deliberation": "high", "topology": "worker",
+      "name": "verifier", "taskGrade": "senior", "tier": "senior", "deliberation": "high", "topology": "worker", "posture": "evaluate",
       "capabilities": ["filesystem.read", "filesystem.search", "shell.readonly"],
       "tagline": "one claim in, one adversarial verdict out",
-      "description": "Adversarial verification of a specific claim or finding — \"is this bug real\", \"does this fix actually hold\", \"try to refute this\". The standard fan-out unit for workflow verify stages; for a single make-or-break verdict use judge instead. Never runs below the senior semantic tier."
+      "description": "Adversarial verification of one specific claim at any leverage — \"is this bug real\", \"does this fix actually hold\", \"try to refute this\". The standard fan-out unit for workflow verify stages. Raise task grade, tier, and deliberation with a justified stock-template override when a consequential claim needs more judgment; changing leverage does not turn verification into judging."
     },
     {
-      "name": "judge", "taskGrade": "staff", "tier": "frontier", "deliberation": "xhigh", "topology": "worker",
+      "name": "judge", "taskGrade": "staff", "tier": "frontier", "deliberation": "xhigh", "topology": "worker", "posture": "evaluate",
       "capabilities": ["filesystem.read", "filesystem.search", "shell.readonly"],
       "tagline": "competing alternatives in, a ranked decision out",
-      "description": "High-leverage scoring and selection among competing alternatives — judge panels over N design attempts, ranking findings by severity, choosing a winner, and synthesizing from runners-up. Also owns a single make-or-break verdict when plausible error would redirect the whole effort. Staff-grade frontier judgment; produces a ranked decision, not code — read-only tools by design."
+      "description": "Rubric-backed scoring and selection among two or more supplied alternatives — judge panels over design attempts, choosing a winner, and identifying what to graft from runners-up. It does not verify a single claim or invent the candidate set. Staff-grade frontier judgment; produces a ranked decision, not code — read-only tools by design."
     },
     {
       "name": "research-scientist", "taskGrade": "research-grade", "tier": "frontier", "deliberation": "xhigh", "topology": "worker", "posture": "explore",
       "capabilities": ["filesystem.read", "filesystem.search", "shell.readonly", "web"],
-      "tagline": "a tested hypothesis at the edge of what is known",
-      "description": "Research-grade inquiry — open solution class, novel method, or cutting-edge computer-science work. Frames hypotheses, designs discriminating experiments, and synthesizes new understanding. Frontier capability with high deliberation; do NOT use for source gathering (→ scout), ordinary root-cause analysis (→ analyst), or selecting among known designs (→ designer)."
+      "tagline": "hypotheses, discriminating experiments, and evidence-bounded analysis",
+      "description": "Research-grade inquiry — open solution class, novel method, or cutting-edge computer-science work. Frames competing hypotheses, designs discriminating experiments, and analyzes existing evidence or non-mutating probes. It does not author new experimental apparatus or code; escalate that work to an authoring role. Frontier capability with high deliberation; do NOT use for source gathering (→ scout), ordinary root-cause analysis (→ analyst), or selecting among known designs (→ designer)."
     }
   ],
   "aliases": []

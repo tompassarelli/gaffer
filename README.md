@@ -2,59 +2,62 @@
 
 *Every squad needs a gaffer.*
 
-Orchestrating agentic workflows is complicated. Which model(s), at what
-effort(s)? Preset subagents or purpose-built ones? How should each worker
-be prompted, and what should each report back? **Let the gaffer figure it
-out.**
+Orchestrating agentic workflows is complicated. Which models, at what
+deliberation? Template workers or purpose-built compositions? How should each
+worker be prompted, and what should each report back? **Let the gaffer figure
+it out.**
 
-A provider-neutral routing doctrine with a Claude Code plugin adapter. It
-routes delegated work by semantic tier, then resolves that tier to the right
-provider, model, and reasoning/effort — whether it's a single subagent or a
-multi-stage workflow.
+A provider-neutral routing library with two first-class delivery surfaces: a
+Claude Code plugin adapter and a [North multi-provider execution
+adapter](docs/adapters/north.md). Gaffer chooses the semantic route; the
+adapter resolves it to the provider, model, and reasoning/effort — whether
+it's a single worker or a multi-stage workflow.
 
 Install it and your sessions gain:
 
 1. **A routing doctrine** (injected at session start): classify each
    delegated task by *shape* — execute / implement / integrate / design /
-   scout / analyze / research-science — and route it on one continuous
-   semantic ramp. Function, task grade, domain requirements, topology, model
-   capability, and deliberation stay independent, governed by
-   two laws most setups get wrong:
+   direct / scout / analyze / verify / judge / research-science — and route it
+   on one continuous semantic ramp. Function, task grade, domain requirements,
+   topology, model capability, and deliberation stay independent, governed by
+   three routing laws:
    - **Layer floor** — foundational / library / architecture code never
      goes to the cheap tier, however mechanical the task looks.
-   - **Shingle law** — each model has ~2 useful effort rungs, and a model's
-     top rung is dominated by the next model's bottom rung. Harder ⇒ climb
-     the model, don't crank effort against a low ceiling.
+   - **Shingle law** — each semantic step exposes only useful
+     model×deliberation rungs; the same concrete rung never masquerades as two
+     tiers, and dominated overlaps are omitted. Harder ⇒ climb the semantic
+     ramp, not effort alone against a low route.
    - **Quality floor** — resource pressure can trim optional breadth, polish,
      and retries, but never silently route consequential work below the
      minimum responsible capability.
-2. **A pre-tuned squad** — agents with a semantic route, exact adapter model,
-   deliberation, and capability surface pinned, plus a composed role payload:
+2. **A template library** — agents with a semantic route, exact adapter
+   model, deliberation, and capability surface pinned, plus a composed role
+   payload:
 
    | Agent | Semantic route | Shape it plays |
    |---|---|---|
    | `gaffer:executor` | economy / low | bounded mechanical changes |
    | `gaffer:implementer` | standard / medium | one feature/fix inside known patterns |
-   | `gaffer:integrator` | senior / high | cross-file work, ambiguous debugging, foundational layers |
+   | `gaffer:integrator` | senior / high | cross-seam work, ambiguous debugging, behavior-at-stake refactors |
    | `gaffer:designer` | frontier / xhigh | choosing shapes: APIs, data models, decomposition (decision-only, read-only tools) |
    | `gaffer:director` | frontier / xhigh | decompose, independently staff, verify, and reconcile multi-agent work |
    | `gaffer:scout` | economy / low | locate, map, gather sources (breadth, fan-out) |
    | `gaffer:analyst` | senior / high | deep-dive: how/why it works, root-cause, design-grounding (read-only) |
-   | `gaffer:verifier` | senior / high | adversarial verification of one claim (workflow verify stages, fan-out) |
-   | `gaffer:judge` | frontier / xhigh | high-leverage scoring, synthesis, and make-or-break verdicts |
-   | `gaffer:research-scientist` | frontier / xhigh | novel hypotheses, experiments, and new knowledge |
+   | `gaffer:verifier` | senior / high | adversarial verification of one claim at any leverage (override the axes when warranted) |
+   | `gaffer:judge` | frontier / xhigh | rubric-backed ranking of multiple supplied alternatives |
+   | `gaffer:research-scientist` | frontier / xhigh | hypothesis and experiment design plus read-only evidence analysis |
 
    Exact versioned model pins are generated from the dated provider catalogs;
    see [`docs/provider-matrix.md`](docs/provider-matrix.md).
 
-   The squad also staffs **workflow stages** (including ultracode-authored
+   The template library also staffs **workflow stages** (including ultracode-authored
    workflows): `agent(prompt, {agentType: 'gaffer:verifier'})` — the
    doctrine tells the session which member plays which stage, and stops
    workers from silently inheriting a top-tier session's model.
 
 3. **Skills**:
-   - `compose` — assemble a bespoke composition for spawns the presets don't
-     cover (Workflow calls, unusual pairings).
+   - `compose` — assemble a bespoke (custom) composition for spawns the
+     templates do not cover (Workflow calls, unusual pairings).
    - `elicit` — calibrate a payload for a model gaffer doesn't know yet,
      using the method below.
 
@@ -82,14 +85,25 @@ Full rationale: [`docs/method.md`](docs/method.md).
 
 ## Install
 
+### Claude Code plugin
+
 ```
 /plugin marketplace add tompassarelli/gaffer
 /plugin install gaffer@gaffer
 ```
 
 Start a new session — you'll see `GAFFER ACTIVE` in the session context.
-Then delegate normally: the session routes by shape, or spawn squad members
-directly via the Agent tool (`subagent_type: "gaffer:implementer"`).
+Then delegate normally: the session routes by shape, or spawn a template
+worker directly via the Agent tool (`subagent_type: "gaffer:implementer"`).
+
+### North multi-provider harness
+
+North consumes Gaffer's `staffing/catalog.json` and `providers/*.json` directly,
+accepts the portable eight-field routing request, then selects an authenticated
+subscription account and concrete provider runtime. The generated
+[North adapter contract](docs/adapters/north.md) documents the spawn surface
+and fail-closed capability mapping; install and bootstrap North itself rather
+than applying the Claude plugin commands above.
 
 ## Architecture note
 
@@ -100,23 +114,40 @@ The axes stay sharp at the source layer; the script does the flattening the
 plugin format requires. Edit blocks, rebuild (`node
 scripts/build-agents.mjs`), never hand-edit agent files (`--check` verifies
 freshness).
-Preset capabilities are provider-neutral catalog labels; the generator maps
-them to Claude tools, while other harnesses map the same labels through their
-own adapters.
+Template capabilities are provider-neutral catalog labels; the generator
+maps them to Claude tools, while other harnesses map the same labels through
+their own adapters.
 
 Provider resolution lives in `providers/*.json`; `docs/routing.md` defines the
 portable request and fallback contract. The concrete Claude pins in generated
 agents are
 compiled compatibility output, not the shared vocabulary.
 
-Each preset is a transparent starting composition, not an identity constraint:
+Terminology and selection are deliberately simple: a **template** is a
+reusable, named starting composition; a **bespoke** (custom) composition is an
+explicit one-off contract. Start with a template. Use it unchanged when its
+deliverable and authority fit; use a justified override when task grade,
+domains, tier, reasoning, or posture change but the fixed topology/capability
+boundary still fits. Use a bespoke composition when responsibility,
+topology/authority, done criteria, or report shape differs. The v2 machine
+schema retains `presets`, `kind: "preset"`, and `nearestPreset` for
+compatibility.
+
+Each template is a transparent starting composition, not an identity
+constraint:
 `role` names the deliverable, `taskGrade` ranges from `novice` through
 `research-grade`, domain requirements state expertise/context the brief or
 adapter must supply (metadata alone loads nothing), topology grants
 coordination authority, semantic tier sets a model capability floor, and
-deliberation sets reasoning depth. Preset overrides record exactly which axes
-changed and why. Bespoke compositions carry a complete authority/deliverable/
-done contract and an explicit promotion decision.
+deliberation sets reasoning depth. Template overrides record exactly
+which axes changed and why. Bespoke compositions carry a complete
+authority/deliverable/done contract and an explicit promotion decision.
+
+The axes are conceptually independent, but the shipped templates bind
+topology to a fixed, enforceable capability set: director carries
+orchestrator/coordination authority and the other stock templates carry worker
+authority. A topology override never manufactures capabilities; use a bespoke
+composition for a different pairing.
 
 Gaffer also separates task economics from provider state. Leverage estimates the
 downstream value of better judgment, and dependency shape argues for one worker,
@@ -135,18 +166,30 @@ side effects; lowering capability or verification is explicit degradation.
 - Different top tier available? The semantic ramp extends naturally — run
   `elicit` to calibrate a delta for that exact concrete model, or record an
   explicit `none`; never inherit a neighboring model's delta.
-- The squad is a **standard library, not a roster limit**: bespoke
-  purpose-built agents are first-class — the laws still bind them, the
+- The templates are a **standard library, not a roster limit**: bespoke
+  compositions are first-class — the laws still bind them, the
   blocks are borrowable parts, and recurring bespoke patterns are surfaced for
   review; promotion requires an explicit library change. Full contract:
   [`docs/extending.md`](docs/extending.md).
-- Preset capabilities are enforceable authority. Non-authoring presets request
+- Template capabilities are enforceable authority. Non-authoring templates
+  request
   `shell.readonly`; an adapter must provide a hard write-denying sandbox or
   withhold shell access. Generated Claude plugin agents take the latter path
   because plugin frontmatter cannot encode a hard sandbox.
 
 ## Related work
 
+- [Anthropic's multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)
+  and [OpenAI Agents SDK orchestration](https://openai.github.io/openai-agents-python/multi_agent/)
+  document orchestrator/manager-worker patterns, specialization, parallel
+  independent work, delegation contracts, and the added cost of coordination.
+  [LangChain](https://docs.langchain.com/oss/python/langchain/multi-agent),
+  [AutoGen](https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/tutorial/teams.html),
+  and [Google ADK](https://adk.dev/workflows/patterns/) likewise emphasize
+  choosing multi-agent patterns only when coordination pays. Gaffer borrows
+  those patterns; its own layer is the independent routing axes, enforceable
+  template/bespoke contracts, and the semantic-tier/deliberation boundary with
+  runtime subscription allocation.
 - [tzachbon/claude-model-router-hook](https://github.com/tzachbon/claude-model-router-hook) —
   same delivery mechanism (SessionStart-injected routing rules), keyword-based
   three-model tiers. Gaffer adds the shape taxonomy, effort as a first-class
@@ -162,9 +205,9 @@ side effects; lowering capability or verification is explicit degradation.
   behavioral calibration as a concept. Gaffer's contribution is the
   mechanism: elicit a contamination-guarded self-report from the model,
   subtract what it already does natively, compile only the residue into the
-  agent's system prompt. As far as we could find, pinning BOTH model and
-  effort per agent, and the self-report subtraction method, have no prior
-  art.
+  agent's system prompt. We did not find model-and-effort pinning per agent or
+  this subtraction method in the systems cited above; that is a scoped search
+  result, not a claim of exhaustive novelty.
 
 ## License
 

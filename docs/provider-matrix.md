@@ -28,12 +28,12 @@ delta lookup; unversioned calibration is never inherited.
 |---|---|---|---|---|---|---|
 | anthropic | economy | `claude-sonnet-5` | `sonnet` | low | low | none — the existing unversioned Sonnet self-report does not establish an exact Sonnet 5 calibration |
 | anthropic | standard | `claude-sonnet-5` | `sonnet` | medium | medium | none — the existing unversioned Sonnet self-report does not establish an exact Sonnet 5 calibration |
-| anthropic | senior | `claude-opus-4-8` | `opus` | high, xhigh | high | none — the existing unversioned Opus self-report does not establish an exact Opus 4.8 calibration |
-| anthropic | frontier | `claude-opus-4-8` | `opus` | high, xhigh, max | xhigh | none — the existing unversioned Opus self-report does not establish an exact Opus 4.8 calibration |
+| anthropic | senior | `claude-opus-4-8` | `opus` | high | high | none — the existing unversioned Opus self-report does not establish an exact Opus 4.8 calibration |
+| anthropic | frontier | `claude-opus-4-8` | `opus` | xhigh, max | xhigh | none — the existing unversioned Opus self-report does not establish an exact Opus 4.8 calibration |
 | openai | economy | `gpt-5.6-luna` | `luna` | low | low | none — no calibrated Gaffer delta has been authored for this model |
 | openai | standard | `gpt-5.6-terra` | `terra` | low, medium | medium | none — no calibrated Gaffer delta has been authored for this model |
 | openai | senior | `gpt-5.6-sol` | `sol` | medium, high | high | none — no calibrated Gaffer delta has been authored for this model |
-| openai | frontier | `gpt-5.6-sol` | `sol` | high, xhigh, max | xhigh | none — no calibrated Gaffer delta has been authored for this model |
+| openai | frontier | `gpt-5.6-sol` | `sol` | xhigh, max | xhigh | none — no calibrated Gaffer delta has been authored for this model |
 
 ## Runtime-only exact-model delta entries
 
@@ -42,4 +42,4 @@ being a semantic tier default. Exact lookup prevents calibration inheritance.
 
 | Provider | Exact model | Aliases | Model delta |
 |---|---|---|---|
-| anthropic | `claude-fable-5` | `fable` | none — temporary runtime promotion has no calibrated Gaffer delta |
+| anthropic | `claude-fable-5` | `fable` | none — runtime-only catalog candidate has no calibrated Gaffer delta |

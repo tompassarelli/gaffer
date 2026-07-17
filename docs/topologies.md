@@ -1,7 +1,12 @@
 # Topologies — coordination authority
 
-Topology is orthogonal to role, grade, tier, reasoning, and posture. It says
-whether this agent owns one terminal piece or owns decomposition and reduction.
+Topology is conceptually independent of role, grade, tier, reasoning, and
+posture. It says whether an agent owns one terminal piece or owns decomposition
+and reduction. Gaffer's current stock templates deliberately ship fixed,
+enforceable topology/capability pairings: director is an orchestrator with
+coordination authority; every other stock template is a worker without it.
+Use a bespoke composition when a different pairing is required rather than
+assuming that a topology override manufactures capabilities.
 
 ## worker
 

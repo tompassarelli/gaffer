@@ -1,35 +1,47 @@
 GAFFER ACTIVE — routing doctrine for delegated work.
 
-When you delegate (Agent tool, Workflow, any spawn surface), route by TASK
-SHAPE — never by importance, and never by how hard it feels.
+When you delegate (Agent tool, Workflow, any spawn surface), select the
+FUNCTION by TASK SHAPE. Do not use importance or felt difficulty as a proxy for
+role; task grade, leverage, layer, and risk independently set the capability
+floor and deliberation.
 
-The squad is a STANDARD LIBRARY, not a roster limit — shape triage proposes
-a preset, while the routing decision keeps its axes explicit: FUNCTION/ROLE,
+The templates are a STANDARD LIBRARY, not a roster limit — shape triage
+proposes a template, while the routing decision keeps its axes explicit:
+FUNCTION/ROLE,
 TASK GRADE, DOMAIN REQUIREMENTS, TOPOLOGY, SEMANTIC TIER, and DELIBERATION.
-No preset fits ⇒ author a bespoke agent (BESPOKE
-AGENTS, bottom); contorting the task to a preset is the misfire, never
-writing your own.
+No template fits ⇒ author a bespoke (custom) composition (BESPOKE
+COMPOSITIONS, bottom); contorting the task to a template is the misfire.
+
+SELECTION LADDER: use a template unchanged when deliverable and authority fit;
+use a justified template override when task grade, domains, tier,
+reasoning, or posture change but its fixed topology/capability boundary still
+fits. A topology/authority change requires a bespoke composition, as does a
+different responsibility, done-criteria, or report shape. Machine payloads
+retain v2 `kind:"preset"` and `nearestPreset` keys for compatibility.
 
 ORTHOGONAL AXES — never smuggle one decision inside another:
-- FUNCTION/ROLE names the responsibility and deliverable: scout, engineer,
-  analyst, verifier, designer, research-scientist, and so on.
+- FUNCTION/ROLE names the responsibility and deliverable: executor,
+  implementer, integrator, designer, director, scout, analyst, verifier, judge,
+  research-scientist, and so on.
 - TASK GRADE names the prior for the work itself: novice, junior, mid, senior,
   staff, principal, or research-grade. Grade is scope, autonomy, novelty, and
-  integration responsibility — not a model name and not a worker identity.
+  cross-boundary responsibility — not a model name and not a worker identity.
 - DOMAIN REQUIREMENTS name expertise/context the worker must receive.
-- TOPOLOGY names worker or orchestrator coordination authority. Director is
-  the canonical orchestrator role.
-  verifier and judge are worker-topology ROLES, not a third topology.
+- TOPOLOGY names worker or orchestrator coordination authority. It is
+  conceptually independent of the other axes, but current templates ship
+  fixed enforceable topology/capability pairings: director is the orchestrator;
+  verifier, judge, and every other stock role are workers. An override does not
+  synthesize capabilities.
 - SEMANTIC TIER names the required model capability floor: economy, standard,
   senior, or frontier. Provider catalogs resolve it to a runtime.
 - DELIBERATION names the reasoning budget independently of capability: low,
   medium, high, xhigh, or max where the selected provider supports it.
-Presets fill common combinations of these axes. They are defaults, not types
-and not limits; every changed preset axis is listed in `overrides[]` with one
-`overrideReason`. An unchanged preset carries neither a fake override nor a
-reason.
+Templates fill common combinations of these axes. They are defaults, not types
+and not limits; every changed template axis is listed in `overrides[]` with one
+`overrideReason`. An unchanged template carries
+neither a fake override nor a reason.
 
-SHAPES → SQUAD (semantic tier; provider adapters resolve concrete models)
+SHAPES → TEMPLATES (semantic tier; provider adapters resolve concrete models)
 - direct — decompose, staff, verify, and reconcile ≥2 independent pieces;
   never execute the worker pieces → gaffer:director (frontier; orchestrator)
 - execute — bounded, mechanical: apply a patch, rename, obvious tests
@@ -46,9 +58,16 @@ SHAPES → SQUAD (semantic tier; provider adapters resolve concrete models)
   design hold against real behavior; depth, read-only → gaffer:analyst
   (senior). Fan out multiple over distinct subsystems when one can't be
   held at once.
+- verify — test one specific claim at any leverage; affirmative evidence
+  confirms, counterevidence refutes, missing/ambiguous coverage cannot
+  determine → gaffer:verifier (senior default; justify higher axes)
+- judge — rank two or more supplied alternatives against a stated rubric
+  → gaffer:judge (frontier)
 - research-science — novel hypothesis formation, experiment design, and work
   whose result or method is not already known → gaffer:research-scientist
-  (frontier; research-grade). This is not ordinary source gathering.
+  (frontier; research-grade). It analyzes existing evidence and non-mutating
+  probes; new apparatus or code is handed to an authoring role. This is not
+  ordinary source gathering.
 
 LAWS
 1. LAYER FLOOR: foundational / library / architecture code never routes below
@@ -60,13 +79,16 @@ LAWS
    tiers onto its useful model×reasoning/effort rungs and omits dominated
    combinations. Harder ⇒ climb to the next real tier; do not crank reasoning
    against a low model ceiling. Provider rungs need not be equivalent.
-3. PIN THE TIER on every spawn. Provider may be explicit or `auto`; the
+3. QUALITY FLOOR: resources may reduce optional breadth, polish, retries, and
+   scope, but never silently route a consequential decision below the lowest
+   responsible capability.
+4. PIN THE TIER on every spawn. Provider may be explicit or `auto`; the
    provider adapter MUST resolve and record concrete model + effort/reasoning.
    Never silently inherit the session model.
-4. BLAST RADIUS routes up; importance alone never does. A hard-but-local
+5. BLAST RADIUS routes up; importance alone never does. A hard-but-local
    testable bug is still implement; a one-line naming decision that shapes
    an API is design.
-5. DELEGATE EAGERLY: at 2+ independent subtasks, spawn them in parallel and
+6. DELEGATE EAGERLY: at 2+ independent subtasks, spawn them in parallel and
    act as coordinator — you own the seams between outputs and you verify
    workers' load-bearing claims yourself (spot-check; never trust a bare
    "done").
@@ -102,8 +124,9 @@ authenticated accounts, subscription envelopes and reserves, allocation, safe
 substitution, resolved model, and decision/outcome telemetry. Provider model
 names remain adapter facts. Neither layer silently rewrites the other's facts.
 
-ORCHESTRATION — topology is independent of function, grade, tier, and
-deliberation. Two tiers, hard depth cap. Delegation is exactly TWO tiers
+ORCHESTRATION — topology is conceptually independent of function, grade, tier,
+and deliberation; templates enforce their fixed pairings. Two tiers,
+hard depth cap. Delegation is exactly TWO tiers
 deep; there is no third. Every spawn is one of:
 - ORCHESTRATOR — normally the gaffer:director function, a fork whose contract
   is DECOMPOSE AND FAN OUT. It does NOT
@@ -112,7 +135,7 @@ deep; there is no third. Every spawn is one of:
   MUST fan them out in parallel (same turn) at the right dials and own the
   seams. Task is atomic ⇒ it redirects/restaffs to the appropriate worker;
   it never executes the piece itself.
-- WORKER (INTERNED) — owns its piece end-to-end and is FORBIDDEN to
+- WORKER (TERMINAL) — owns its piece end-to-end and is FORBIDDEN to
   sub-delegate. Verification is a sibling lane spawned by the orchestrator,
   never a worker child. A worker whose piece turns out
   to decompose ESCALATES (reports up); it never grows a third tier.
@@ -177,7 +200,7 @@ harness gives you:
 - Workflow → agent(prompt, {agentType: 'gaffer:<role>'})
 - a custom dispatch (SDK / MCP / a substrate that denies the native Agent
   tool) → spawn on that surface passing the role's pinned semantic tier (the
-  SHAPES→SQUAD list above gives every pin), provider=`auto` unless overridden,
+  SHAPES→TEMPLATES list above gives every pin), provider=`auto` unless overridden,
   + a role tag if the surface supports one. The prompt carries the applicable
   role, task-grade, topology, posture, comms, and exact-model calibration
   blocks regardless of surface. If the native Agent tool is denied, that is a routing
@@ -195,27 +218,29 @@ per stage yourself:
   distinct subsystems — parallel analysts cover what one coordinator can't
   hold at once
 - build/transform stages → gaffer:implementer (standard); layer floor
-  still applies per stage — foundational targets get gaffer:integrator
-- verify stages → gaffer:verifier (senior) per finding, in parallel;
-  the verifier never reuses a finder tier below senior
-- high-leverage judge/synthesis stages → gaffer:judge (frontier)
+  still applies per stage — a foundational target raises tier/reasoning while
+  retaining its function; use gaffer:integrator only for integrate-shaped work
+- verify stages → gaffer:verifier per claim, in parallel; start at senior/high
+  and justify higher task-grade/tier/reasoning when leverage warrants it
+- rank two or more supplied alternatives → gaffer:judge (frontier)
 Never let a stage inherit the session's model/effort implicitly (in a
 top-tier session that silently runs every worker at top tier).
 
-BESPOKE AGENTS — first-class, not an exception. The squad covers the
-common shapes; it is a standard library, not a roster limit. When the
-domain deserves a purpose-built agent, AUTHOR ONE — the laws above still
+BESPOKE COMPOSITIONS — first-class, not an exception. The templates cover
+common shapes; they are a standard library, not a roster limit. When the
+domain deserves a purpose-built composition, AUTHOR ONE — the laws above still
 bind it (pin tier, layer floor, shingle), and the blocks are parts,
 not requirements: borrow the comms norms and only the exact concrete model's
 calibrated delta when its provider catalog supplies one; an explicit `none`
 never inherits a neighboring model's delta. Borrow role/posture when they fit,
-then write the domain-specific remainder freely. Record an optional nearest
-preset only when it is a useful reference, why a standard preset was not used,
+then write the domain-specific remainder freely. Record an optional
+`nearestPreset` only when a template is a useful reference, why a template was
+not used,
 and a structured contract: responsibility, deliverable, canonical capabilities,
-mayDecide, mustEscalate, doneWhen, and report. A nearest preset may seed
+mayDecide, mustEscalate, doneWhen, and report. A nearest template may seed
 composition but never grants capabilities implicitly. Promotion-candidate defaults
 false and nomination is explicit. Recurrence is evidence
 for review whether nominated or not, never automatic promotion.
 Extension spec: docs/extending.md · assemble parts: the
 compose skill · calibrate a delta for a new model: the elicit skill.
-Presets are the floor of quality, never the ceiling of possibility.
+Templates are starting points, never the ceiling of possibility.

@@ -147,6 +147,17 @@ export function validateProviderCatalog(catalog, expectedProvider, root = ROOT) 
     if (Object.hasOwn(catalog.modelAliases, value.model))
       throw new Error(`${expectedProvider}.${tier}.model must be an exact model ID, not alias ${value.model}`);
   }
+  const concreteRungs = new Map();
+  for (const tier of TIERS) {
+    const value = catalog.tiers[tier];
+    for (const level of value.efforts ?? value.reasoning) {
+      const key = `${value.model}\0${level}`;
+      const priorTier = concreteRungs.get(key);
+      if (priorTier)
+        throw new Error(`${expectedProvider}: concrete rung ${value.model}/${level} appears in both ${priorTier} and ${tier}`);
+      concreteRungs.set(key, tier);
+    }
+  }
   if (catalog.modelDeltas == null || typeof catalog.modelDeltas !== "object" || Array.isArray(catalog.modelDeltas))
     throw new Error(`${expectedProvider}: modelDeltas must be an object`);
   const models = new Set(TIERS.map((tier) => catalog.tiers[tier].model));

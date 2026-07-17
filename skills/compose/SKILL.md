@@ -1,13 +1,18 @@
 ---
 name: compose
-description: Assemble a provider-neutral bespoke composition across independent role, task-grade, domain, topology, posture, semantic-tier, deliberation, comms, and model-delta axes when no preset fits.
+description: Assemble a provider-neutral bespoke (custom) composition across independent role, task-grade, domain, topology, posture, semantic-tier, deliberation, comms, and model-delta axes when no template fits.
 ---
 
-# Compose a bespoke composition
+# Compose a bespoke (custom) composition
 
-The preset agents cover the common cells. For anything else, assemble the
-payload by hand from this plugin's blocks and paste it into the spawn
-prompt (or Workflow `agent()` prompt).
+Templates cover the common cells. Use one unchanged when deliverable and
+authority fit; use a justified template override when task grade,
+domains, tier, reasoning, or posture change but its fixed topology/capability
+boundary still fits. A topology/authority change requires a bespoke
+composition, as does a different responsibility, done-criteria, or report
+shape. Machine payloads retain v2 `kind: "preset"` and `nearestPreset` keys.
+For a bespoke composition, assemble the payload from this plugin's blocks and
+paste it into the spawn prompt (or Workflow `agent()` prompt).
 
 ## Procedure
 
@@ -17,15 +22,28 @@ prompt (or Workflow `agent()` prompt).
      research-scientist.
    - `taskGrade` — novice, junior, mid, senior, staff, principal, or
      research-grade.
-   - Domain requirements — expertise and context the brief must provide.
+   - Domain requirements — expertise, context, and external-access
+     prerequisites the brief or runtime must actually provide. A requirement
+     records a gate; it never grants access by itself.
    - Topology — worker or orchestrator (coordination authority); verifier and
-     judge are worker-topology roles, never a topology; never inferred from grade.
+     judge are worker-topology roles, never a topology; never inferred from
+     grade. Stock templates carry fixed topology/capability pairings, so use a
+     bespoke composition rather than assuming an override creates authority.
    - Semantic tier — economy, standard, senior, or frontier capability floor.
    - Deliberation — low, medium, high, xhigh, or max reasoning budget where
      supported by the selected provider tier.
    Done: each axis is stated explicitly; no role name doubles as a grade,
    model, or manager permission.
-2. **Pick the prompt blocks** (all under this skill's plugin root):
+2. **Audit authority and access before buying a model turn.** List every
+   side effect required by the deliverable. Each must fit the contract's
+   canonical capabilities. Name every required external system and operation
+   in `domainRequirements`, together with the authenticated adapter, CLI, or
+   context that will satisfy it. If the harness cannot prove that access at
+   admission, split to an appropriately authorized composition or stop
+   preflight; never ask a read-only worker to improvise a write.
+   Done: every required side effect has both authority and an available
+   execution surface; unmet access is a preflight result, not a model task.
+3. **Pick the prompt blocks** (all under this skill's plugin root):
    - Role — `docs/roles.md`: executor · implementer · integrator ·
      designer · director · scout · analyst · verifier · judge · research-scientist. Sets authority,
      deliverable, report format, redirects.
@@ -33,7 +51,7 @@ prompt (or Workflow `agent()` prompt).
      the work-contract prior without impersonating a model tier.
    - Topology — `docs/topologies.md`: worker · orchestrator. Sets spawn and
      reduction authority without contaminating posture.
-   - Posture — `docs/postures.md`: explore · deliver · preserve. Sets the
+   - Posture — `docs/postures.md`: explore · deliver · preserve · evaluate. Sets the
      collision priority order (what yields when values conflict).
    - Comms — `docs/comms.md` (universal block): output norms every report
      follows regardless of role.
@@ -42,24 +60,28 @@ prompt (or Workflow `agent()` prompt).
      is explicit, not permission to borrow a different provider's delta.
    Done: role, grade, topology, posture, and comms paths are named; the exact
    concrete model's delta path is named or explicitly `none` for this adapter.
-3. **Pin provider-neutral routing**: semantic tier and deliberation are
+4. **Pin provider-neutral routing**: semantic tier and deliberation are
    explicit. Provider/account selection is a separate harness-envelope concern;
    North defaults that envelope to `provider: auto`. The selected adapter
    resolves the concrete model and effort/reasoning. Remember the layer floor:
    foundational/library/architecture work never runs below senior tier.
    Done: tier + deliberation are literal Gaffer request values; provider is a
    literal North envelope value (normally `auto`), never a ninth Gaffer field.
-4. **Paste** the blocks above the task text. Trim the delta before trimming
+5. **Paste** the blocks above the task text. Trim the delta before trimming
    role/posture.
    Done: `wc -l` of the assembled payload ≤ 60, every block above the task.
-5. If no block fits, write a bespoke role contract and record: an optional
-   nearest preset when useful, why a standard preset was not used,
+6. If no block fits, write a bespoke role contract and record: an optional
+   `nearestPreset` stock-template reference when useful, why a stock template
+   was not used,
    responsibility, deliverable, canonical `capabilities[]`, `mayDecide[]`, `mustEscalate[]`,
    `doneWhen[]`, report contract, and a stable composition name. Record either
    `promotionCandidate` status (false by default; `--promotion-candidate`
    nominates explicitly);
    recurrence is logged evidence and never auto-promotes the role.
-   Done: the bespoke reason and contract are present, with promotion status.
+   Without `nearestPreset`, explicitly set task grade, topology, tier,
+   deliberation, and posture; domain requirements may be an explicit empty
+   list. Done: the bespoke reason and contract are present, with promotion
+   status and no implicit routing defaults.
 
 ## Workflow example
 
@@ -69,6 +91,7 @@ const prompt = roleBlock + gradeBlock + topologyBlock + postureBlock +
 await spawn(`${prompt}\n\nTASK: ${task}`, {
   provider: 'auto', tier: 'standard', reasoning: 'medium',
   role: 'implementer', taskGrade: 'mid', topology: 'worker',
+  posture: 'deliver',
   domainRequirements: ['repository conventions'],
   composition: {kind: 'preset', id: 'implementer', overrides: []}
 })

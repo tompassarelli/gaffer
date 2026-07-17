@@ -56,10 +56,10 @@ self-report, so the delta lands as an extension of its self-understanding,
 not a rival doctrine. Structure: a short trust-the-canon preamble, then
 numbered items grouped by phase, each demanding a written one-line answer.
 Target ≤ 50 lines. Save to `docs/deltas/<model>.md` and bake it into any
-agent presets that run on that model.
+stock-template agents that run on that model.
 
 Done: `wc -l docs/deltas/<model>.md` ≤ 50, every kept item phrased in the
-model's own vocabulary, and every preset that runs on that model rebuilt to
+model's own vocabulary, and every stock template that runs on that model rebuilt to
 carry it.
 
 ## Honest limits
