@@ -20,6 +20,14 @@ const tiers = staffing.vocabulary.semanticTiers;
 const grades = staffing.vocabulary.taskGrades;
 const staffingSchema = JSON.parse(readFileSync(resolve(root, "staffing/catalog.schema.json"), "utf8"));
 const routingSchema = JSON.parse(readFileSync(resolve(root, "contracts/routing-request.schema.json"), "utf8"));
+const staffingKeys = ["$schema", "version", "vocabulary", "defaults", "presets", "aliases"];
+const staffingDefinitionKeys = ["uniqueStrings", "capabilities", "preset", "alias", "roleId"];
+if (staffing.version !== 2 || staffingSchema.properties?.version?.const !== 2 ||
+    JSON.stringify(Object.keys(staffing).sort()) !== JSON.stringify([...staffingKeys].sort()) ||
+    JSON.stringify([...staffingSchema.required].sort()) !== JSON.stringify(staffingKeys.filter((key) => key !== "$schema").sort()) ||
+    JSON.stringify(Object.keys(staffingSchema.properties ?? {}).sort()) !== JSON.stringify([...staffingKeys].sort()) ||
+    JSON.stringify(Object.keys(staffingSchema.$defs ?? {}).sort()) !== JSON.stringify([...staffingDefinitionKeys].sort()))
+  throw new Error("canonical staffing catalog/schema must use the exact v2 preset shape");
 if (JSON.stringify([...routingSchema.required].sort()) !== JSON.stringify([...ROUTING_FIELDS].sort()))
   throw new Error("canonical routing schema must require exactly the eight Gaffer fields");
 
@@ -83,28 +91,29 @@ for (const schema of capabilitySchemas) {
       throw new Error(`capability JSON Schema parity probe failed for ${JSON.stringify(value)}`);
   }
 }
-for (const recipe of staffing.recipes)
+for (const preset of staffing.presets)
   for (const schema of capabilitySchemas)
-    if (!capabilitySchemaAccepts(schema, recipe.capabilities))
-      throw new Error(`${recipe.name}: canonical capabilities fail a JSON Schema capability fragment`);
+    if (!capabilitySchemaAccepts(schema, preset.capabilities))
+      throw new Error(`${preset.name}: canonical capabilities fail a JSON Schema capability fragment`);
 // Negative schema-level probes exercise the validators used by the generators;
 // parsing a JSON Schema file alone is not validation.
 for (const invalid of [
+  { ...staffing, version: 1 },
   { ...staffing, defaults: { ...staffing.defaults, topology: "manager" } },
-  { ...staffing, recipes: [{ ...staffing.recipes[0], tier: "cheap" }, ...staffing.recipes.slice(1)] },
-  { ...staffing, recipes: [{ ...staffing.recipes[0], name: { bad: true } }, ...staffing.recipes.slice(1)] },
-  { ...staffing, recipes: [{ ...staffing.recipes[0], capabilities: ["filesystem.telepathy"] }, ...staffing.recipes.slice(1)] },
-  { ...staffing, recipes: [{ ...staffing.recipes[0], capabilities: [] }, ...staffing.recipes.slice(1)] },
-  { ...staffing, recipes: [{ ...staffing.recipes[0], capabilities: ["filesystem.read", "filesystem.read"] }, ...staffing.recipes.slice(1)] },
-  { ...staffing, recipes: [{ ...staffing.recipes[0], capabilities: [42] }, ...staffing.recipes.slice(1)] },
-  { ...staffing, recipes: staffing.recipes.map((recipe) => recipe.name === "designer"
-    ? { ...recipe, topology: "orchestrator" } : recipe) },
-  { ...staffing, recipes: staffing.recipes.map((recipe) => recipe.name === "director"
-    ? { ...recipe, capabilities: [...recipe.capabilities, "filesystem.write"] } : recipe) },
-  { ...staffing, recipes: staffing.recipes.map((recipe) => recipe.name === "director"
-    ? { ...recipe, capabilities: recipe.capabilities.map((capability) => capability === "shell.readonly" ? "shell" : capability) } : recipe) },
-  { ...staffing, recipes: [{ ...staffing.recipes[0], capabilities: [...staffing.recipes[0].capabilities, "coordination"] }, ...staffing.recipes.slice(1)] },
-  { ...staffing, recipes: [{ ...staffing.recipes[0], capabilities: [...staffing.recipes[0].capabilities, "shell.readonly"] }, ...staffing.recipes.slice(1)] },
+  { ...staffing, presets: [{ ...staffing.presets[0], tier: "cheap" }, ...staffing.presets.slice(1)] },
+  { ...staffing, presets: [{ ...staffing.presets[0], name: { bad: true } }, ...staffing.presets.slice(1)] },
+  { ...staffing, presets: [{ ...staffing.presets[0], capabilities: ["filesystem.telepathy"] }, ...staffing.presets.slice(1)] },
+  { ...staffing, presets: [{ ...staffing.presets[0], capabilities: [] }, ...staffing.presets.slice(1)] },
+  { ...staffing, presets: [{ ...staffing.presets[0], capabilities: ["filesystem.read", "filesystem.read"] }, ...staffing.presets.slice(1)] },
+  { ...staffing, presets: [{ ...staffing.presets[0], capabilities: [42] }, ...staffing.presets.slice(1)] },
+  { ...staffing, presets: staffing.presets.map((preset) => preset.name === "designer"
+    ? { ...preset, topology: "orchestrator" } : preset) },
+  { ...staffing, presets: staffing.presets.map((preset) => preset.name === "director"
+    ? { ...preset, capabilities: [...preset.capabilities, "filesystem.write"] } : preset) },
+  { ...staffing, presets: staffing.presets.map((preset) => preset.name === "director"
+    ? { ...preset, capabilities: preset.capabilities.map((capability) => capability === "shell.readonly" ? "shell" : capability) } : preset) },
+  { ...staffing, presets: [{ ...staffing.presets[0], capabilities: [...staffing.presets[0].capabilities, "coordination"] }, ...staffing.presets.slice(1)] },
+  { ...staffing, presets: [{ ...staffing.presets[0], capabilities: [...staffing.presets[0].capabilities, "shell.readonly"] }, ...staffing.presets.slice(1)] },
 ]) {
   try { validateStaffingCatalog(invalid); throw new Error("invalid staffing catalog was accepted"); }
   catch (error) { if (error.message === "invalid staffing catalog was accepted") throw error; }
@@ -116,8 +125,8 @@ for (const [capabilities, expected] of [
   [["filesystem.telepathy"], false],
   [[42], false],
 ]) {
-  const probe = { ...staffing, recipes: [
-    { ...staffing.recipes[0], capabilities }, ...staffing.recipes.slice(1),
+  const probe = { ...staffing, presets: [
+    { ...staffing.presets[0], capabilities }, ...staffing.presets.slice(1),
   ] };
   let runtimeAccepted = true;
   try { validateStaffingCatalog(probe); } catch { runtimeAccepted = false; }
@@ -126,16 +135,16 @@ for (const [capabilities, expected] of [
     throw new Error(`runtime/schema capability parity drift for ${JSON.stringify(capabilities)}`);
 }
 for (const [field, makeProbe] of [
-  ["recipe", (name) => ({ ...staffing, recipes: [
-    { ...staffing.recipes[0], name }, ...staffing.recipes.slice(1),
+  ["preset", (name) => ({ ...staffing, presets: [
+    { ...staffing.presets[0], name }, ...staffing.presets.slice(1),
   ] })],
-  ["alias", (name) => ({ ...staffing, aliases: [{ name, target: staffing.recipes[0].name }] })],
+  ["alias", (name) => ({ ...staffing, aliases: [{ name, target: staffing.presets[0].name }] })],
   ["alias target", (target) => ({ ...staffing, aliases: [{ name: "safe-alias", target }] })],
 ]) {
   for (const [name, expected] of roleIdCases) {
     let accepted = true;
     try { validateStaffingCatalog(makeProbe(name)); } catch { accepted = false; }
-    // A safe alias target still has to exist; use recipe validation only for
+    // A safe alias target still has to exist; use preset validation only for
     // positive target grammar and require rejection for every unsafe target.
     if (field === "alias target" && expected) continue;
     if (accepted !== expected)
@@ -160,12 +169,12 @@ if (fable === "fable" || Object.values(providerCatalogs.anthropic.tiers).some(({
 try { modelDeltaFor(providerCatalogs.anthropic, "unlisted-runtime-model"); throw new Error("missing exact model delta was inherited"); }
 catch (error) { if (error.message === "missing exact model delta was inherited") throw error; }
 const providerNames = /\b(?:sonnet|opus|luna|terra|sol)\b/i;
-for (const recipe of staffing.recipes) {
-  if (providerNames.test(recipe.description)) throw new Error(`${recipe.name}: provider model leaked into neutral staffing description`);
+for (const preset of staffing.presets) {
+  if (providerNames.test(preset.description)) throw new Error(`${preset.name}: provider model leaked into neutral staffing description`);
 }
 if (staffing.aliases.some(({ name }) => name === "researcher") ||
-    !staffing.recipes.find(({ name, taskGrade }) => name === "scout" && taskGrade === "junior") ||
-    !staffing.recipes.find(({ name, taskGrade }) => name === "research-scientist" && taskGrade === "research-grade"))
+    !staffing.presets.find(({ name, taskGrade }) => name === "scout" && taskGrade === "junior") ||
+    !staffing.presets.find(({ name, taskGrade }) => name === "research-scientist" && taskGrade === "research-grade"))
   throw new Error("research assistant/scout and cutting-edge research-scientist must remain distinct");
 const openaiFixture = providerCatalogs.openai;
 const missingModelDeltas = { ...openaiFixture.modelDeltas };
@@ -247,8 +256,8 @@ for (const badId of roleIdCases.filter(([, expected]) => !expected).map(([id]) =
   catch (error) { if (error.message === "unsafe nearestPreset was accepted") throw error; }
 }
 
-// The generator owns recipe validation so its rules cannot drift from what it
-// renders. Importing it with --check validates every recipe's independent task
+// The generator owns preset validation so its rules cannot drift from what it
+// renders. Importing it with --check validates every preset's independent task
 // grade and semantic tier, then proves all generated adapter artifacts current.
 if (new Set(grades).size !== grades.length || new Set(tiers).size !== tiers.length) {
   throw new Error("validation vocabulary contains duplicates");
@@ -261,7 +270,7 @@ if (built.status !== 0) process.exit(built.status ?? 1);
 // (PyYAML), then consume that parsed structure below. Regex-only frontmatter
 // checks missed valid-looking scalars whose `: ` punctuation changed YAML shape.
 const generatedAgentPaths = [
-  ...staffing.recipes.map(({ name }) => resolve(root, `agents/${name}.md`)),
+  ...staffing.presets.map(({ name }) => resolve(root, `agents/${name}.md`)),
   ...staffing.aliases.map(({ name }) => resolve(root, `agents/${name}.md`)),
 ];
 const yamlProbe = spawnSync("python3", ["-c", String.raw`
@@ -313,74 +322,74 @@ if (staffing.vocabulary.topologies.length !== 2 ||
     !["worker", "orchestrator"].every((t) => staffing.vocabulary.topologies.includes(t)))
   throw new Error("topology vocabulary must be exactly worker|orchestrator");
 for (const role of ["verifier", "judge"])
-  if (staffing.recipes.find((r) => r.name === role)?.topology !== "worker")
+  if (staffing.presets.find((r) => r.name === role)?.topology !== "worker")
     throw new Error(`${role} must be a worker-topology role, not a topology`);
-const director = staffing.recipes.find(({ name }) => name === "director");
+const director = staffing.presets.find(({ name }) => name === "director");
 if (!director || director.taskGrade !== "staff" || director.tier !== "frontier" ||
     director.deliberation !== "xhigh" || director.topology !== "orchestrator" || director.posture !== "deliver")
   throw new Error("director must remain the staff/frontier/xhigh orchestrator preset");
-const judge = staffing.recipes.find(({ name }) => name === "judge");
+const judge = staffing.presets.find(({ name }) => name === "judge");
 if (!judge || judge.taskGrade !== "staff" || judge.tier !== "frontier" || judge.deliberation !== "xhigh" || judge.topology !== "worker")
   throw new Error("judge must remain the staff/frontier/xhigh high-leverage verdict preset");
-for (const recipe of staffing.recipes.filter(({ name }) => name !== "director"))
-  if (recipe.topology !== "worker") throw new Error(`${recipe.name} unexpectedly grants orchestrator topology`);
+for (const preset of staffing.presets.filter(({ name }) => name !== "director"))
+  if (preset.topology !== "worker") throw new Error(`${preset.name} unexpectedly grants orchestrator topology`);
 const nonAuthoringPresets = ["designer", "director", "scout", "analyst", "verifier", "judge", "research-scientist"];
 for (const name of nonAuthoringPresets) {
-  const recipe = staffing.recipes.find((candidate) => candidate.name === name);
-  if (!recipe || recipe.capabilities.includes("filesystem.write") || recipe.capabilities.includes("shell") ||
-      !recipe.capabilities.includes("shell.readonly"))
+  const preset = staffing.presets.find((candidate) => candidate.name === name);
+  if (!preset || preset.capabilities.includes("filesystem.write") || preset.capabilities.includes("shell") ||
+      !preset.capabilities.includes("shell.readonly"))
     throw new Error(`${name} must remain a mechanically non-authoring preset`);
 }
 for (const name of ["executor", "implementer", "integrator"])
-  if (!staffing.recipes.find((recipe) => recipe.name === name)?.capabilities.includes("filesystem.write") ||
-      !staffing.recipes.find((recipe) => recipe.name === name)?.capabilities.includes("shell") ||
-      staffing.recipes.find((recipe) => recipe.name === name)?.capabilities.includes("shell.readonly"))
+  if (!staffing.presets.find((preset) => preset.name === name)?.capabilities.includes("filesystem.write") ||
+      !staffing.presets.find((preset) => preset.name === name)?.capabilities.includes("shell") ||
+      staffing.presets.find((preset) => preset.name === name)?.capabilities.includes("shell.readonly"))
     throw new Error(`${name} must retain its authoring capability`);
 if (!director.capabilities.includes("coordination"))
   throw new Error("director must retain provider-neutral coordination capability");
-for (const recipe of staffing.recipes)
-  if (recipe.topology === "worker" && recipe.capabilities.includes("coordination"))
-    throw new Error(`${recipe.name}: worker topology must not carry coordination capability`);
+for (const preset of staffing.presets)
+  if (preset.topology === "worker" && preset.capabilities.includes("coordination"))
+    throw new Error(`${preset.name}: worker topology must not carry coordination capability`);
 
-// Every preset composes; its payload matches its recipe, resolves, and carries
+// Every preset composes; its payload matches its preset, resolves, and carries
 // only the canonical routing fields.
-for (const recipe of staffing.recipes) {
-  const { status, payload, stderr } = compose([recipe.name]);
-  if (status !== 0 || !payload) throw new Error(`preset ${recipe.name} failed to compose: ${stderr}`);
-  if (payload.role !== recipe.name || payload.taskGrade !== recipe.taskGrade || payload.tier !== recipe.tier ||
-      payload.reasoning !== recipe.deliberation || payload.topology !== recipe.topology ||
-      payload.composition?.kind !== "preset" || payload.composition?.id !== recipe.name ||
+for (const preset of staffing.presets) {
+  const { status, payload, stderr } = compose([preset.name]);
+  if (status !== 0 || !payload) throw new Error(`preset ${preset.name} failed to compose: ${stderr}`);
+  if (payload.role !== preset.name || payload.taskGrade !== preset.taskGrade || payload.tier !== preset.tier ||
+      payload.reasoning !== preset.deliberation || payload.topology !== preset.topology ||
+      payload.composition?.kind !== "preset" || payload.composition?.id !== preset.name ||
       payload.composition?.overrides?.length !== 0 || payload.composition?.overrideReason !== undefined)
-    throw new Error(`preset ${recipe.name} payload drifts from its recipe`);
+    throw new Error(`preset ${preset.name} payload drifts from its preset`);
   if (!resolvableDeliberations(payload.tier).has(payload.reasoning))
-    throw new Error(`preset ${recipe.name} emits an unresolvable tier/deliberation pair`);
+    throw new Error(`preset ${preset.name} emits an unresolvable tier/deliberation pair`);
   if (!hasExactRoutingFields(payload))
-    throw new Error(`preset ${recipe.name} payload must contain exactly the eight routing fields`);
-  const generated = readFileSync(resolve(root, `agents/${recipe.name}.md`), "utf8");
+    throw new Error(`preset ${preset.name} payload must contain exactly the eight routing fields`);
+  const generated = readFileSync(resolve(root, `agents/${preset.name}.md`), "utf8");
   const marker = generated.match(/<!-- GAFFER_ROUTING (\{.*\}) -->/);
-  if (!marker) throw new Error(`generated ${recipe.name} is missing GAFFER_ROUTING`);
+  if (!marker) throw new Error(`generated ${preset.name} is missing GAFFER_ROUTING`);
   validateRoutingRequest(JSON.parse(marker[1]), staffing);
-  const posture = recipe.posture ?? staffing.defaults.posture;
-  if (!generated.includes(`TASK GRADE: ${recipe.taskGrade.toUpperCase()}`) ||
-      !generated.includes(`TOPOLOGY: ${recipe.topology.toUpperCase()}`) ||
+  const posture = preset.posture ?? staffing.defaults.posture;
+  if (!generated.includes(`TASK GRADE: ${preset.taskGrade.toUpperCase()}`) ||
+      !generated.includes(`TOPOLOGY: ${preset.topology.toUpperCase()}`) ||
       !generated.includes(`POSTURE: ${posture.toUpperCase()}`))
-    throw new Error(`generated ${recipe.name} must include task-grade, topology, and effective-posture blocks`);
-  const frontmatter = parsedAgentFrontmatter[resolve(root, `agents/${recipe.name}.md`)];
-  if (frontmatter?.name !== recipe.name || !frontmatter.description.endsWith(`Task grade: ${recipe.taskGrade}.`))
-    throw new Error(`generated ${recipe.name} YAML frontmatter identity/grade drifted`);
+    throw new Error(`generated ${preset.name} must include task-grade, topology, and effective-posture blocks`);
+  const frontmatter = parsedAgentFrontmatter[resolve(root, `agents/${preset.name}.md`)];
+  if (frontmatter?.name !== preset.name || !frontmatter.description.endsWith(`Task grade: ${preset.taskGrade}.`))
+    throw new Error(`generated ${preset.name} YAML frontmatter identity/grade drifted`);
   const tools = frontmatter.tools.split(/,\s*/).filter(Boolean);
   const hasAllAuthoringTools = ["Edit", "Write"].every((tool) => tools.includes(tool));
   const hasAnyAuthoringTool = ["Edit", "Write"].some((tool) => tools.includes(tool));
-  if (recipe.capabilities.includes("filesystem.write") ? !hasAllAuthoringTools : hasAnyAuthoringTool)
-    throw new Error(`generated ${recipe.name} authoring tools drift from canonical capabilities`);
-  if (recipe.capabilities.includes("shell.readonly") && tools.includes("Bash"))
-    throw new Error(`generated ${recipe.name} exposes unrestricted Bash for shell.readonly`);
-  if (recipe.capabilities.includes("shell") !== tools.includes("Bash"))
-    throw new Error(`generated ${recipe.name} shell tool drifts from canonical capabilities`);
-  if (recipe.capabilities.includes("coordination") !== tools.includes("Agent"))
-    throw new Error(`generated ${recipe.name} coordination tool drifts from canonical capabilities`);
+  if (preset.capabilities.includes("filesystem.write") ? !hasAllAuthoringTools : hasAnyAuthoringTool)
+    throw new Error(`generated ${preset.name} authoring tools drift from canonical capabilities`);
+  if (preset.capabilities.includes("shell.readonly") && tools.includes("Bash"))
+    throw new Error(`generated ${preset.name} exposes unrestricted Bash for shell.readonly`);
+  if (preset.capabilities.includes("shell") !== tools.includes("Bash"))
+    throw new Error(`generated ${preset.name} shell tool drifts from canonical capabilities`);
+  if (preset.capabilities.includes("coordination") !== tools.includes("Agent"))
+    throw new Error(`generated ${preset.name} coordination tool drifts from canonical capabilities`);
   if (!generated.includes("## Output norms"))
-    throw new Error(`generated ${recipe.name} omits the universal communication block`);
+    throw new Error(`generated ${preset.name} omits the universal communication block`);
 }
 
 {
@@ -449,7 +458,7 @@ for (const alias of staffing.aliases) {
   if (nominated.status !== 0 || nominated.payload.composition.kind !== "bespoke" ||
       nominated.payload.composition.promotionCandidate !== true || nominated.payload.composition.contract.doneWhen.length !== 1)
     throw new Error(`bespoke contract/promotion decision failed: ${nominated.stderr}`);
-  const novel = compose(["novel-systems-inquiry", "--rationale", "no existing recipe is a truthful reference",
+  const novel = compose(["novel-systems-inquiry", "--rationale", "no existing preset is a truthful reference",
     "--contract", contract]);
   if (novel.status !== 0 || novel.payload.composition.nearestPreset !== undefined ||
       novel.payload.composition.promotionCandidate !== false)

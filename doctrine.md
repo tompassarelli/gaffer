@@ -210,7 +210,7 @@ not requirements: borrow the comms norms and only the exact concrete model's
 calibrated delta when its provider catalog supplies one; an explicit `none`
 never inherits a neighboring model's delta. Borrow role/posture when they fit,
 then write the domain-specific remainder freely. Record an optional nearest
-preset only when it is a useful reference, why a standard recipe was not used,
+preset only when it is a useful reference, why a standard preset was not used,
 and a structured contract: responsibility, deliverable, canonical capabilities,
 mayDecide, mustEscalate, doneWhen, and report. A nearest preset may seed
 composition but never grants capabilities implicitly. Promotion-candidate defaults

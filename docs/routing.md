@@ -118,9 +118,12 @@ compatible preset or a bespoke contract with explicit capabilities. The layer
 floor raises foundational, library, and architecture work to at least `senior`.
 Blast radius may raise a tier; importance alone does not.
 
-The canonical machine-readable templates live in `staffing/catalog.json`
-(`staffing/catalog.schema.json` documents the format). Compose a portable
-payload without knowing a provider model name:
+The canonical machine-readable preset definitions live in
+`staffing/catalog.json` (`staffing/catalog.schema.json` documents the format).
+Catalog v2 has exactly `$schema`, `version`, `vocabulary`, `defaults`,
+`presets`, and `aliases` at its top level; `version` is `2` and `presets` is
+the named standard library. Compose a portable payload without knowing a
+provider model name:
 
 ```sh
 node scripts/compose-routing.mjs integrator --domain Nix --tier frontier --deliberation xhigh \
@@ -181,13 +184,13 @@ but those are North inputs rather than Gaffer fields. The harness:
    to a concrete model and effort/reasoning control.
 6. Records the requested route beside the resolved one for audit.
 
-Recipe capabilities are provider-neutral requirements. An adapter may expose
+Preset capabilities are provider-neutral requirements. An adapter may expose
 only the intersection it can enforce, and must fail closed when a required
 boundary is unavailable. In particular, `shell.readonly` means an OS-enforced
 working-tree write denial; removing Edit/Write while leaving an unrestricted
 shell does not satisfy it. An adapter without a hard read-only shell omits the
 shell rather than silently widening authority. This is also why capabilities
-are recipe facts rather than a ninth routing field: named presets supply them,
+are preset facts rather than a ninth routing field: named presets supply them,
 while a bespoke contract states the authority its adapter must realize.
 
 Automatic fallback is SUBSTITUTION only: it preserves the semantic tier and
@@ -206,14 +209,14 @@ equivalent between providers.
 
 Composition provenance has five deliberately distinct presentation states:
 
-- `gaffer:<preset>` — an unchanged standard recipe.
-- `gaffer:<preset>+override` — a standard recipe with recorded axis changes and
+- `gaffer:<preset>` — an unchanged standard preset.
+- `gaffer:<preset>+override` — a standard preset with recorded axis changes and
   an `overrideReason`.
 - `gaffer:bespoke:<id>` — an improvised, structured composition with its own
   capabilities and authority contract.
 - `gaffer:not-selected` — a native session that did not select Gaffer at all.
 - `gaffer:legacy-debt` — a pre-contract record whose provenance cannot yet be
-  reconstructed; this is migration debt, not a recipe.
+  reconstructed; this is migration debt, not a preset.
 
 `gaffer:none` is not a valid display state because it collapses intentional
 non-selection, bespoke composition, and missing legacy data into one ambiguous

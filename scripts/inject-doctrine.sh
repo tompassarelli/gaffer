@@ -8,7 +8,7 @@
 #
 #   adapter resolution:  $GAFFER_SPAWN_ADAPTER  >  ~/.claude/my-config.state
 #                        (dispatch=)            >  native (default)
-#   adapter blocks:      docs/adapters/<adapter>.md   (generated from RECIPES by
+#   adapter blocks:      docs/adapters/<adapter>.md   (generated from PRESETS by
 #                        scripts/build-agents.mjs — do not hand-edit)
 #   native:              the block lives inline in doctrine.md (markers stripped);
 #                        no external file, so gaffer works standalone for anyone.

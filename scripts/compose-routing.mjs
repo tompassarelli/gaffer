@@ -63,8 +63,8 @@ try { canonicalRoleId(args.role, "role"); }
 catch (error) { die(error.message); }
 const alias = catalog.aliases.find(({ name }) => name === args.role);
 const canonicalRole = alias?.target ?? args.role;
-const preset = catalog.recipes.find(({ name }) => name === canonicalRole);
-const nearest = args.nearest && catalog.recipes.find(({ name }) => name === args.nearest);
+const preset = catalog.presets.find(({ name }) => name === canonicalRole);
+const nearest = args.nearest && catalog.presets.find(({ name }) => name === args.nearest);
 if (args.nearest && !nearest) die(`unknown nearest preset: ${args.nearest}`);
 if (preset && (args.nearest || args.rationale || args.contract || args.promotionSpecified))
   die("--nearest, --rationale, --contract, and promotion decisions apply only to bespoke roles");

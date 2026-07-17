@@ -3,10 +3,10 @@
   "title": "Gaffer staffing catalog",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "vocabulary", "defaults", "recipes", "aliases"],
+  "required": ["version", "vocabulary", "defaults", "presets", "aliases"],
   "properties": {
     "$schema": { "type": "string" },
-    "version": { "const": 1 },
+    "version": { "const": 2 },
     "vocabulary": {
       "type": "object",
       "additionalProperties": false,
@@ -28,7 +28,7 @@
         "topology": { "type": "string" }, "posture": { "type": "string" }
       }
     },
-    "recipes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/recipe" } },
+    "presets": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/preset" } },
     "aliases": { "type": "array", "items": { "$ref": "#/$defs/alias" } }
   },
   "$defs": {
@@ -37,7 +37,7 @@
       "type": "array", "minItems": 1, "uniqueItems": true,
       "items": { "enum": ["filesystem.read", "filesystem.search", "filesystem.write", "shell", "shell.readonly", "web", "coordination"] }
     },
-    "recipe": {
+    "preset": {
       "type": "object", "additionalProperties": false,
       "required": ["name", "taskGrade", "tier", "deliberation", "topology", "capabilities", "tagline", "description"],
       "properties": {

@@ -32,7 +32,7 @@ squad has no privileged status beyond being pre-built.
    catalog supplies a calibrated path.
 3. Write the domain-specific remainder freely — that's the point.
 4. Record a bespoke contract: an optional nearest preset (when it genuinely
-   helps explain or seed the composition), why a standard recipe was not used, responsibility,
+   helps explain or seed the composition), why a standard preset was not used, responsibility,
    deliverable, canonical `capabilities[]`, `mayDecide[]`, `mustEscalate[]`,
    `doneWhen[]`, report, and a stable composition name. Capabilities are always
    explicit; a nearest preset does not silently donate its authority.
@@ -47,7 +47,7 @@ squad has no privileged status beyond being pre-built.
 ## Promoting a recurring pattern into the library
 
 - **New squad member**: add a role block to `docs/roles.md` (authority +
-  deliverable + REPORT + REDIRECT), add a recipe to
+  deliverable + REPORT + REDIRECT), add a preset to
   `staffing/catalog.json`, rebuild (`node scripts/build-agents.mjs`),
   and describe it in README. Agent files are generated — never hand-write
   one.
@@ -76,9 +76,9 @@ squad has no privileged status beyond being pre-built.
 
 | Axis | Sets | Enforcement | In gaffer | At runtime |
 |---|---|---|---|---|
-| Routing | semantic tier + deliberation | hard at dispatch | recipe + routing request | semantic spawn opts |
+| Routing | semantic tier + deliberation | hard at dispatch | preset + routing request | semantic spawn opts |
 | Substrate | model + effort/reasoning | hard (API params) | provider catalog / compiled adapter | resolved spawn opts |
-| Capability surface | provider-neutral capability labels | hard, fail-closed adapter intersection | recipe `capabilities` | adapter tool + sandbox mapping |
+| Capability surface | provider-neutral capability labels | hard, fail-closed adapter intersection | preset `capabilities` | adapter tool + sandbox mapping |
 | Role | authority / deliverable / report / redirect | advisory | `docs/roles.md` | — |
 | Task grade | work scope / autonomy / novelty prior | advisory | preset or bespoke contract | spawn metadata |
 | Domain requirements | expertise + context the brief/adapter must supply | recorded; hard only when a harness has a real capability gate | preset or bespoke contract | prompt / required capabilities |

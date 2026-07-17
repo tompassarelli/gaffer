@@ -19,7 +19,7 @@ fields form North's v2 staffing contract: North assembles the selected role,
 task-grade, topology, posture, communication, and exact-model calibration
 blocks; North gates each named domain requirement on explicit brief context,
 relevant loaded repo docs/skills/capability, or escalation — metadata alone
-never confers expertise. North intersects the recipe's provider-neutral
+never confers expertise. North intersects the preset's provider-neutral
 capabilities with the selected adapter's concrete tool surface. Orchestrator
 topology activates director authority.
 Capability enforcement is fail-closed. `shell.readonly` means a shell whose
@@ -29,7 +29,7 @@ must enable its sandbox with `failIfUnavailable=true`,
 `allowUnsandboxedCommands=false`, and a `filesystem.denyWrite` entry for
 the working tree. Claude plugin-agent frontmatter cannot encode that sandbox;
 the generated plugin adapter therefore withholds Bash for `shell.readonly`
-recipes instead of claiming a hard boundary it cannot provide.
+presets instead of claiming a hard boundary it cannot provide.
 North presents composition provenance as `gaffer:<preset>`,
 `gaffer:<preset>+override`, or `gaffer:bespoke:<id>`. A native session that
 did not select Gaffer is `gaffer:not-selected`; only pre-contract records may
@@ -37,7 +37,7 @@ use `gaffer:legacy-debt`. Never collapse these states to `gaffer:none`.
 Repeated bespoke use is evidence for review, never automatic promotion.
 North resolves tier+reasoning through a provider
 catalog and records both requested and concrete routes. Routing defaults
-(canonical — generated from RECIPES, do not hand-edit):
+(canonical — generated from PRESETS, do not hand-edit):
 
   gaffer role         task grade      tier      reasoning  topology      posture  capabilities
   ------------------  --------------  --------  ---------  ------------  -------  -----------------------------------------------------------------

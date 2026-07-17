@@ -28,8 +28,8 @@ function keysOnly(value, allowed, label) {
 }
 
 export function validateStaffingCatalog(catalog) {
-  if (catalog?.version !== 1) throw new Error("staffing catalog: version must be 1");
-  keysOnly(catalog, ["$schema", "version", "vocabulary", "defaults", "recipes", "aliases"], "top level");
+  if (catalog?.version !== 2) throw new Error("staffing catalog: version must be 2");
+  keysOnly(catalog, ["$schema", "version", "vocabulary", "defaults", "presets", "aliases"], "top level");
   const vocabulary = catalog?.vocabulary;
   const axes = ["taskGrades", "semanticTiers", "deliberations", "topologies", "postures", "capabilities"];
   keysOnly(vocabulary, axes, "vocabulary");
@@ -42,25 +42,25 @@ export function validateStaffingCatalog(catalog) {
   keysOnly(catalog.defaults, ["taskGrade", "tier", "deliberation", "topology", "posture"], "defaults");
   for (const [field, axis] of [["taskGrade", "taskGrades"], ["tier", "semanticTiers"], ["deliberation", "deliberations"], ["topology", "topologies"], ["posture", "postures"]])
     if (!vocabulary[axis].includes(catalog.defaults?.[field])) throw new Error(`staffing catalog: invalid defaults.${field}`);
-  if (!Array.isArray(catalog.recipes) || !catalog.recipes.length) throw new Error("staffing catalog: recipes must be non-empty");
+  if (!Array.isArray(catalog.presets) || !catalog.presets.length) throw new Error("staffing catalog: presets must be non-empty");
   const names = new Set();
-  for (const recipe of catalog.recipes) {
-    keysOnly(recipe, ["name", "taskGrade", "tier", "deliberation", "topology", "posture", "capabilities", "tagline", "description"], `recipe ${recipe?.name ?? "<unknown>"}`);
-    canonicalRoleId(recipe?.name, "staffing catalog recipe name");
-    if (names.has(recipe.name)) throw new Error(`staffing catalog: duplicate recipe name ${recipe.name}`);
-    names.add(recipe.name);
+  for (const preset of catalog.presets) {
+    keysOnly(preset, ["name", "taskGrade", "tier", "deliberation", "topology", "posture", "capabilities", "tagline", "description"], `preset ${preset?.name ?? "<unknown>"}`);
+    canonicalRoleId(preset?.name, "staffing catalog preset name");
+    if (names.has(preset.name)) throw new Error(`staffing catalog: duplicate preset name ${preset.name}`);
+    names.add(preset.name);
     for (const [field, axis] of [["taskGrade", "taskGrades"], ["tier", "semanticTiers"], ["deliberation", "deliberations"], ["topology", "topologies"]]) {
-      if (!vocabulary[axis].includes(recipe[field])) throw new Error(`${recipe.name}: invalid ${field} ${JSON.stringify(recipe[field])}`);
+      if (!vocabulary[axis].includes(preset[field])) throw new Error(`${preset.name}: invalid ${field} ${JSON.stringify(preset[field])}`);
     }
-    if (recipe.posture !== undefined && !vocabulary.postures.includes(recipe.posture))
-      throw new Error(`${recipe.name}: invalid posture ${JSON.stringify(recipe.posture)}`);
-    if (!Array.isArray(recipe.capabilities) || !recipe.capabilities.length ||
-        recipe.capabilities.some((capability) => !vocabulary.capabilities.includes(capability)) ||
-        new Set(recipe.capabilities).size !== recipe.capabilities.length)
-      throw new Error(`${recipe.name}: capabilities must contain unique canonical capability labels`);
-    validateTopologyCapabilities(recipe.topology, recipe.capabilities, `${recipe.name}.capabilities`);
+    if (preset.posture !== undefined && !vocabulary.postures.includes(preset.posture))
+      throw new Error(`${preset.name}: invalid posture ${JSON.stringify(preset.posture)}`);
+    if (!Array.isArray(preset.capabilities) || !preset.capabilities.length ||
+        preset.capabilities.some((capability) => !vocabulary.capabilities.includes(capability)) ||
+        new Set(preset.capabilities).size !== preset.capabilities.length)
+      throw new Error(`${preset.name}: capabilities must contain unique canonical capability labels`);
+    validateTopologyCapabilities(preset.topology, preset.capabilities, `${preset.name}.capabilities`);
     for (const field of ["tagline", "description"])
-      if (typeof recipe[field] !== "string" || !recipe[field].trim()) throw new Error(`${recipe.name}: missing ${field}`);
+      if (typeof preset[field] !== "string" || !preset[field].trim()) throw new Error(`${preset.name}: missing ${field}`);
   }
   if (!Array.isArray(catalog.aliases)) throw new Error("staffing catalog: aliases must be an array");
   const aliases = new Set();

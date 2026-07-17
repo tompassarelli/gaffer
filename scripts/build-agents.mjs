@@ -45,7 +45,7 @@ const anthropic = loadProviderCatalog("anthropic");
 const staffing = loadStaffingCatalog();
 export const TASK_GRADES = staffing.vocabulary.taskGrades;
 export const SEMANTIC_TIERS = staffing.vocabulary.semanticTiers;
-export const RECIPES = staffing.recipes;
+export const PRESETS = staffing.presets;
 const COMPAT_ALIASES = staffing.aliases;
 const CLAUDE_TOOLS = {
   "filesystem.read": ["Read"],
@@ -72,14 +72,14 @@ function claudeTools(capabilities) {
 const yamlString = (value) => JSON.stringify(String(value));
 
 // Generated Claude Code agents are an adapter artifact. Resolve their concrete
-// pins from the Anthropic catalog while keeping recipes provider-neutral.
-for (const recipe of RECIPES) {
-  const resolved = anthropic.tiers[recipe.tier];
-  if (!resolved) throw new Error(`Anthropic catalog does not resolve tier: ${recipe.tier}`);
-  if (!resolved.efforts?.includes(recipe.deliberation))
-    throw new Error(`${recipe.name}: Claude adapter tier ${recipe.tier} does not support deliberation ${recipe.deliberation}`);
-  recipe.model = resolved.model;
-  recipe.effort = recipe.deliberation;
+// pins from the Anthropic catalog while keeping presets provider-neutral.
+for (const preset of PRESETS) {
+  const resolved = anthropic.tiers[preset.tier];
+  if (!resolved) throw new Error(`Anthropic catalog does not resolve tier: ${preset.tier}`);
+  if (!resolved.efforts?.includes(preset.deliberation))
+    throw new Error(`${preset.name}: Claude adapter tier ${preset.tier} does not support deliberation ${preset.deliberation}`);
+  preset.model = resolved.model;
+  preset.effort = preset.deliberation;
 }
 
 function render(r) {
@@ -131,7 +131,7 @@ function render(r) {
 }
 
 function renderAlias(alias) {
-  const target = RECIPES.find((r) => r.name === alias.target);
+  const target = PRESETS.find((r) => r.name === alias.target);
   return render({
     ...target,
     name: alias.name,
@@ -142,13 +142,13 @@ function renderAlias(alias) {
 }
 
 // The north spawn-adapter's SPAWN SURFACES doctrine block — generated from the
-// SAME RECIPES so the dials never drift from the agents. scripts/inject-doctrine.sh
+// SAME PRESETS so the dials never drift from the agents. scripts/inject-doctrine.sh
 // swaps this in for the native block when GAFFER_SPAWN_ADAPTER=north (or
 // dispatch=north). Every role passes through North's open role string; the
 // matching Gaffer block is loaded when present and bespoke contracts ride in
 // the prompt.
 function renderNorthAdapter() {
-  const rows = RECIPES.map((r) => ({
+  const rows = PRESETS.map((r) => ({
     role: r.name, grade: r.taskGrade, tier: r.tier, reasoning: r.deliberation,
     topology: r.topology,
     posture: r.posture ?? staffing.defaults.posture,
@@ -185,7 +185,7 @@ fields form North's v2 staffing contract: North assembles the selected role,
 task-grade, topology, posture, communication, and exact-model calibration
 blocks; North gates each named domain requirement on explicit brief context,
 relevant loaded repo docs/skills/capability, or escalation — metadata alone
-never confers expertise. North intersects the recipe's provider-neutral
+never confers expertise. North intersects the preset's provider-neutral
 capabilities with the selected adapter's concrete tool surface. Orchestrator
 topology activates director authority.
 Capability enforcement is fail-closed. \`shell.readonly\` means a shell whose
@@ -195,7 +195,7 @@ must enable its sandbox with \`failIfUnavailable=true\`,
 \`allowUnsandboxedCommands=false\`, and a \`filesystem.denyWrite\` entry for
 the working tree. Claude plugin-agent frontmatter cannot encode that sandbox;
 the generated plugin adapter therefore withholds Bash for \`shell.readonly\`
-recipes instead of claiming a hard boundary it cannot provide.
+presets instead of claiming a hard boundary it cannot provide.
 North presents composition provenance as \`gaffer:<preset>\`,
 \`gaffer:<preset>+override\`, or \`gaffer:bespoke:<id>\`. A native session that
 did not select Gaffer is \`gaffer:not-selected\`; only pre-contract records may
@@ -203,7 +203,7 @@ use \`gaffer:legacy-debt\`. Never collapse these states to \`gaffer:none\`.
 Repeated bespoke use is evidence for review, never automatic promotion.
 North resolves tier+reasoning through a provider
 catalog and records both requested and concrete routes. Routing defaults
-(canonical — generated from RECIPES, do not hand-edit):
+(canonical — generated from PRESETS, do not hand-edit):
 
 ${table}
 
@@ -309,7 +309,7 @@ function renderProviderMatrix() {
 
 const check = process.argv.includes("--check");
 let dirty = 0;
-for (const r of RECIPES) {
+for (const r of PRESETS) {
   const path = agentPath(r.name);
   const out = render(r);
   const cur = existsSync(path) ? readFileSync(path, "utf8") : "";

@@ -100,7 +100,7 @@ The axes stay sharp at the source layer; the script does the flattening the
 plugin format requires. Edit blocks, rebuild (`node
 scripts/build-agents.mjs`), never hand-edit agent files (`--check` verifies
 freshness).
-Recipe capabilities are provider-neutral catalog labels; the generator maps
+Preset capabilities are provider-neutral catalog labels; the generator maps
 them to Claude tools, while other harnesses map the same labels through their
 own adapters.
 
@@ -140,7 +140,7 @@ side effects; lowering capability or verification is explicit degradation.
   blocks are borrowable parts, and recurring bespoke patterns are surfaced for
   review; promotion requires an explicit library change. Full contract:
   [`docs/extending.md`](docs/extending.md).
-- Recipe capabilities are enforceable authority. Non-authoring recipes request
+- Preset capabilities are enforceable authority. Non-authoring presets request
   `shell.readonly`; an adapter must provide a hard write-denying sandbox or
   withhold shell access. Generated Claude plugin agents take the latter path
   because plugin frontmatter cannot encode a hard sandbox.

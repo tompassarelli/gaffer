@@ -41,19 +41,19 @@ function stringList(value, label, { nonEmpty = false } = {}) {
 
 const equal = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 
-export function effectiveRecipe(recipe, catalog) {
+export function effectivePreset(preset, catalog) {
   return {
-    taskGrade: recipe.taskGrade,
+    taskGrade: preset.taskGrade,
     domainRequirements: [],
-    topology: recipe.topology,
-    tier: recipe.tier,
-    reasoning: recipe.deliberation,
-    posture: recipe.posture ?? catalog.defaults.posture,
+    topology: preset.topology,
+    tier: preset.tier,
+    reasoning: preset.deliberation,
+    posture: preset.posture ?? catalog.defaults.posture,
   };
 }
 
-export function presetOverrides(request, recipe, catalog) {
-  const base = effectiveRecipe(recipe, catalog);
+export function presetOverrides(request, preset, catalog) {
+  const base = effectivePreset(preset, catalog);
   return OVERRIDE_FIELDS.filter((field) => !equal(request[field], base[field]));
 }
 
@@ -88,18 +88,18 @@ export function validateRoutingRequest(value, catalog = loadStaffingCatalog()) {
   const alias = catalog.aliases.find(({ name }) => name === role);
   const canonicalRole = alias?.target ?? role;
   if (canonicalRole !== role) throw new Error(`role must use canonical preset name ${canonicalRole}`);
-  const recipe = catalog.recipes.find(({ name }) => name === role);
+  const preset = catalog.presets.find(({ name }) => name === role);
 
   if (composition.kind === "preset") {
     keysExactly(composition, composition.overrideReason === undefined
       ? ["kind", "id", "overrides"] : ["kind", "id", "overrides", "overrideReason"], "composition");
-    if (!recipe) throw new Error(`unknown role ${role} requires a bespoke composition`);
+    if (!preset) throw new Error(`unknown role ${role} requires a bespoke composition`);
     const compositionId = canonicalRoleId(composition.id, "composition.id");
     if (compositionId !== role) throw new Error(`composition.id must match canonical role ${role}`);
     const declared = stringList(composition.overrides, "composition.overrides");
     if (declared.some((field) => !OVERRIDE_FIELDS.includes(field)))
       throw new Error(`composition.overrides may contain only: ${OVERRIDE_FIELDS.join(", ")}`);
-    const actual = presetOverrides(request, recipe, catalog);
+    const actual = presetOverrides(request, preset, catalog);
     if (!equal([...declared].sort(), [...actual].sort()))
       throw new Error(`composition.overrides must exactly record changed preset axes: ${actual.join(", ") || "none"}`);
     if (actual.length) nonEmptyString(composition.overrideReason, "composition.overrideReason");
@@ -107,7 +107,7 @@ export function validateRoutingRequest(value, catalog = loadStaffingCatalog()) {
       throw new Error("unchanged preset must omit composition.overrideReason");
     if (role === "director" && request.topology === "worker")
       throw new Error("director cannot use worker topology; choose a worker role for atomic work");
-    validateTopologyCapabilities(request.topology, recipe.capabilities, `routing preset ${role}`);
+    validateTopologyCapabilities(request.topology, preset.capabilities, `routing preset ${role}`);
   } else if (composition.kind === "bespoke") {
     const allowed = ["kind", "id", "nearestPreset", "bespokeReason", "promotionCandidate", "contract"];
     const unknown = Object.keys(composition).filter((key) => !allowed.includes(key));
@@ -115,12 +115,12 @@ export function validateRoutingRequest(value, catalog = loadStaffingCatalog()) {
       .filter((key) => !Object.hasOwn(composition, key));
     if (unknown.length) throw new Error(`composition has unknown field(s): ${unknown.join(", ")}`);
     if (missing.length) throw new Error(`composition is missing field(s): ${missing.join(", ")}`);
-    if (recipe) throw new Error(`known role ${role} requires a preset composition`);
+    if (preset) throw new Error(`known role ${role} requires a preset composition`);
     const compositionId = canonicalRoleId(composition.id, "composition.id");
     if (compositionId !== role) throw new Error(`composition.id must match canonical role ${role}`);
     if (composition.nearestPreset !== undefined) {
       const nearest = canonicalRoleId(composition.nearestPreset, "composition.nearestPreset");
-      if (!catalog.recipes.some(({ name }) => name === nearest))
+      if (!catalog.presets.some(({ name }) => name === nearest))
         throw new Error(`composition.nearestPreset must name a canonical preset`);
     }
     nonEmptyString(composition.bespokeReason, "composition.bespokeReason");

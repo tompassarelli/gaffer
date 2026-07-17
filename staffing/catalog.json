@@ -1,6 +1,6 @@
 {
   "$schema": "./catalog.schema.json",
-  "version": 1,
+  "version": 2,
   "vocabulary": {
     "taskGrades": ["novice", "junior", "mid", "senior", "staff", "principal", "research-grade"],
     "semanticTiers": ["economy", "standard", "senior", "frontier"],
@@ -12,7 +12,7 @@
   "defaults": {
     "taskGrade": "mid", "tier": "standard", "deliberation": "medium", "topology": "worker", "posture": "explore"
   },
-  "recipes": [
+  "presets": [
     {
       "name": "executor", "taskGrade": "novice", "tier": "economy", "deliberation": "low", "topology": "worker", "posture": "deliver",
       "capabilities": ["filesystem.read", "filesystem.search", "filesystem.write", "shell"],

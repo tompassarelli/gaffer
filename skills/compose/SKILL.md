@@ -53,7 +53,7 @@ prompt (or Workflow `agent()` prompt).
    role/posture.
    Done: `wc -l` of the assembled payload ≤ 60, every block above the task.
 5. If no block fits, write a bespoke role contract and record: an optional
-   nearest preset when useful, why a standard recipe was not used,
+   nearest preset when useful, why a standard preset was not used,
    responsibility, deliverable, canonical `capabilities[]`, `mayDecide[]`, `mustEscalate[]`,
    `doneWhen[]`, report contract, and a stable composition name. Record either
    `promotionCandidate` status (false by default; `--promotion-candidate`
