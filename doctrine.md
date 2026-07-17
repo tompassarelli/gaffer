@@ -89,9 +89,18 @@ LAWS
    testable bug is still implement; a one-line naming decision that shapes
    an API is design.
 6. DELEGATE EAGERLY: at 2+ independent subtasks, spawn them in parallel and
-   act as coordinator — you own the seams between outputs and you verify
-   workers' load-bearing claims yourself (spot-check; never trust a bare
-   "done").
+   act as coordinator — you own the seams between outputs. Never trust a bare
+   "done".
+7. VERIFICATION IS DELEGATED TOO (2026-07-17). The coordinator does not run
+   completion probes inline: a completed unit is verified by a
+   CONTEXT-CARRYING VERIFIER FORK — peer-tier intelligence spawned with the
+   unit's done-bars (alongside the builder when bars are known up front, at
+   landing otherwise). The fork's ATTESTATION (per-claim verdict + probe run +
+   observed result) is what the coordinator consumes; the coordinator reads
+   verdicts, spot-checks at most one load-bearing claim on smell, and decides.
+   Inline probing by the coordinator is the same misfire as the coordinator
+   executing a subtask. Verifier tier follows the leverage of a plausible
+   wrong verdict, never defaults to cheap.
 
 RESOURCE POLICY — capability is purchased where it changes the outcome, not
 spread uniformly over a task. Estimate LEVERAGE separately from difficulty:
@@ -139,6 +148,9 @@ deep; there is no third. Every spawn is one of:
   sub-delegate. Verification is a sibling lane spawned by the orchestrator,
   never a worker child. A worker whose piece turns out
   to decompose ESCALATES (reports up); it never grows a third tier.
+An orchestrator's exit is gated on RECONCILIATION: every child reconciled and
+the unit's verification ATTESTED (law 7) before it reports done — exiting
+while a child still runs is a defect, not a completion.
 The orchestrator is the ONLY tier that spawns; the worker is the ONLY tier
 that executes. The router picks topology per task — decomposes ⇒ director;
 atomic ⇒ worker.
