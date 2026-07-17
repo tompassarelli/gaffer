@@ -69,8 +69,9 @@ grep plus the hit count it must return. Two properties earn it: it is
 list"). A bar defends against **premature completion** — attention slipping
 to *being done* before the work is — so name that failure when the bar is
 non-obvious: what a rushed worker skips, and what count catches it. A bare
-"done" is never accepted; verification means checking the worker against its
-bars.
+"done" is never accepted: a self-contained worker supplies evidence against
+its bars, while an emergent aggregate receives an independent whole-outcome
+attestation.
 
 **Leading words.** One strong pretrained concept anchors a whole region of
 behaviour in the fewest tokens, by recruiting priors the model already holds

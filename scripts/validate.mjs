@@ -660,6 +660,7 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
   const providerMatrix = readFileSync(resolve(root, "docs/provider-matrix.md"), "utf8");
   const northAdapter = readFileSync(resolve(root, "docs/adapters/north.md"), "utf8");
   const taskGradeSource = readFileSync(resolve(root, "docs/task-grades.md"), "utf8");
+  const topologies = readFileSync(resolve(root, "docs/topologies.md"), "utf8");
   const internedWorker = /\binterned worker\b|worker\s*\(\s*interned\s*\)/i;
   if (internedWorker.test(doctrine) || internedWorker.test(northAdapter))
     throw new Error("obsolete interned-worker jargon returned; use terminal worker");
@@ -686,8 +687,14 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
       /JUDGE[\s\S]{0,1000}(?:single make-or-break|ranking findings by severity)/i.test(roles))
     throw new Error("judge must rank multiple supplied alternatives only");
   if (!/DESIGNER[\s\S]{0,500}Must escalate: implementation/i.test(roles) ||
-      !/DIRECTOR[\s\S]{0,1200}independent verifier when leverage warrants one/i.test(roles))
+      !/DIRECTOR[\s\S]{0,1800}emergent whole outcome has an attestation from a context-carrying verifier[\s\S]{0,120}scoped to that whole outcome/i.test(roles) ||
+      !/DIRECTOR[\s\S]{0,1400}spot-check at most one[\s\S]{0,80}load-bearing claim/i.test(roles))
     throw new Error("designer/director authority and verification boundaries drifted");
+  if (/a completed unit is verified by a[\s\S]{0,80}context-carrying verifier fork/i.test(doctrine) ||
+      /otherwise the director's read-only spot-checks/i.test(roles) ||
+      !/ORCHESTRATOR[\s\S]{0,700}Self-contained units return worker evidence[\s\S]{0,180}verdict leverage warrants one/i.test(topologies) ||
+      !/ORCHESTRATOR[\s\S]{0,900}emergent aggregate always gets a[\s\S]{0,100}whole-outcome verifier attestation/i.test(topologies))
+    throw new Error("outcome-attached verifier contract drifted");
   const postures = readFileSync(resolve(root, "docs/postures.md"), "utf8");
   if (!/POSTURE: EVALUATE[\s\S]{0,700}non-mutating|POSTURE: EVALUATE[\s\S]{0,700}mutating the subject/.test(postures))
     throw new Error("evaluate posture must be evidence-first and non-mutating");

@@ -152,14 +152,15 @@ composition for a different pairing.
 Gaffer also separates task economics from provider state. Leverage estimates the
 downstream value of better judgment, and dependency shape argues for one worker,
 a fixed workflow, a director with parallel workers, or a strong sequential worker
-plus a verifier — but these are **planner inputs** that derive the request, not
-fields on it. The routing request carries only role, task grade, domain
-requirements, topology (`worker`/`orchestrator`), tier, reasoning, posture, and
-composition; the composer validates the semantic pair and North resolves its
-provider/account/model. Allocation strategy, candidate waterfalls, resolved
-model, account identity, and resource pressure are North's runtime facts, never
-Gaffer request fields. Same-tier substitution may happen automatically before
-side effects; lowering capability or verification is explicit degradation.
+plus a verifier when verdict leverage warrants one — but these are **planner
+inputs** that derive the request, not fields on it. The routing request carries
+only role, task grade, domain requirements, topology (`worker`/`orchestrator`),
+tier, reasoning, posture, and composition; the composer validates the semantic
+pair and North resolves its provider/account/model. Allocation strategy,
+candidate waterfalls, resolved model, account identity, and resource pressure
+are North's runtime facts, never Gaffer request fields. Same-tier substitution
+may happen automatically before side effects; lowering capability or
+verification is explicit degradation.
 
 ## Tuning
 
