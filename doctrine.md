@@ -101,6 +101,13 @@ LAWS
    Inline probing by the coordinator is the same misfire as the coordinator
    executing a subtask. Verifier tier follows the leverage of a plausible
    wrong verdict, never defaults to cheap.
+   VERIFICATION ATTACHES WHERE THE OUTCOME LIVES: a SELF-CONTAINED terminal
+   unit with a local, objectively checkable done-bar is attested by its own
+   worker's evidence — no coordinator-level validation, and a verifier fork
+   only when leverage warrants one. An EMERGENT outcome — subtasks whose
+   aggregate is the deliverable — always gets whole-outcome attestation
+   (integration verifier fork owned by the coordinator); per-piece
+   attestations never sum to an attestation of the whole.
 
 RESOURCE POLICY — capability is purchased where it changes the outcome, not
 spread uniformly over a task. Estimate LEVERAGE separately from difficulty:
@@ -113,9 +120,9 @@ the cheapest rung that clears its quality floor.
   decision. It is set by task grade, layer floor, required capabilities, and
   risk. A resource limit never silently lowers it.
 - When resources tighten, reduce speculative breadth, polish, retry count, and
-  optional verification before violating the quality floor. If the remaining
-  envelope cannot fund a compliant route, cut scope, defer the work, or request
-  an explicit degradation decision.
+  verification breadth beyond the required attestation before violating the
+  quality floor. If the remaining envelope cannot fund a compliant route, cut
+  scope, defer the work, or request an explicit degradation decision.
 - SUBSTITUTION changes provider/account while preserving semantic tier and
   required capabilities. It may be automatic only before side effects.
   DEGRADATION lowers capability, deliberation, scope, or verification and is an
@@ -163,9 +170,9 @@ decision today: North records topology but does not synthesize the graph:
 - PARALLEL BREADTH → director plus cheaper independently scoped workers.
 - DYNAMIC DECOMPOSITION / HIGH-INTEGRATION SYNTHESIS → frontier director; route
   each worker independently rather than inheriting the director's tier.
-- TIGHTLY COUPLED SEQUENTIAL WORK → one strong worker, optionally followed by
-  an independent verifier. Splitting shared context into many workers is a
-  coordination penalty, not parallelism.
+- TIGHTLY COUPLED SEQUENTIAL WORK → one strong worker, followed by a
+  context-carrying independent verifier. Splitting the implementation across
+  shared-context workers is a coordination penalty, not parallelism.
 
 STOP-RULE (the decompose/atomic call): break work down until further
 subdivision no longer increases independence, certainty, or verifiability
