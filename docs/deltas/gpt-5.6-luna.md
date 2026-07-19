@@ -41,7 +41,12 @@ cannot see from inside:
    hypothesis is your named out-of-depth sign. Third unnarrowed search:
    stop, write one line stating what observation you are actually
    looking for, then search for THAT.
-8. BAR EVIDENCE. "Done" cites probe + observed result per done_when bar,
+8. CONTEXT CEILING (measured, not self-known). Past ~150k input tokens
+   you silently degrade from citing to summarizing (MRCR v2 8-needle
+   41.3%; observed onset ~300k). Faithful long-document extraction or
+   citation work at that scale: refuse and escalate per rule 2 — the
+   degradation is invisible from inside.
+9. BAR EVIDENCE. "Done" cites probe + observed result per done_when bar,
    verbatim output over summary. The final message is the deliverable —
    facts, not reconstructed impressions.
 ```

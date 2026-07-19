@@ -31,10 +31,10 @@ delta lookup; unversioned calibration is never inherited.
 | anthropic | standard | `claude-sonnet-5` | `sonnet` | medium | medium | none — the existing unversioned Sonnet self-report does not establish an exact Sonnet 5 calibration |
 | anthropic | senior | `claude-opus-4-8` | `opus` | high | high | none — the existing unversioned Opus self-report does not establish an exact Opus 4.8 calibration |
 | anthropic | frontier | `claude-opus-4-8` | `opus` | xhigh, max | xhigh | none — the existing unversioned Opus self-report does not establish an exact Opus 4.8 calibration |
-| openai | economy | `gpt-5.6-luna` | `luna` | low | low | none — no calibrated Gaffer delta has been authored for this model |
-| openai | standard | `gpt-5.6-terra` | `terra` | low, medium | medium | none — no calibrated Gaffer delta has been authored for this model |
-| openai | senior | `gpt-5.6-sol` | `sol` | medium, high | high | none — no calibrated Gaffer delta has been authored for this model |
-| openai | frontier | `gpt-5.6-sol` | `sol` | xhigh, max | xhigh | none — no calibrated Gaffer delta has been authored for this model |
+| openai | economy | `gpt-5.6-luna` | `luna` | low, medium | medium | [calibrated](deltas/gpt-5.6-luna.md) |
+| openai | standard | `gpt-5.6-terra` | `terra` | low, medium | medium | [calibrated](deltas/gpt-5.6-terra.md) |
+| openai | senior | `gpt-5.6-sol` | `sol` | medium, high | high | [calibrated](deltas/gpt-5.6-sol.md) |
+| openai | frontier | `gpt-5.6-sol` | `sol` | xhigh, max | xhigh | [calibrated](deltas/gpt-5.6-sol.md) |
 
 ## Runtime-only exact-model delta entries
 
