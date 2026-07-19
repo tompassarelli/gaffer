@@ -40,7 +40,7 @@ Install it and your sessions gain:
    | `gaffer:implementer` | standard / medium | one feature/fix inside known patterns |
    | `gaffer:integrator` | senior / high | cross-seam work, ambiguous debugging, behavior-at-stake refactors |
    | `gaffer:designer` | frontier / xhigh | choosing shapes: APIs, data models, decomposition (decision-only, read-only tools) |
-   | `gaffer:director` | frontier / xhigh | decompose, independently staff, verify, and reconcile multi-agent work |
+   | `gaffer:director` | frontier / xhigh | decompose, independently staff, evidence-check, and reconcile multi-agent work |
    | `gaffer:scout` | economy / low | locate, map, gather sources (breadth, fan-out) |
    | `gaffer:analyst` | senior / high | deep-dive: how/why it works, root-cause, design-grounding (read-only) |
    | `gaffer:verifier` | senior / high | adversarial verification of one claim at any leverage (override the axes when warranted) |
@@ -48,12 +48,21 @@ Install it and your sessions gain:
    | `gaffer:research-scientist` | frontier / xhigh | hypothesis and experiment design plus read-only evidence analysis |
 
    Exact versioned model pins are generated from the dated provider catalogs;
-   see [`docs/provider-matrix.md`](docs/provider-matrix.md).
+   see [`docs/provider-matrix.md`](docs/provider-matrix.md). Every exact catalog
+   model must have official model-family, availability, and effort-support
+   provenance; provider-wide union coverage cannot substitute for a model's
+   missing scope.
 
    The template library also staffs **workflow stages** (including ultracode-authored
    workflows): `agent(prompt, {agentType: 'gaffer:verifier'})` — the
    doctrine tells the session which member plays which stage, and stops
    workers from silently inheriting a top-tier session's model.
+
+   Verification remains evidence-backed: workers report evidence, and an
+   independently staffed verifier returns a verdict with the probe and observed
+   result. Current lanes share one OS uid, so Gaffer does not treat that staffing
+   separation as security-grade attestation; `attested` or `verified` status is
+   reserved for a future protected trust boundary.
 
 3. **Skills**:
    - `compose` — assemble a bespoke (custom) composition for spawns the

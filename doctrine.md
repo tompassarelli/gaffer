@@ -56,8 +56,9 @@ SHAPES → TEMPLATES (semantic tier; provider adapters resolve concrete models)
   → gaffer:scout (economy)
 - analyze — deep-dive: how does this work, why does it break, does this
   design hold against real behavior; depth, read-only → gaffer:analyst
-  (senior). Fan out multiple over distinct subsystems when one can't be
-  held at once.
+  (senior). Fan out when independently traceable mechanisms benefit from
+  separate evidence trails and later synthesis; keep tightly coupled traces
+  together regardless of subsystem count.
 - verify — test one specific claim at any leverage; affirmative evidence
   confirms, counterevidence refutes, missing/ambiguous coverage cannot
   determine → gaffer:verifier (senior default; justify higher axes)
@@ -94,17 +95,21 @@ LAWS
 7. VERIFICATION IS DELEGATED TOO (2026-07-17). The coordinator does not run
    completion probes inline; verification attaches where the outcome lives.
    A SELF-CONTAINED terminal unit with a local, objectively checkable done-bar
-   is attested by its worker's evidence — no coordinator-level validation, and
-   a context-carrying verifier fork only when the leverage of a plausible wrong
+   supplies worker evidence — no coordinator-level validation, and a
+   context-carrying verifier fork only when the leverage of a plausible wrong
    verdict warrants one. An EMERGENT outcome — subtasks whose aggregate is the
-   deliverable — always gets whole-outcome attestation from a context-carrying
-   integration verifier fork owned by the coordinator; per-piece evidence or
-   attestations never sum to an attestation of the whole. A verifier reports a
-   per-claim verdict + probe run + observed result. The coordinator consumes
-   that evidence, spot-checks at most one load-bearing claim on smell, and
-   decides. Inline probing by the coordinator is the same misfire as the
-   coordinator executing a subtask. Verifier tier follows verdict leverage,
-   never defaults to cheap.
+   deliverable — always gets a whole-outcome report from an independently
+   staffed, context-carrying integration verifier fork owned by the
+   coordinator; per-piece evidence or verifier reports never establish the
+   whole by addition. A verifier reports a per-claim verdict + probe run +
+   observed result. The coordinator consumes that evidence, spot-checks at
+   most one load-bearing claim on smell, and decides the evidence-backed,
+   reconciled outcome. Inline probing by the coordinator is the same misfire
+   as the coordinator executing a subtask. Verifier tier follows verdict
+   leverage, never defaults to cheap. Because current lanes share one OS uid,
+   independently staffed means role/context separation, not security-grade
+   independent attestation; `attested` or `verified` status is reserved for a
+   future protected trust boundary.
 
 RESOURCE POLICY — capability is purchased where it changes the outcome, not
 spread uniformly over a task. Estimate LEVERAGE separately from difficulty:
@@ -154,9 +159,10 @@ deep; there is no third. Every spawn is one of:
   spawned by the orchestrator, never a worker child. A worker whose piece turns
   out to decompose ESCALATES (reports up); it never grows a third tier.
 An orchestrator's exit is gated on RECONCILIATION: every child and its required
-evidence are reconciled, and the emergent whole outcome is independently
-attested, before it reports done. Exiting while a child still runs is a defect,
-not a completion.
+evidence are reconciled, and an independently staffed, context-carrying
+verifier has reported a verdict, probe, and observed result on the emergent
+whole outcome, before it reports done. Exiting while a child still runs is a
+defect, not a completion.
 The orchestrator is the ONLY tier that spawns; the worker is the ONLY tier
 that executes. The router picks topology per task — decomposes ⇒ director;
 atomic ⇒ worker.
@@ -170,9 +176,10 @@ decision today: North records topology but does not synthesize the graph:
 - DYNAMIC DECOMPOSITION / HIGH-INTEGRATION SYNTHESIS → frontier director; route
   each worker independently rather than inheriting the director's tier.
 - TIGHTLY COUPLED SEQUENTIAL WORK → one strong worker; its local objective bar
-  is self-attested, with a context-carrying independent verifier when verdict
-  leverage warrants one. Splitting the implementation across shared-context
-  workers is a coordination penalty, not parallelism.
+  is supported by worker evidence, with an independently staffed,
+  context-carrying verifier report when verdict leverage warrants one.
+  Splitting the implementation across shared-context workers is a coordination
+  penalty, not parallelism.
 
 STOP-RULE (the decompose/atomic call): break work down until further
 subdivision no longer increases independence, certainty, or verifiability
@@ -191,8 +198,9 @@ decomposition: every node that decomposes work OWNS the reduction of that
 work — child outputs return to the parent that spawned them (the node that
 knows why each child exists), NEVER flat fan-in to a root synthesizer. At two
 tiers this is concrete — the orchestrator IS the reducing parent, so done
-means reconciled (seams resolved, load-bearing claims verified), not "workers
-reported"; worker deliverables return UP, never sideways. Director lifecycle:
+means reconciled (seams resolved, load-bearing claims supported by evidence),
+not "workers reported"; worker deliverables return UP, never sideways.
+Director lifecycle:
 receive → classify → redirect/restaff atomic work OR decompose composite work
 (stop-rule decides) → spawn workers with LOCAL contracts (objective, scope, I/O, verification path
 — what makes each child terminal) → await → reconcile into the parent result
@@ -208,8 +216,9 @@ N-tier promises. Two tiers fixes both ends.
 BRIEF DONE-BARS. Every brief an orchestrator fans out ends each step with a
 checkable done-bar — a command + its expected output, or a grep + the hit
 count it must return. A self-contained worker supplies evidence against its
-bars; a verifier supplies an independent attestation when law 7 requires one.
-A bare "done" is never accepted.
+bars; a verifier supplies an independently staffed report with its verdict,
+probe, and observed result when law 7 requires one. A bare "done" is never
+accepted.
 
 <!-- gaffer:spawn-surfaces adapter=native (default; inject-doctrine.sh swaps this block per GAFFER_SPAWN_ADAPTER / dispatch=) -->
 SPAWN SURFACES — a squad member is an eight-field Gaffer request: role,
@@ -234,9 +243,9 @@ agent(prompt, {agentType: 'gaffer:scout'}) — or pin tier (and let the
 provider adapter resolve model+effort/reasoning)
 per stage yourself:
 - discovery/finder stages → gaffer:scout (economy), fan out wide
-- deep-analysis/root-cause stages → gaffer:analyst (senior); fan out over
-  distinct subsystems — parallel analysts cover what one coordinator can't
-  hold at once
+- deep-analysis/root-cause stages → gaffer:analyst (senior); fan out when
+  independently traceable mechanisms benefit from separate evidence trails
+  and later synthesis, not because a subsystem count was crossed
 - build/transform stages → gaffer:implementer (standard); layer floor
   still applies per stage — a foundational target raises tier/reasoning while
   retaining its function; use gaffer:integrator only for integrate-shaped work

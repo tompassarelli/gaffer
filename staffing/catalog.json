@@ -40,8 +40,8 @@
     {
       "name": "director", "taskGrade": "staff", "tier": "frontier", "deliberation": "xhigh", "topology": "orchestrator", "posture": "deliver",
       "capabilities": ["filesystem.read", "filesystem.search", "shell.readonly", "web", "coordination"],
-      "tagline": "independent work reconciled into one verified result",
-      "description": "Director-shaped work — a task with two or more genuinely independent pieces whose seams must be designed, staffed, verified, and reconciled. The standard high-capability orchestrator function: decomposes to terminal worker briefs, routes every worker independently, owns cross-cutting constraints, and returns the integrated result. It does not execute worker subtasks itself. Use a worker role for atomic or tightly coupled work; override taskGrade to principal when direction spans systems or long-lived constraints."
+      "tagline": "independent work reconciled into one evidence-backed result",
+      "description": "Director-shaped work — a task with two or more genuinely independent pieces whose seams must be designed, staffed, evidence-checked, and reconciled. The standard high-capability orchestrator function: decomposes to terminal worker briefs, routes every worker independently, owns cross-cutting constraints, and returns the integrated result. It does not execute worker subtasks itself. Use a worker role for atomic or tightly coupled work; override taskGrade to principal when direction spans systems or long-lived constraints."
     },
     {
       "name": "scout", "taskGrade": "junior", "tier": "economy", "deliberation": "low", "topology": "worker", "posture": "explore",
@@ -53,7 +53,7 @@
       "name": "analyst", "taskGrade": "senior", "tier": "senior", "deliberation": "high", "topology": "worker", "posture": "explore",
       "capabilities": ["filesystem.read", "filesystem.search", "shell.readonly", "web"],
       "tagline": "understanding, grounded in real behavior",
-      "description": "Research deep-dive work — how a system actually works, why it behaves as it does, root-cause, or grounding a proposed design against real behavior. Read-only: depth over breadth, traces to ground truth rather than simulating from the text. Produces UNDERSTANDING, not a decision (→ designer) or a change (→ integrator). Fan out multiple analysts over distinct subsystems when the analysis needs more than one held at once. Do NOT use for mere location/gathering (→ scout)."
+      "description": "Research deep-dive work — how a system actually works, why it behaves as it does, root-cause, or grounding a proposed design against real behavior. Read-only: depth over breadth, traces to ground truth rather than simulating from the text. Produces UNDERSTANDING, not a decision (→ designer) or a change (→ integrator). Fan out when independently traceable mechanisms benefit from separate evidence trails and later synthesis; keep tightly coupled traces together regardless of subsystem count. Do NOT use for mere location/gathering (→ scout)."
     },
     {
       "name": "verifier", "taskGrade": "senior", "tier": "senior", "deliberation": "high", "topology": "worker", "posture": "evaluate",

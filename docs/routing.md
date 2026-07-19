@@ -249,7 +249,7 @@ canonical `capabilities[]`, `mayDecide[]`, `mustEscalate[]`, `doneWhen[]`, and
 report. The capabilities are explicit even when `nearestPreset` is present:
 the nearest stock template can seed composition defaults but never grants authority by
 implication. A harness records the
-requested composition beside the resolved route and verified outcome. Repeated
+requested composition beside the resolved route and evidence-backed outcome. Repeated
 successful fingerprints are visible for review regardless of nomination; runtime observations never
 rewrite Gaffer's stock-template library automatically. Comparable successful
 recurrence means the same responsibility, deliverable, capability/authority

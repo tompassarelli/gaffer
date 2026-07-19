@@ -22,7 +22,7 @@
       },
       {
         "url": "https://platform.claude.com/docs/en/build-with-claude/effort",
-        "modelFamilies": ["claude-sonnet-5", "claude-opus-4-8"],
+        "modelFamilies": ["claude-fable-5", "claude-sonnet-5", "claude-opus-4-8"],
         "scopes": ["effort-support"]
       }
     ]

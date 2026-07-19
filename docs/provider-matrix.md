@@ -8,7 +8,8 @@ semantic Gaffer request remains provider-neutral.
 ## Freshness and official provenance
 
 Official sources establish only the listed model-family, availability, and
-effort-support facts. Semantic tier placement, defaults, and omitted or
+effort-support facts, with every exact catalog model covered for each fact
+category. Semantic tier placement, defaults, and omitted or
 dominated rungs are Gaffer's dated calibration judgments; the sources do not
 establish Gaffer's exact rung economics.
 Review-after dates are advisory freshness signals: overdue validation emits a
@@ -16,7 +17,7 @@ warning but remains reproducible and nonfatal; malformed or reversed dates fail.
 
 | Provider | As of | Review after | Official sources and scope |
 |---|---|---|---|
-| anthropic | 2026-07-16 | 2026-08-16 | [`claude-fable-5`](https://www.anthropic.com/claude/fable) — model-family, availability<br>[`claude-sonnet-5`](https://www.anthropic.com/news/claude-sonnet-5) — model-family, availability, effort-support<br>[`claude-opus-4-8`](https://platform.claude.com/docs/en/about-claude/models/whats-new-claude-4-8) — model-family, availability, effort-support<br>[`claude-sonnet-5`, `claude-opus-4-8`](https://platform.claude.com/docs/en/build-with-claude/effort) — effort-support |
+| anthropic | 2026-07-16 | 2026-08-16 | [`claude-fable-5`](https://www.anthropic.com/claude/fable) — model-family, availability<br>[`claude-sonnet-5`](https://www.anthropic.com/news/claude-sonnet-5) — model-family, availability, effort-support<br>[`claude-opus-4-8`](https://platform.claude.com/docs/en/about-claude/models/whats-new-claude-4-8) — model-family, availability, effort-support<br>[`claude-fable-5`, `claude-sonnet-5`, `claude-opus-4-8`](https://platform.claude.com/docs/en/build-with-claude/effort) — effort-support |
 | openai | 2026-07-16 | 2026-08-16 | [`gpt-5.6-luna`, `gpt-5.6-terra`, `gpt-5.6-sol`](https://developers.openai.com/api/docs/models) — model-family, effort-support<br>[`gpt-5.6-luna`, `gpt-5.6-terra`, `gpt-5.6-sol`](https://openai.com/index/gpt-5-6/) — availability |
 
 ## Semantic resolution

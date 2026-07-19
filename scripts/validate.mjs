@@ -196,10 +196,35 @@ for (const catalog of Object.values(providerCatalogs)) {
   try { modelDeltaFor(catalog, "unlisted-runtime-model"); throw new Error("missing exact model delta was inherited"); }
   catch (error) { if (error.message === "missing exact model delta was inherited") throw error; }
 }
-const providerNames = /\b(?:sonnet|opus|luna|terra|sol)\b/i;
-for (const preset of staffing.presets) {
-  if (providerNames.test(preset.description)) throw new Error(`${preset.name}: provider model leaked into neutral staffing description`);
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const providerModelTokens = [...new Set(Object.values(providerCatalogs).flatMap((catalog) => [
+  ...Object.keys(catalog.modelAliases),
+  ...Object.keys(catalog.modelDeltas),
+]))].sort((left, right) => right.length - left.length);
+const providerModelToken = new RegExp(
+  `(?:^|[^a-z0-9_])(${providerModelTokens.map(escapeRegex).join("|")})(?=$|[^a-z0-9_])`,
+  "i",
+);
+function validateProviderNeutralDescriptions(candidate) {
+  for (const preset of candidate.presets) {
+    const match = preset.description.match(providerModelToken);
+    if (match)
+      throw new Error(`${preset.name}: provider model token ${match[1]} leaked into neutral staffing description`);
+  }
 }
+validateProviderNeutralDescriptions(staffing);
+const fableLeakFixture = { ...staffing, presets: staffing.presets.map((preset, index) =>
+  index === 0 ? { ...preset, description: `${preset.description} Fable.` } : preset) };
+try {
+  validateProviderNeutralDescriptions(fableLeakFixture);
+  throw new Error("Fable provider-model leak fixture was accepted");
+} catch (error) {
+  if (error.message === "Fable provider-model leak fixture was accepted" ||
+      !error.message.includes("provider model token Fable leaked")) throw error;
+}
+const unrelatedProseFixture = { ...staffing, presets: staffing.presets.map((preset, index) =>
+  index === 0 ? { ...preset, description: `${preset.description} Consolidated, fabled resolution.` } : preset) };
+validateProviderNeutralDescriptions(unrelatedProseFixture);
 if (staffing.aliases.some(({ name }) => name === "researcher") ||
     !staffing.presets.find(({ name, taskGrade }) => name === "scout" && taskGrade === "junior") ||
     !staffing.presets.find(({ name, taskGrade }) => name === "research-scientist" && taskGrade === "research-grade"))
@@ -207,6 +232,60 @@ if (staffing.aliases.some(({ name }) => name === "researcher") ||
 const openaiFixture = providerCatalogs.openai;
 const missingModelDeltas = { ...openaiFixture.modelDeltas };
 delete missingModelDeltas[openaiFixture.tiers.senior.model];
+const provenanceScopes = ["model-family", "availability", "effort-support"];
+function withoutModelScope(catalog, model, scope) {
+  const sources = catalog.provenance.sources.map((source) =>
+      source.scopes.includes(scope) && source.modelFamilies.includes(model)
+        ? { ...source, modelFamilies: source.modelFamilies.filter((candidate) => candidate !== model) }
+        : { ...source, modelFamilies: [...source.modelFamilies], scopes: [...source.scopes] });
+  const fallbackIndex = sources.findIndex((source) => source.modelFamilies.includes(model));
+  if (fallbackIndex === -1) throw new Error(`cannot build ${model} missing-${scope} fixture without retaining model coverage`);
+  const retainedScopes = new Set(sources
+    .filter((source) => source.modelFamilies.includes(model))
+    .flatMap((source) => source.scopes));
+  for (const retainedScope of provenanceScopes.filter((candidate) => candidate !== scope && !retainedScopes.has(candidate))) {
+    sources[fallbackIndex] = {
+      ...sources[fallbackIndex],
+      scopes: [...sources[fallbackIndex].scopes, retainedScope],
+    };
+  }
+  return { ...catalog, provenance: { ...catalog.provenance, sources } };
+}
+function expectPerModelScopeGap(label, catalog, provider, model, scope) {
+  const providerWideScopes = new Set(catalog.provenance.sources.flatMap((source) => source.scopes));
+  if (!provenanceScopes.every((candidate) => providerWideScopes.has(candidate)))
+    throw new Error(`${label} fixture does not preserve provider-wide union coverage`);
+  const modelScopes = new Set(catalog.provenance.sources
+    .filter((source) => source.modelFamilies.includes(model))
+    .flatMap((source) => source.scopes));
+  if (modelScopes.has(scope) ||
+      !provenanceScopes.filter((candidate) => candidate !== scope).every((candidate) => modelScopes.has(candidate)))
+    throw new Error(`${label} fixture must isolate exactly the ${model}/${scope} gap`);
+  try {
+    validateProviderCatalog(catalog, provider);
+    throw new Error(`${label} provider catalog was accepted`);
+  } catch (error) {
+    if (error.message === `${label} provider catalog was accepted` ||
+        !error.message.includes(`${model} missing ${scope}`)) throw error;
+  }
+}
+const openaiScopeModel = openaiFixture.tiers.economy.model;
+for (const scope of provenanceScopes)
+  expectPerModelScopeGap(
+    `per-model missing ${scope}`,
+    withoutModelScope(openaiFixture, openaiScopeModel, scope),
+    "openai",
+    openaiScopeModel,
+    scope,
+  );
+const fableModel = providerCatalogs.anthropic.modelAliases.fable;
+expectPerModelScopeGap(
+  "Fable per-model missing effort-support",
+  withoutModelScope(providerCatalogs.anthropic, fableModel, "effort-support"),
+  "anthropic",
+  fableModel,
+  "effort-support",
+);
 for (const [label, invalid] of [
   ["unknown tier field", { ...openaiFixture, tiers: { ...openaiFixture.tiers,
     economy: { ...openaiFixture.tiers.economy, price: 1 },
@@ -661,6 +740,8 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
   const northAdapter = readFileSync(resolve(root, "docs/adapters/north.md"), "utf8");
   const taskGradeSource = readFileSync(resolve(root, "docs/task-grades.md"), "utf8");
   const topologies = readFileSync(resolve(root, "docs/topologies.md"), "utf8");
+  const method = readFileSync(resolve(root, "docs/method.md"), "utf8");
+  const generatedDirector = readFileSync(resolve(root, "agents/director.md"), "utf8");
   const internedWorker = /\binterned worker\b|worker\s*\(\s*interned\s*\)/i;
   if (internedWorker.test(doctrine) || internedWorker.test(northAdapter))
     throw new Error("obsolete interned-worker jargon returned; use terminal worker");
@@ -670,6 +751,12 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
     `${readme}\n${doctrine}\n${JSON.stringify(staffing.presets)}`))
     throw new Error("layer floor must raise capability without renaming the task function");
   if (/root CLAUDE\.md/.test(roles)) throw new Error("role blocks must route to canonical AGENTS.md");
+  if (/any second file the spec didn't name|3\+ distant subsystems/i.test(roles) ||
+      !/mechanically coupled or generated surfaces required by the specified\s+change/i.test(roles) ||
+      !/independently traceable mechanisms[\s\S]{0,240}regardless of how many\s+subsystems/i.test(roles) ||
+      !/independently traceable mechanisms[\s\S]{0,220}regardless of subsystem count/i.test(
+        staffing.presets.find(({ name }) => name === "analyst")?.description ?? ""))
+    throw new Error("executor/analyst boundaries must follow ambiguity, authority, and dependency shape rather than file/subsystem counts");
   if (/\b(?:Fable|Sonnet|Opus|Terra|Luna|Sol)\b/.test(routing))
     throw new Error("provider-neutral routing prose leaked a concrete model name");
   const methodSection = readme.split("## The payload method")[1]?.split("## Install")[0] ?? "";
@@ -687,14 +774,23 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
       /JUDGE[\s\S]{0,1000}(?:single make-or-break|ranking findings by severity)/i.test(roles))
     throw new Error("judge must rank multiple supplied alternatives only");
   if (!/DESIGNER[\s\S]{0,500}Must escalate: implementation/i.test(roles) ||
-      !/DIRECTOR[\s\S]{0,1800}emergent whole outcome has an attestation from a context-carrying verifier[\s\S]{0,120}scoped to that whole outcome/i.test(roles) ||
+      !/DIRECTOR[\s\S]{0,1800}context-carrying, independently staffed verifier returned a[\s\S]{0,120}verdict, probe, and observed result[\s\S]{0,120}emergent whole outcome/i.test(roles) ||
       !/DIRECTOR[\s\S]{0,1400}spot-check at most one[\s\S]{0,80}load-bearing claim/i.test(roles))
     throw new Error("designer/director authority and verification boundaries drifted");
   if (/a completed unit is verified by a[\s\S]{0,80}context-carrying verifier fork/i.test(doctrine) ||
       /otherwise the director's read-only spot-checks/i.test(roles) ||
       !/ORCHESTRATOR[\s\S]{0,700}Self-contained units return worker evidence[\s\S]{0,180}verdict leverage warrants one/i.test(topologies) ||
-      !/ORCHESTRATOR[\s\S]{0,900}emergent aggregate always gets a[\s\S]{0,100}whole-outcome verifier attestation/i.test(topologies))
+      !/ORCHESTRATOR[\s\S]{0,900}emergent aggregate always gets a report from[\s\S]{0,120}independently staffed[\s\S]{0,160}verdict,\s*probe, and observed result/i.test(topologies) ||
+      !/emergent aggregate receives an independently staffed,[\s\S]{0,120}verifier report with a verdict, probe, and observed result/i.test(method))
     throw new Error("outcome-attached verifier contract drifted");
+  const trustVocabulary = `${doctrine}\n${roles}\n${topologies}\n${method}\n${readme}\n${routing}\n${JSON.stringify(staffing.presets)}\n${generatedDirector}`;
+  if (/\b(?:self[- ]attest\w*|whole-outcome (?:verifier )?attestation|verifier attestations?|attested by|independently attested|verified (?:result|outcome))\b/i.test(trustVocabulary))
+    throw new Error("shared-UID workflow claimed security-grade attestation or a verified result");
+  if (!/current lanes share one OS uid[\s\S]{0,220}`attested` or `verified` status is reserved for a[\s\S]{0,80}future protected trust boundary/i.test(doctrine) ||
+      !/Current lanes share one OS uid[\s\S]{0,220}`attested` or `verified` status is[\s\S]{0,80}reserved for a future protected trust boundary/i.test(readme) ||
+      !/evidence-backed result/.test(director.tagline) ||
+      !/evidence-checked/.test(director.description))
+    throw new Error("shared-UID trust vocabulary must reserve attested/verified status and describe evidence-backed outcomes");
   const postures = readFileSync(resolve(root, "docs/postures.md"), "utf8");
   if (!/POSTURE: EVALUATE[\s\S]{0,700}non-mutating|POSTURE: EVALUATE[\s\S]{0,700}mutating the subject/.test(postures))
     throw new Error("evaluate posture must be evidence-first and non-mutating");
@@ -708,6 +804,9 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
     throw new Error("research-scientist must escalate new apparatus/code authoring");
   if (!providerMatrix.includes("sources do not") || !providerMatrix.includes("exact rung economics"))
     throw new Error("generated provider matrix must distinguish official provenance from Gaffer calibration judgments");
+  if (!providerMatrix.includes("every exact catalog model covered for each fact") ||
+      !providerMatrix.includes("category"))
+    throw new Error("generated provider matrix must state that provenance scope coverage is per exact model");
   if (!providerMatrix.includes("advisory freshness signals") ||
       !providerMatrix.includes("warning but remains reproducible and nonfatal"))
     throw new Error("generated provider matrix must explain nonfatal review freshness");

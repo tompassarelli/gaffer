@@ -95,6 +95,7 @@ export function validateProviderCatalog(catalog, expectedProvider, root = ROOT) 
   const sourceUrls = new Set();
   const sourcedModels = new Set();
   const sourcedScopes = new Set();
+  const sourcedScopesByModel = new Map();
   for (const [index, source] of provenance.sources.entries()) {
     const label = `${expectedProvider}.provenance.sources[${index}]`;
     keysOnly(source, ["url", "modelFamilies", "scopes"], label);
@@ -110,7 +111,12 @@ export function validateProviderCatalog(catalog, expectedProvider, root = ROOT) 
         source.scopes.some((scope) => !SOURCE_SCOPES.includes(scope)) ||
         new Set(source.scopes).size !== source.scopes.length)
       throw new Error(`${label}.scopes must use official fact scopes only`);
-    source.modelFamilies.forEach((model) => sourcedModels.add(model));
+    source.modelFamilies.forEach((model) => {
+      sourcedModels.add(model);
+      const modelScopes = sourcedScopesByModel.get(model) ?? new Set();
+      source.scopes.forEach((scope) => modelScopes.add(scope));
+      sourcedScopesByModel.set(model, modelScopes);
+    });
     source.scopes.forEach((scope) => sourcedScopes.add(scope));
   }
   const missingScopes = SOURCE_SCOPES.filter((scope) => !sourcedScopes.has(scope));
@@ -173,6 +179,13 @@ export function validateProviderCatalog(catalog, expectedProvider, root = ROOT) 
   const unknownSourced = [...sourcedModels].filter((model) => !deltaModels.has(model));
   if (unsourced.length || unknownSourced.length)
     throw new Error(`${expectedProvider}: provenance model coverage mismatch; unsourced=${unsourced.join(",")} unknown=${unknownSourced.join(",")}`);
+  const missingScopesByModel = [...deltaModels].flatMap((model) => {
+    const covered = sourcedScopesByModel.get(model) ?? new Set();
+    const missingModelScopes = SOURCE_SCOPES.filter((scope) => !covered.has(scope));
+    return missingModelScopes.length ? [`${model} missing ${missingModelScopes.join(",")}`] : [];
+  });
+  if (missingScopesByModel.length)
+    throw new Error(`${expectedProvider}: provenance must cover every scope per exact model; ${missingScopesByModel.join("; ")}`);
   for (const [model, descriptor] of Object.entries(catalog.modelDeltas)) {
     if (descriptor == null || typeof descriptor !== "object" || Array.isArray(descriptor))
       throw new Error(`${expectedProvider}: modelDeltas.${model} must be an object`);
