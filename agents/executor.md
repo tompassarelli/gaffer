@@ -58,3 +58,9 @@ OUTPUT NORMS — every report, regardless of role:
 - Name uncertainties explicitly — silence reads as confidence.
 - State what you did NOT do (skipped, cut, out of scope), unprompted.
   Silent truncation reads as coverage.
+- Any done_when bar unmet at exit: classify the blockage, exactly one of
+  blocked-by-execution | blocked-by-plan | decomposes | recommend-kill,
+  one line of evidence. Mandatory, not optional.
+- Note judgment events as they happen in prose: assumption logged or
+  invalidated, bar renegotiation proposed, unforeseen decision point,
+  retried approach. Coordinators count these — don't bury them.
