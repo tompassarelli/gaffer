@@ -29,7 +29,7 @@ delta lookup; unversioned calibration is never inherited.
 |---|---|---|---|---|---|---|
 | anthropic | economy | `claude-sonnet-5` | `sonnet` | low | low | none — the existing unversioned Sonnet self-report does not establish an exact Sonnet 5 calibration |
 | anthropic | standard | `claude-sonnet-5` | `sonnet` | medium | medium | none — the existing unversioned Sonnet self-report does not establish an exact Sonnet 5 calibration |
-| anthropic | senior | `claude-opus-4-8` | `opus` | high | high | none — the existing unversioned Opus self-report does not establish an exact Opus 4.8 calibration |
+| anthropic | senior | `claude-opus-4-8` | `opus` | medium, high | high | none — the existing unversioned Opus self-report does not establish an exact Opus 4.8 calibration |
 | anthropic | frontier | `claude-opus-4-8` | `opus` | xhigh, max | xhigh | none — the existing unversioned Opus self-report does not establish an exact Opus 4.8 calibration |
 | openai | economy | `gpt-5.6-luna` | `luna` | low, medium | medium | [calibrated](deltas/gpt-5.6-luna.md) |
 | openai | standard | `gpt-5.6-terra` | `terra` | low, medium | medium | [calibrated](deltas/gpt-5.6-terra.md) |
