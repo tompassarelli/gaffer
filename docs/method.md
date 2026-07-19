@@ -3,7 +3,7 @@
 ## Routing: shape, not difficulty
 
 Initial role triage follows the deliverable SHAPE — execute / implement /
-integrate / design / direct / scout / analyze / verify / judge /
+integrate / design / direct / scout / analyze / review / verify / judge /
 research-science — because shape is a better prior than difficulty-as-felt.
 Role does not choose the other axes: task grade, domain requirements,
 topology, semantic tier, deliberation, and posture remain explicit. A
@@ -28,6 +28,28 @@ Two empirical laws sharpen the routing:
   generated from the catalogs in
   [`docs/provider-matrix.md`](provider-matrix.md); they are evidence for the
   mapping, not shared doctrine.
+
+## Review is an artifact-evaluation shape
+
+Review takes one supplied artifact or change and evaluates it across multiple
+criteria. Its output is evidence-backed, prioritized findings plus an
+`accept`, `changes-required`, or `cannot-assess` disposition. That makes it
+different from analysis (understanding a mechanism), verification (deciding
+one claim), judging (ranking multiple alternatives), design (choosing or
+redesigning a shape), and integration (applying a change).
+
+The generalized contract is grounded in primary code-review practice:
+Google's reviewer guidance treats review as a whole-change, multi-criterion
+assessment across design, functionality, complexity, tests, documentation,
+and context
+([what to look for](https://google.github.io/eng-practices/review/reviewer/looking-for.html));
+its standard prioritizes evidence and system health rather than taste or
+perfection
+([review standard](https://google.github.io/eng-practices/review/reviewer/standard.html));
+and GitHub gives review an explicit approve/request-changes/comment disposition
+([pull-request reviews](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews)).
+Gaffer generalizes beyond code to any one supplied artifact while preserving
+read-only authority.
 
 ## Payloads: consumer-calibrated deltas
 

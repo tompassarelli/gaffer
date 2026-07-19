@@ -9,7 +9,7 @@ import {
   loadProviderCatalog, modelDeltaFor, validateProviderCatalog,
   providerCatalogFreshness, resolvableDeliberations, resolveModelAlias,
 } from "./provider-catalog.mjs";
-import { ROUTING_FIELDS, validateRoutingRequest } from "./routing-request.mjs";
+import { OVERRIDE_FIELDS, ROUTING_FIELDS, validateRoutingRequest } from "./routing-request.mjs";
 import {
   canonicalRoleId, containedLeaf, RETIRED_ROLE_IDS, ROLE_ID_PATTERN_SOURCE,
 } from "./role-id.mjs";
@@ -28,7 +28,7 @@ const staffingPresetKeys = [
 ];
 const stockTemplateNames = [
   "executor", "implementer", "integrator", "designer", "director",
-  "scout", "analyst", "verifier", "judge", "research-scientist",
+  "scout", "analyst", "reviewer", "verifier", "judge", "research-scientist",
 ];
 if (staffing.version !== 2 || staffingSchema.properties?.version?.const !== 2 ||
     JSON.stringify(Object.keys(staffing).sort()) !== JSON.stringify([...staffingKeys].sort()) ||
@@ -46,6 +46,10 @@ if (JSON.stringify(staffing.presets.map(({ name }) => name).sort()) !==
 if (JSON.stringify([...(routingSchema.properties?.posture?.enum ?? [])].sort()) !==
     JSON.stringify([...staffing.vocabulary.postures].sort()))
   throw new Error("routing JSON Schema posture enum must match the staffing vocabulary");
+if (JSON.stringify([...(routingSchema.$defs?.overrideField?.enum ?? [])].sort()) !==
+    JSON.stringify([...OVERRIDE_FIELDS].sort()) ||
+    OVERRIDE_FIELDS.includes("topology"))
+  throw new Error("routing JSON Schema/runtime preset override fields must exclude topology");
 
 // Role/composition identity is one safe namespace across catalog, routing,
 // schemas, UI projection, and generated filenames. Schema copies are checked
@@ -205,26 +209,37 @@ const providerModelToken = new RegExp(
   `(?:^|[^a-z0-9_])(${providerModelTokens.map(escapeRegex).join("|")})(?=$|[^a-z0-9_])`,
   "i",
 );
-function validateProviderNeutralDescriptions(candidate) {
+function validateProviderNeutralPresetProse(candidate) {
   for (const preset of candidate.presets) {
-    const match = preset.description.match(providerModelToken);
-    if (match)
-      throw new Error(`${preset.name}: provider model token ${match[1]} leaked into neutral staffing description`);
+    for (const field of ["tagline", "description"]) {
+      const match = preset[field].match(providerModelToken);
+      if (match)
+        throw new Error(`${preset.name}: provider model token ${match[1]} leaked into neutral staffing ${field}`);
+    }
   }
 }
-validateProviderNeutralDescriptions(staffing);
-const fableLeakFixture = { ...staffing, presets: staffing.presets.map((preset, index) =>
+validateProviderNeutralPresetProse(staffing);
+const fableDescriptionLeakFixture = { ...staffing, presets: staffing.presets.map((preset, index) =>
   index === 0 ? { ...preset, description: `${preset.description} Fable.` } : preset) };
 try {
-  validateProviderNeutralDescriptions(fableLeakFixture);
-  throw new Error("Fable provider-model leak fixture was accepted");
+  validateProviderNeutralPresetProse(fableDescriptionLeakFixture);
+  throw new Error("Fable provider-model description leak fixture was accepted");
 } catch (error) {
-  if (error.message === "Fable provider-model leak fixture was accepted" ||
-      !error.message.includes("provider model token Fable leaked")) throw error;
+  if (error.message === "Fable provider-model description leak fixture was accepted" ||
+      !error.message.includes("provider model token Fable leaked into neutral staffing description")) throw error;
+}
+const fableTaglineLeakFixture = { ...staffing, presets: staffing.presets.map((preset, index) =>
+  index === 0 ? { ...preset, tagline: `${preset.tagline} Fable` } : preset) };
+try {
+  validateProviderNeutralPresetProse(fableTaglineLeakFixture);
+  throw new Error("Fable provider-model tagline leak fixture was accepted");
+} catch (error) {
+  if (error.message === "Fable provider-model tagline leak fixture was accepted" ||
+      !error.message.includes("provider model token Fable leaked into neutral staffing tagline")) throw error;
 }
 const unrelatedProseFixture = { ...staffing, presets: staffing.presets.map((preset, index) =>
   index === 0 ? { ...preset, description: `${preset.description} Consolidated, fabled resolution.` } : preset) };
-validateProviderNeutralDescriptions(unrelatedProseFixture);
+validateProviderNeutralPresetProse(unrelatedProseFixture);
 if (staffing.aliases.some(({ name }) => name === "researcher") ||
     !staffing.presets.find(({ name, taskGrade }) => name === "scout" && taskGrade === "junior") ||
     !staffing.presets.find(({ name, taskGrade }) => name === "research-scientist" && taskGrade === "research-grade"))
@@ -344,6 +359,20 @@ for (const fixture of routingFixtures.invalid) {
       throw new Error(`invalid routing fixture '${fixture.name}' produced wrong error: ${error.message}`);
   }
 }
+{
+  const request = structuredClone(routingFixtures.valid.find(
+    ({ name }) => name === "unchanged preset",
+  )?.request);
+  if (!request) throw new Error("unchanged preset routing fixture is missing");
+  request.composition.overrides = ["topology"];
+  try {
+    validateRoutingRequest(request, staffing);
+    throw new Error("topology was accepted as a preset override field");
+  } catch (error) {
+    if (error.message === "topology was accepted as a preset override field" ||
+        !error.message.includes("composition.overrides may contain only")) throw error;
+  }
+}
 const safeBespoke = routingFixtures.valid.find(({ name }) => name === "complete bespoke contract")?.request;
 if (!safeBespoke) throw new Error("safe bespoke routing fixture is missing");
 validateRoutingRequest(safeBespoke, staffing);
@@ -429,12 +458,12 @@ const compose = (argv) => {
 const hasExactRoutingFields = (payload) =>
   JSON.stringify(Object.keys(payload).sort()) === JSON.stringify([...ROUTING_FIELDS].sort());
 
-// Topology is coordination authority only: worker|orchestrator. verifier and
-// judge are worker-topology ROLES, never a third topology.
+// Topology is coordination authority only: worker|orchestrator. Reviewer,
+// verifier, and judge are worker-topology ROLES, never a third topology.
 if (staffing.vocabulary.topologies.length !== 2 ||
     !["worker", "orchestrator"].every((t) => staffing.vocabulary.topologies.includes(t)))
   throw new Error("topology vocabulary must be exactly worker|orchestrator");
-for (const role of ["verifier", "judge"])
+for (const role of ["reviewer", "verifier", "judge"])
   if (staffing.presets.find((r) => r.name === role)?.topology !== "worker")
     throw new Error(`${role} must be a worker-topology role, not a topology`);
 const director = staffing.presets.find(({ name }) => name === "director");
@@ -448,9 +477,20 @@ if (!judge || judge.taskGrade !== "staff" || judge.tier !== "frontier" ||
 const verifier = staffing.presets.find(({ name }) => name === "verifier");
 if (!verifier || verifier.topology !== "worker" || verifier.posture !== "evaluate")
   throw new Error("verifier must remain a worker/evaluate stock template");
+const reviewer = staffing.presets.find(({ name }) => name === "reviewer");
+if (!reviewer || reviewer.taskGrade !== "senior" || reviewer.tier !== "senior" ||
+    reviewer.deliberation !== "high" || reviewer.topology !== "worker" ||
+    reviewer.posture !== "evaluate" ||
+    JSON.stringify(reviewer.capabilities) !== JSON.stringify([
+      "filesystem.read", "filesystem.search", "shell.readonly",
+    ]))
+  throw new Error("reviewer must remain the senior/senior/high read-only worker/evaluate stock template");
 for (const preset of staffing.presets.filter(({ name }) => name !== "director"))
   if (preset.topology !== "worker") throw new Error(`${preset.name} unexpectedly grants orchestrator topology`);
-const nonAuthoringPresets = ["designer", "director", "scout", "analyst", "verifier", "judge", "research-scientist"];
+const nonAuthoringPresets = [
+  "designer", "director", "scout", "analyst", "reviewer", "verifier", "judge",
+  "research-scientist",
+];
 for (const name of nonAuthoringPresets) {
   const preset = staffing.presets.find((candidate) => candidate.name === name);
   if (!preset || preset.capabilities.includes("filesystem.write") || preset.capabilities.includes("shell") ||
@@ -643,12 +683,27 @@ for (const [role, flag, value, field] of [
     throw new Error(`override ${flag} collapsed orthogonal axis ${axis}`);
   }
 }
+for (const [direction, args, expected] of [
+  ["down", ["--task-grade", "mid", "--tier", "standard", "--deliberation", "medium"],
+    { taskGrade: "mid", tier: "standard", reasoning: "medium" }],
+  ["up", ["--task-grade", "staff", "--tier", "frontier", "--deliberation", "xhigh"],
+    { taskGrade: "staff", tier: "frontier", reasoning: "xhigh" }],
+]) {
+  const { status, payload, stderr } = compose([
+    "verifier", ...args, "--override-reason", `verdict leverage routes ${direction}`,
+  ]);
+  if (status !== 0 || payload.taskGrade !== expected.taskGrade ||
+      payload.tier !== expected.tier || payload.reasoning !== expected.reasoning ||
+      JSON.stringify(payload.composition.overrides) !==
+        JSON.stringify(["taskGrade", "tier", "reasoning"]))
+    throw new Error(`verifier ${direction} override contract failed: ${stderr}`);
+}
 {
   const incompatibleTopology = compose(["integrator", "--topology", "orchestrator",
     "--override-reason", "topology invariant probe"]);
   if (incompatibleTopology.status === 0 ||
-      !incompatibleTopology.stderr.includes("orchestrator topology requires coordination"))
-    throw new Error("preset topology override silently projected incompatible capabilities");
+      !incompatibleTopology.stderr.includes("--topology applies only to bespoke compositions"))
+    throw new Error("composer accepted a stock-template topology option");
 }
 // In-tier deliberation override (frontier resolves xhigh AND max) is a valid single-axis move.
 {
@@ -717,7 +772,8 @@ for (const tier of staffing.vocabulary.semanticTiers) {
       throw new Error(`preset accepted bespoke-only flag: ${args.slice(1).join(" ")}`);
   }
   const contradictoryDirector = compose(["director", "--topology", "worker", "--override-reason", "contradiction probe"]);
-  if (contradictoryDirector.status === 0 || !contradictoryDirector.stderr.includes("director cannot use worker topology"))
+  if (contradictoryDirector.status === 0 ||
+      !contradictoryDirector.stderr.includes("--topology applies only to bespoke compositions"))
     throw new Error("director topology contradiction was accepted");
 }
 
@@ -742,6 +798,7 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
   const topologies = readFileSync(resolve(root, "docs/topologies.md"), "utf8");
   const method = readFileSync(resolve(root, "docs/method.md"), "utf8");
   const generatedDirector = readFileSync(resolve(root, "agents/director.md"), "utf8");
+  const generatedReviewer = readFileSync(resolve(root, "agents/reviewer.md"), "utf8");
   const internedWorker = /\binterned worker\b|worker\s*\(\s*interned\s*\)/i;
   if (internedWorker.test(doctrine) || internedWorker.test(northAdapter))
     throw new Error("obsolete interned-worker jargon returned; use terminal worker");
@@ -762,23 +819,48 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
   const methodSection = readme.split("## The payload method")[1]?.split("## Install")[0] ?? "";
   if (/\b(?:Sonnet|Opus)\b/.test(methodSection))
     throw new Error("shared calibration method must not hardcode Anthropic model names");
+  const portableDoctrine = doctrine.replace(
+    /<!-- gaffer:spawn-surfaces[\s\S]*?<!-- \/gaffer:spawn-surfaces -->/,
+    "",
+  );
+  if (/subagent_type\s*:|\bagent\s*\(|mcp__north|provider\s*=\s*`?auto/i.test(portableDoctrine))
+    throw new Error("provider/harness invocation syntax escaped the fenced doctrine adapter example");
+  if (!/FUNCTION\/ROLE,[\s\S]{0,160}POSTURE/.test(doctrine) ||
+      !/Function, task grade, domain requirements,[\s\S]{0,100}posture/.test(readme) ||
+      !/Role is conceptually independent[\s\S]{0,180}posture/.test(roles) ||
+      !/Role does not choose the other axes[\s\S]{0,180}posture/.test(method) ||
+      !/Classify the independent axes[\s\S]{0,1200}Posture/.test(composeSkill))
+    throw new Error("posture must appear in every canonical independent-axis list");
   for (const field of ROUTING_FIELDS)
     if (!doctrine.includes(field)) throw new Error(`doctrine spawn contract omits ${field}`);
   for (const block of ["gradeBlock", "topologyBlock", "commsBlock"])
     if (!composeSkill.includes(block)) throw new Error(`compose example omits ${block}`);
   if (!/single claim remains verifier work at[\s\S]{0,120}any leverage/i.test(roles) ||
       !/confirmed[\s\S]{0,120}affirmative evidence[\s\S]{0,120}refuted[\s\S]{0,120}counterevidence/i.test(roles) ||
-      !/ambiguous evidence[\s\S]{0,160}cannot-determine/i.test(roles))
+      !/ambiguous evidence[\s\S]{0,160}cannot-determine/i.test(roles) ||
+      !/justified stock-template override may move[\s\S]{0,100}up or down[\s\S]{0,120}quality floor remains binding/i.test(roles))
     throw new Error("verifier role lost its single-claim boundary or strict verdict epistemics");
+  if (!/ROLE: REVIEWER[\s\S]{0,180}one supplied artifact[\s\S]{0,120}multiple[\s\S]{0,220}prioritized/i.test(roles) ||
+      !/accept \/ changes-required \/\s*cannot-assess/i.test(roles) ||
+      !/REVIEWER[\s\S]{0,1800}gaffer:verifier[\s\S]{0,300}gaffer:analyst[\s\S]{0,300}gaffer:designer[\s\S]{0,300}gaffer:judge[\s\S]{0,300}gaffer:integrator/i.test(roles) ||
+      !["google.github.io/eng-practices/review/reviewer/looking-for.html",
+        "google.github.io/eng-practices/review/reviewer/standard.html",
+        "docs.github.com/en/pull-requests"].every((source) => `${roles}\n${method}`.includes(source)) ||
+      !generatedReviewer.includes("ROLE: REVIEWER") ||
+      !generatedReviewer.includes("TOPOLOGY: WORKER") ||
+      !generatedReviewer.includes("POSTURE: EVALUATE"))
+    throw new Error("reviewer lost its generalized artifact-review contract, distinctions, grounding, or generated blocks");
   if (!/JUDGE[\s\S]{0,120}two or more supplied alternatives/.test(roles) ||
       /JUDGE[\s\S]{0,1000}(?:single make-or-break|ranking findings by severity)/i.test(roles))
     throw new Error("judge must rank multiple supplied alternatives only");
   if (!/DESIGNER[\s\S]{0,500}Must escalate: implementation/i.test(roles) ||
       !/DIRECTOR[\s\S]{0,1800}context-carrying, independently staffed verifier returned a[\s\S]{0,120}verdict, probe, and observed result[\s\S]{0,120}emergent whole outcome/i.test(roles) ||
-      !/DIRECTOR[\s\S]{0,1400}spot-check at most one[\s\S]{0,80}load-bearing claim/i.test(roles))
+      !/DIRECTOR[\s\S]{0,700}Do not rerun or spot-check a worker probe inline/i.test(roles) ||
+      /DIRECTOR[\s\S]{0,1600}(?:may spot-check|spot-check at most)/i.test(roles))
     throw new Error("designer/director authority and verification boundaries drifted");
   if (/a completed unit is verified by a[\s\S]{0,80}context-carrying verifier fork/i.test(doctrine) ||
       /otherwise the director's read-only spot-checks/i.test(roles) ||
+      /ORCHESTRATOR[\s\S]{0,1000}(?:may spot-check|spot-check at most)/i.test(topologies) ||
       !/ORCHESTRATOR[\s\S]{0,700}Self-contained units return worker evidence[\s\S]{0,180}verdict leverage warrants one/i.test(topologies) ||
       !/ORCHESTRATOR[\s\S]{0,900}emergent aggregate always gets a report from[\s\S]{0,120}independently staffed[\s\S]{0,160}verdict,\s*probe, and observed result/i.test(topologies) ||
       !/emergent aggregate receives an independently staffed,[\s\S]{0,120}verifier report with a verdict, probe, and observed result/i.test(method))
@@ -789,7 +871,7 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
   if (!/current lanes share one OS uid[\s\S]{0,220}`attested` or `verified` status is reserved for a[\s\S]{0,80}future protected trust boundary/i.test(doctrine) ||
       !/Current lanes share one OS uid[\s\S]{0,220}`attested` or `verified` status is[\s\S]{0,80}reserved for a future protected trust boundary/i.test(readme) ||
       !/evidence-backed result/.test(director.tagline) ||
-      !/evidence-checked/.test(director.description))
+      !/evidence-reconciled/.test(director.description))
     throw new Error("shared-UID trust vocabulary must reserve attested/verified status and describe evidence-backed outcomes");
   const postures = readFileSync(resolve(root, "docs/postures.md"), "utf8");
   if (!/POSTURE: EVALUATE[\s\S]{0,700}non-mutating|POSTURE: EVALUATE[\s\S]{0,700}mutating the subject/.test(postures))
@@ -799,9 +881,17 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
   if (!/Posture never expands[\s\S]{0,120}capability contract/i.test(postures) ||
       !/read-only probes and written hypotheses for non-authoring\s+agents/i.test(postures))
     throw new Error("explore posture must not grant authoring authority to read-only stock templates");
-  if (!/new (?:experimental )?apparatus[\s\S]{0,100}code[\s\S]{0,160}(?:authoring role|handoff)/i.test(
-    staffing.presets.find(({ name }) => name === "research-scientist")?.description ?? ""))
-    throw new Error("research-scientist must escalate new apparatus/code authoring");
+  const analystDescription = staffing.presets.find(({ name }) => name === "analyst")?.description ?? "";
+  if (!/falls back to explicitly static-only analysis[\s\S]{0,100}unobserved behavior/i.test(analystDescription) ||
+      !/ANALYST[\s\S]{0,1000}no enforceable read-only execution surface[\s\S]{0,180}static-only/i.test(roles))
+    throw new Error("analyst must fall back to labeled static-only analysis when read-only execution is unavailable");
+  const researchDescription = staffing.presets.find(
+    ({ name }) => name === "research-scientist",
+  )?.description ?? "";
+  if (!/existing non-mutating tools or probes only/i.test(researchDescription) ||
+      !/new script[\s\S]{0,120}apparatus[\s\S]{0,120}ephemeral scratch/i.test(researchDescription) ||
+      !/RESEARCH-SCIENTIST[\s\S]{0,900}new script[\s\S]{0,160}ephemeral scratch/i.test(roles))
+    throw new Error("research-scientist must use existing non-mutating probes and hand off all new apparatus authoring");
   if (!providerMatrix.includes("sources do not") || !providerMatrix.includes("exact rung economics"))
     throw new Error("generated provider matrix must distinguish official provenance from Gaffer calibration judgments");
   if (!providerMatrix.includes("every exact catalog model covered for each fact") ||
@@ -817,6 +907,12 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
     "withholds Bash", "not proof of arbitrary external-service authority", "`north linear`"])
     if (!northAdapter.includes(enforcement))
       throw new Error(`North adapter omits fail-closed non-authoring enforcement: ${enforcement}`);
+  if (!northAdapter.includes("reviewer") ||
+      !northAdapter.includes("Stock-template overrides may change task grade, domains, tier, reasoning, or") ||
+      !northAdapter.includes("Stock topology is fixed") ||
+      !northAdapter.includes("topology alone never loads the director role") ||
+      !northAdapter.includes("does not run worker probes inline"))
+    throw new Error("generated North adapter lost reviewer, topology, or director evidence boundaries");
   for (const provenanceState of ["gaffer:<preset>", "gaffer:<preset>+override", "gaffer:bespoke:<id>",
     "gaffer:not-selected", "gaffer:legacy-debt"])
     if (!northAdapter.includes(provenanceState) || !routing.includes(provenanceState))

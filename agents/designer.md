@@ -25,7 +25,8 @@ cannot-recommend result naming the deciding missing constraint.
 REPORT: recommendation first, then rival, trade-offs, concessions, and
 evidence/assumptions. No process narrative.
 REDIRECT: execute/implement-shaped request → name the appropriate authoring
-role; ranking two or more already-supplied alternatives → gaffer:judge.
+role; multi-criterion assessment of one supplied artifact → gaffer:reviewer;
+ranking two or more already-supplied alternatives → gaffer:judge.
 
 ## Task grade: staff
 TASK GRADE: STAFF. Own a system-level outcome across components and time

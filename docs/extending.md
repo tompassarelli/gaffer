@@ -33,10 +33,10 @@ the template library has no privileged status beyond being pre-built.
 Selection ladder: use a stock template unchanged when its deliverable and
 authority fit; use a justified stock-template override when task grade,
 domains, tier, reasoning, or posture change but its fixed topology/capability
-boundary still fits. A topology/authority change requires a bespoke
-composition, as does a different responsibility, done-criteria, or report
-shape. The v2 machine schema retains `presets`, `kind: "preset"`, and
-`nearestPreset` for compatibility.
+boundary still fits. A topology change is never a preset override. Any change
+to responsibility, deliverable, capability/authority boundary, done criteria,
+or report shape requires a bespoke composition. The v2 machine schema retains
+`presets`, `kind: "preset"`, and `nearestPreset` for compatibility.
 
 1. Name the axes: function/role, `taskGrade`, domain requirements, topology and
    dependency shape, leverage, quality floor, semantic tier, deliberation,
@@ -105,7 +105,7 @@ shape. The v2 machine schema retains `presets`, `kind: "preset"`, and
 | Role | authority / deliverable / report / redirect | advisory | `docs/roles.md` | — |
 | Task grade | work scope / autonomy / novelty prior | advisory | stock template or bespoke contract | spawn metadata |
 | Domain requirements | expertise + context the brief/adapter must supply | recorded; hard only when a harness has a real capability gate | stock template or bespoke contract | prompt / required capabilities |
-| Topology | worker / orchestrator coordination authority (verifier/judge are worker roles) | host-enforced | doctrine + request | spawn opts / host orchestration |
+| Topology | worker / orchestrator coordination authority (reviewer/verifier/judge are worker roles) | host-enforced | doctrine + request | spawn opts / host orchestration |
 | Dependency shape | when topology pays for itself | planner input (advisory) | doctrine — derives topology | orchestration plan |
 | Leverage | value of improved judgment / cost of plausible error | planner input (advisory) | doctrine — derives tier | selection reason |
 | Quality floor | minimum responsible semantic tier | planner input (advisory) | doctrine — bounds tier | tier-selection bound |
@@ -132,8 +132,8 @@ sandbox. A tools allowlist without Edit/Write is not itself a write boundary.
 Topology and capabilities are validated together: orchestrators require
 `coordination` and forbid `filesystem.write` plus unrestricted `shell`; workers
 forbid `coordination`; `shell` and `shell.readonly` are mutually exclusive.
-Changing a stock template's topology never projects a new capability set behind the
-scenes, so incompatible topology overrides are rejected.
+Changing a stock template's topology is rejected rather than projecting a new
+capability set behind the scenes; a different pairing is bespoke.
 
 Resource policy follows the same boundary. A bespoke composition selects one
 semantic tier and one reasoning level; it does not carry an ordered fallback

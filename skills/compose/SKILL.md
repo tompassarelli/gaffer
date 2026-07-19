@@ -8,30 +8,34 @@ description: Assemble a provider-neutral bespoke (custom) composition across ind
 Templates cover the common cells. Use one unchanged when deliverable and
 authority fit; use a justified template override when task grade,
 domains, tier, reasoning, or posture change but its fixed topology/capability
-boundary still fits. A topology/authority change requires a bespoke
-composition, as does a different responsibility, done-criteria, or report
-shape. Machine payloads retain v2 `kind: "preset"` and `nearestPreset` keys.
+boundary still fits. A topology change is never a template override. Any change
+to responsibility, deliverable, capability/authority boundary, done criteria,
+or report shape requires a bespoke composition. Machine payloads retain v2
+`kind: "preset"` and `nearestPreset` keys.
 For a bespoke composition, assemble the payload from this plugin's blocks and
-paste it into the spawn prompt (or Workflow `agent()` prompt).
+pass it through the selected adapter's documented spawn surface.
 
 ## Procedure
 
 1. **Classify the independent axes** before selecting blocks:
    - Role/function — responsibility and deliverable: executor, implementer,
-     integrator, designer, director, scout, analyst, verifier, judge, or
-     research-scientist.
+     integrator, designer, director, scout, analyst, reviewer, verifier, judge,
+     or research-scientist.
    - `taskGrade` — novice, junior, mid, senior, staff, principal, or
      research-grade.
    - Domain requirements — expertise, context, and external-access
      prerequisites the brief or runtime must actually provide. A requirement
      records a gate; it never grants access by itself.
-   - Topology — worker or orchestrator (coordination authority); verifier and
-     judge are worker-topology roles, never a topology; never inferred from
-     grade. Stock templates carry fixed topology/capability pairings, so use a
-     bespoke composition rather than assuming an override creates authority.
+   - Topology — worker or orchestrator (coordination authority); reviewer,
+     verifier, and judge are worker-topology roles, never a topology; never
+     inferred from grade. Stock templates carry fixed topology/capability
+     pairings, so use a bespoke composition rather than attempting a topology
+     override.
    - Semantic tier — economy, standard, senior, or frontier capability floor.
    - Deliberation — low, medium, high, xhigh, or max reasoning budget where
      supported by the selected provider tier.
+   - Posture — explore, deliver, preserve, or evaluate collision ordering. It
+     never expands role, topology, or capabilities.
    Done: each axis is stated explicitly; no role name doubles as a grade,
    model, or manager permission.
 2. **Audit authority and access before buying a model turn.** List every
@@ -45,8 +49,8 @@ paste it into the spawn prompt (or Workflow `agent()` prompt).
    execution surface; unmet access is a preflight result, not a model task.
 3. **Pick the prompt blocks** (all under this skill's plugin root):
    - Role — `docs/roles.md`: executor · implementer · integrator ·
-     designer · director · scout · analyst · verifier · judge · research-scientist. Sets authority,
-     deliverable, report format, redirects.
+     designer · director · scout · analyst · reviewer · verifier · judge ·
+     research-scientist. Sets authority, deliverable, report format, redirects.
    - Task grade — `docs/task-grades.md`: novice through research-grade. Sets
      the work-contract prior without impersonating a model tier.
    - Topology — `docs/topologies.md`: worker · orchestrator. Sets spawn and
@@ -83,7 +87,10 @@ paste it into the spawn prompt (or Workflow `agent()` prompt).
    list. Done: the bespoke reason and contract are present, with promotion
    status and no implicit routing defaults.
 
-## Workflow example
+## Adapter example (North execution envelope)
+
+The following fenced syntax belongs to the North adapter; it is not part of
+the portable Gaffer request contract.
 
 ```js
 const prompt = roleBlock + gradeBlock + topologyBlock + postureBlock +

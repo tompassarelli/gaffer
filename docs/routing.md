@@ -23,7 +23,7 @@ is an error, not a silently-ignored no-op — the composer rejects unknown optio
 
 | Planner input | What it captures | Derives |
 |---|---|---|
-| task shape | execute / implement / integrate / design / direct / scout / analyze / verify / judge / research-science | role + stock-template defaults |
+| task shape | execute / implement / integrate / design / direct / scout / analyze / review / verify / judge / research-science | role + stock-template defaults |
 | leverage | how much better judgment changes downstream outcomes (distinct from difficulty and grade) | argues tier / quality floor up |
 | dependency shape | atomic-cohesive, deterministic-workflow, parallel-breadth, dynamic-decomposition, tightly-coupled-sequential | topology |
 | quality floor | lowest responsible tier for the decision | bounds tier selection; refuses degraded routes |
@@ -49,11 +49,14 @@ importance. These stay an orchestrator's reasoning today — North records
 ```
 
 ```ts
+type OverrideField =
+  | "taskGrade" | "domainRequirements" | "tier" | "reasoning" | "posture";
+
 type RoutingRequest = {
   role: string;                 // function / deliverable; stock-template or bespoke name
   taskGrade: "novice" | "junior" | "mid" | "senior" | "staff" | "principal" | "research-grade";
   domainRequirements: string[];
-  topology: "worker" | "orchestrator";                       // coordination authority; verifier/judge are worker ROLES
+  topology: "worker" | "orchestrator";                       // coordination authority; reviewer/verifier/judge are worker ROLES
   tier: "economy" | "standard" | "senior" | "frontier";      // model capability floor
   reasoning: "low" | "medium" | "high" | "xhigh" | "max";    // deliberation
   posture: "explore" | "deliver" | "preserve" | "evaluate";
@@ -77,12 +80,14 @@ judgment expected of the work; `tier` is the model capability floor; `reasoning`
 is deliberation; `domainRequirements` names context/expertise the brief or
 adapter must supply, including named external-access prerequisites when the
 deliverable depends on another system (recording a requirement alone grants
-nothing); and
-`topology` describes coordination authority. An adapter must not infer one
+nothing); `topology` describes coordination authority; and `posture` names the
+priority order when values collide. An adapter must not infer one
 solely from another. A stock template may propose all of them, but the recorded
-request keeps them distinct. A changed stock-template axis is listed in
-`overrides[]` and requires `overrideReason`; an unchanged stock template uses
-`overrides: []` and must not carry a reason. The canonical JSON Schema and
+request keeps them distinct. A changed overrideable stock-template axis is
+listed in `overrides[]` and requires `overrideReason`; an unchanged stock
+template uses `overrides: []` and must not carry a reason. Stock topology is
+fixed and never appears in `overrides[]`; changing it requires a bespoke
+composition with explicit capabilities. The canonical JSON Schema and
 cross-harness examples are
 [`contracts/routing-request.schema.json`](../contracts/routing-request.schema.json)
 and [`contracts/routing-request.fixtures.json`](../contracts/routing-request.fixtures.json).
@@ -94,8 +99,9 @@ wire-level `role`. Retired IDs such as `researcher` remain invalid rather than
 silently returning as bespoke roles.
 
 `tier` and `reasoning` are independent axes, but their COMBINATION must resolve
-through a provider catalog (see below). `verifier` and `judge` are functions on
-worker topology, not topologies: `topology` is only `worker` or `orchestrator`.
+through a provider catalog (see below). `reviewer`, `verifier`, and `judge` are
+functions on worker topology, not topologies: `topology` is only `worker` or
+`orchestrator`.
 
 ## Shape routing
 
@@ -108,19 +114,27 @@ worker topology, not topologies: `topology` is only `worker` or `orchestrator`.
 | direct | director | frontier | orchestrator | deliver |
 | scout | scout | economy | worker | explore |
 | analyze | analyst | senior | worker | explore |
+| review | reviewer | senior | worker | evaluate |
 | verify | verifier | senior | worker | evaluate |
 | judge | judge | frontier | worker | evaluate |
 | research-science | research-scientist | frontier | worker | explore |
 
 These are stock templates, not coupled identities. `taskGrade`, domain
-requirements, topology, semantic tier, and deliberation are conceptually
-independent. Current stock templates nevertheless ship fixed, enforceable
-topology/capability pairings. A topology override does not rewrite a stock
-template's capabilities: it is accepted only when the fixed capabilities
-already satisfy the requested topology. Otherwise choose a compatible stock
-template or a bespoke composition with explicit capabilities. The layer floor
-raises foundational, library, and architecture work to at least `senior`.
-Blast radius may raise a tier; importance alone does not.
+requirements, topology, semantic tier, deliberation, and posture are
+conceptually independent. Current stock templates nevertheless ship fixed,
+enforceable topology/capability pairings. A stock template's topology cannot
+be overridden. Choose a compatible stock template or a bespoke composition
+with explicit capabilities for a different topology. The layer floor raises
+foundational, library, and architecture work to at least `senior`. Blast radius
+may raise a tier; importance alone does not.
+
+Reviewer is the multi-criterion evaluation of one supplied artifact or change:
+prioritized evidence-backed findings plus `accept`, `changes-required`, or
+`cannot-assess`. Analyst explains a mechanism, verifier decides one claim,
+judge ranks multiple supplied alternatives, designer chooses or redesigns a
+shape, and integrator applies a change. Verifier's senior/high default may be
+justifiably overridden up or down, but the task's quality floor remains
+binding.
 
 The canonical machine-readable stock-template definitions live in
 `staffing/catalog.json` (`staffing/catalog.schema.json` documents the format).
@@ -138,23 +152,23 @@ node scripts/compose-routing.mjs migration-forensics --nearest analyst \
   --contract @/absolute/path/to/migration-contract.json --no-promotion-candidate
 ```
 
-The command prints the JSON that follows a `GAFFER_ROUTING` marker. Stock-template
-values are defaults only: every changed axis replaces only itself and is
-auditable. Unknown roles are valid bespoke compositions only with a reason,
-promotion status, structured authority / deliverable / done contract, and an
-optional `nearestPreset` reference when a stock template genuinely helps
-explain or seed the composition. Without `--nearest`, the composer requires
-explicit task grade, topology, tier, deliberation, and posture; it never fills
-an unknown role from generic defaults. Domain requirements may explicitly be
-an empty list.
+The command prints the JSON that follows a `GAFFER_ROUTING` marker.
+Stock-template values are defaults only: every changed overrideable axis
+replaces only itself and is auditable. Their topology is fixed. Unknown roles
+are valid bespoke compositions only with a reason, promotion status,
+structured authority / deliverable / done contract, and an optional
+`nearestPreset` reference when a stock template genuinely helps explain or
+seed the composition. Without `--nearest`, the composer requires explicit task
+grade, topology, tier, deliberation, and posture; it never fills an unknown role
+from generic defaults. Domain requirements may explicitly be an empty list.
 
 Selection ladder: use a stock template unchanged when its deliverable and
 authority fit; use a justified stock-template override when task grade,
 domains, tier, reasoning, or posture change but its fixed topology/capability
-boundary still fits. A topology/authority change requires a bespoke/custom
-composition, as does a different responsibility, done-criteria, or report
-shape. Machine payloads retain the v2 `presets`, `kind: "preset"`, and
-`nearestPreset` names for compatibility.
+boundary still fits. A topology change is never a preset override. Any change
+to responsibility, deliverable, capability/authority boundary, done criteria,
+or report shape requires a bespoke/custom composition. Machine payloads retain
+the v2 `presets`, `kind: "preset"`, and `nearestPreset` names for compatibility.
 
 ## Tier × deliberation resolution
 
@@ -262,8 +276,8 @@ promotion.
 
 `scripts/compose-routing.mjs` validates semantic tier and deliberation
 resolvability; current North chooses the provider/account and resolves the pair.
-Together they validate and record role, task grade, domain
-requirements, topology, posture, and composition as independent metadata.
+Together they validate and record role, task grade, domain requirements,
+topology, tier, deliberation, posture, and composition as independent metadata.
 Recorded metadata is useful for audit and empirical routing reports, but does
 not by itself load domain expertise, change a role contract by grade, or spawn
 an orchestrator graph. Planner inputs (shape, leverage, dependency shape,

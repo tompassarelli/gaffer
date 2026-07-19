@@ -6,7 +6,7 @@ export const ROUTING_FIELDS = [
   "role", "taskGrade", "domainRequirements", "topology", "tier", "reasoning", "posture", "composition",
 ];
 export const OVERRIDE_FIELDS = [
-  "taskGrade", "domainRequirements", "topology", "tier", "reasoning", "posture",
+  "taskGrade", "domainRequirements", "tier", "reasoning", "posture",
 ];
 export const CONTRACT_FIELDS = [
   "responsibility", "deliverable", "capabilities", "mayDecide", "mustEscalate", "doneWhen", "report",
@@ -96,6 +96,8 @@ export function validateRoutingRequest(value, catalog = loadStaffingCatalog()) {
     if (!preset) throw new Error(`unknown role ${role} requires a bespoke composition`);
     const compositionId = canonicalRoleId(composition.id, "composition.id");
     if (compositionId !== role) throw new Error(`composition.id must match canonical role ${role}`);
+    if (request.topology !== preset.topology)
+      throw new Error(`stock-template topology is fixed at '${preset.topology}'; use a bespoke composition for '${request.topology}'`);
     const declared = stringList(composition.overrides, "composition.overrides");
     if (declared.some((field) => !OVERRIDE_FIELDS.includes(field)))
       throw new Error(`composition.overrides may contain only: ${OVERRIDE_FIELDS.join(", ")}`);
@@ -105,8 +107,6 @@ export function validateRoutingRequest(value, catalog = loadStaffingCatalog()) {
     if (actual.length) nonEmptyString(composition.overrideReason, "composition.overrideReason");
     else if (composition.overrideReason !== undefined)
       throw new Error("unchanged stock template must omit composition.overrideReason");
-    if (role === "director" && request.topology === "worker")
-      throw new Error("director cannot use worker topology; choose a worker role for atomic work");
     validateTopologyCapabilities(request.topology, preset.capabilities, `routing stock template ${role}`);
   } else if (composition.kind === "bespoke") {
     const allowed = ["kind", "id", "nearestPreset", "bespokeReason", "promotionCandidate", "contract"];

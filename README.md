@@ -17,10 +17,11 @@ Install it and your sessions gain:
 
 1. **A routing doctrine** (injected at session start): classify each
    delegated task by *shape* — execute / implement / integrate / design /
-   direct / scout / analyze / verify / judge / research-science — and route it
+   direct / scout / analyze / review / verify / judge / research-science — and
+   route it
    on one continuous semantic ramp. Function, task grade, domain requirements,
-   topology, model capability, and deliberation stay independent, governed by
-   three routing laws:
+   topology, model capability, deliberation, and posture stay independent,
+   governed by three routing laws:
    - **Layer floor** — foundational / library / architecture code never
      goes to the cheap tier, however mechanical the task looks.
    - **Shingle law** — each semantic step exposes only useful
@@ -40,12 +41,13 @@ Install it and your sessions gain:
    | `gaffer:implementer` | standard / medium | one feature/fix inside known patterns |
    | `gaffer:integrator` | senior / high | cross-seam work, ambiguous debugging, behavior-at-stake refactors |
    | `gaffer:designer` | frontier / xhigh | choosing shapes: APIs, data models, decomposition (decision-only, read-only tools) |
-   | `gaffer:director` | frontier / xhigh | decompose, independently staff, evidence-check, and reconcile multi-agent work |
+   | `gaffer:director` | frontier / xhigh | decompose, independently staff, consume evidence, and reconcile multi-agent work |
    | `gaffer:scout` | economy / low | locate, map, gather sources (breadth, fan-out) |
    | `gaffer:analyst` | senior / high | deep-dive: how/why it works, root-cause, design-grounding (read-only) |
-   | `gaffer:verifier` | senior / high | adversarial verification of one claim at any leverage (override the axes when warranted) |
+   | `gaffer:reviewer` | senior / high | one supplied artifact/change reviewed across multiple criteria, with findings and disposition |
+   | `gaffer:verifier` | senior / high | adversarial verification of one claim (justified overrides may move up or down; quality floor binds) |
    | `gaffer:judge` | frontier / xhigh | rubric-backed ranking of multiple supplied alternatives |
-   | `gaffer:research-scientist` | frontier / xhigh | hypothesis and experiment design plus read-only evidence analysis |
+   | `gaffer:research-scientist` | frontier / xhigh | hypothesis/experiment design plus existing non-mutating evidence probes; new apparatus is handed off |
 
    Exact versioned model pins are generated from the dated provider catalogs;
    see [`docs/provider-matrix.md`](docs/provider-matrix.md). Every exact catalog
@@ -53,10 +55,10 @@ Install it and your sessions gain:
    provenance; provider-wide union coverage cannot substitute for a model's
    missing scope.
 
-   The template library also staffs **workflow stages** (including ultracode-authored
-   workflows): `agent(prompt, {agentType: 'gaffer:verifier'})` — the
-   doctrine tells the session which member plays which stage, and stops
-   workers from silently inheriting a top-tier session's model.
+   The template library also staffs **workflow stages**. The doctrine tells the
+   session which member plays each stage and stops workers from silently
+   inheriting a top-tier session's model; concrete invocation syntax belongs
+   to the selected adapter's fenced example.
 
    Verification remains evidence-backed: workers report evidence, and an
    independently staffed verifier returns a verdict with the probe and observed
@@ -137,10 +139,10 @@ reusable, named starting composition; a **bespoke** (custom) composition is an
 explicit one-off contract. Start with a template. Use it unchanged when its
 deliverable and authority fit; use a justified override when task grade,
 domains, tier, reasoning, or posture change but the fixed topology/capability
-boundary still fits. Use a bespoke composition when responsibility,
-topology/authority, done criteria, or report shape differs. The v2 machine
-schema retains `presets`, `kind: "preset"`, and `nearestPreset` for
-compatibility.
+boundary still fits. Topology is never a template override. Use a bespoke
+composition when topology, responsibility, deliverable, capability/authority
+boundary, done criteria, or report shape differs. The v2 machine schema
+retains `presets`, `kind: "preset"`, and `nearestPreset` for compatibility.
 
 Each template is a transparent starting composition, not an identity
 constraint:
@@ -148,15 +150,16 @@ constraint:
 `research-grade`, domain requirements state expertise/context the brief or
 adapter must supply (metadata alone loads nothing), topology grants
 coordination authority, semantic tier sets a model capability floor, and
-deliberation sets reasoning depth. Template overrides record exactly
-which axes changed and why. Bespoke compositions carry a complete
-authority/deliverable/done contract and an explicit promotion decision.
+deliberation sets reasoning depth; posture sets what yields under collision.
+Template overrides record exactly which overrideable axes changed and why.
+Bespoke compositions carry a complete authority/deliverable/done contract and
+an explicit promotion decision.
 
 The axes are conceptually independent, but the shipped templates bind
 topology to a fixed, enforceable capability set: director carries
 orchestrator/coordination authority and the other stock templates carry worker
-authority. A topology override never manufactures capabilities; use a bespoke
-composition for a different pairing.
+authority. A topology change requires a bespoke composition; it never
+manufactures capabilities on a stock template.
 
 Gaffer also separates task economics from provider state. Leverage estimates the
 downstream value of better judgment, and dependency shape argues for one worker,

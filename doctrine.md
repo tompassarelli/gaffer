@@ -8,21 +8,23 @@ floor and deliberation.
 The templates are a STANDARD LIBRARY, not a roster limit — shape triage
 proposes a template, while the routing decision keeps its axes explicit:
 FUNCTION/ROLE,
-TASK GRADE, DOMAIN REQUIREMENTS, TOPOLOGY, SEMANTIC TIER, and DELIBERATION.
+TASK GRADE, DOMAIN REQUIREMENTS, TOPOLOGY, SEMANTIC TIER, DELIBERATION, and
+POSTURE.
 No template fits ⇒ author a bespoke (custom) composition (BESPOKE
 COMPOSITIONS, bottom); contorting the task to a template is the misfire.
 
 SELECTION LADDER: use a template unchanged when deliverable and authority fit;
 use a justified template override when task grade, domains, tier,
 reasoning, or posture change but its fixed topology/capability boundary still
-fits. A topology/authority change requires a bespoke composition, as does a
-different responsibility, done-criteria, or report shape. Machine payloads
-retain v2 `kind:"preset"` and `nearestPreset` keys for compatibility.
+fits. A topology change is never a preset override. Any change to
+responsibility, deliverable, capability/authority boundary, done criteria, or
+report shape requires a bespoke composition. Machine payloads retain v2
+`kind:"preset"` and `nearestPreset` keys for compatibility.
 
 ORTHOGONAL AXES — never smuggle one decision inside another:
 - FUNCTION/ROLE names the responsibility and deliverable: executor,
   implementer, integrator, designer, director, scout, analyst, verifier, judge,
-  research-scientist, and so on.
+  reviewer, research-scientist, and so on.
 - TASK GRADE names the prior for the work itself: novice, junior, mid, senior,
   staff, principal, or research-grade. Grade is scope, autonomy, novelty, and
   cross-boundary responsibility — not a model name and not a worker identity.
@@ -30,15 +32,18 @@ ORTHOGONAL AXES — never smuggle one decision inside another:
 - TOPOLOGY names worker or orchestrator coordination authority. It is
   conceptually independent of the other axes, but current templates ship
   fixed enforceable topology/capability pairings: director is the orchestrator;
-  verifier, judge, and every other stock role are workers. An override does not
-  synthesize capabilities.
+  every other stock role is a worker. A stock template cannot override
+  topology or synthesize a different capability boundary.
 - SEMANTIC TIER names the required model capability floor: economy, standard,
   senior, or frontier. Provider catalogs resolve it to a runtime.
 - DELIBERATION names the reasoning budget independently of capability: low,
   medium, high, xhigh, or max where the selected provider supports it.
+- POSTURE names what yields when values collide: explore, deliver, preserve,
+  or evaluate. It never expands role, topology, or capabilities.
 Templates fill common combinations of these axes. They are defaults, not types
-and not limits; every changed template axis is listed in `overrides[]` with one
-`overrideReason`. An unchanged template carries
+and not limits; every changed overrideable template axis is listed in
+`overrides[]` with one `overrideReason`. Topology is fixed for a stock template,
+not overrideable. An unchanged template carries
 neither a fake override nor a reason.
 
 SHAPES → TEMPLATES (semantic tier; provider adapters resolve concrete models)
@@ -59,16 +64,22 @@ SHAPES → TEMPLATES (semantic tier; provider adapters resolve concrete models)
   (senior). Fan out when independently traceable mechanisms benefit from
   separate evidence trails and later synthesis; keep tightly coupled traces
   together regardless of subsystem count.
+- review — evaluate one supplied artifact or change across multiple criteria;
+  return evidence-backed prioritized findings plus accept, changes-required,
+  or cannot-assess → gaffer:reviewer (senior)
 - verify — test one specific claim at any leverage; affirmative evidence
   confirms, counterevidence refutes, missing/ambiguous coverage cannot
-  determine → gaffer:verifier (senior default; justify higher axes)
+  determine → gaffer:verifier (senior default; justified overrides may move
+  task grade, tier, and deliberation up or down, while the task's quality floor
+  remains binding)
 - judge — rank two or more supplied alternatives against a stated rubric
   → gaffer:judge (frontier)
 - research-science — novel hypothesis formation, experiment design, and work
   whose result or method is not already known → gaffer:research-scientist
-  (frontier; research-grade). It analyzes existing evidence and non-mutating
-  probes; new apparatus or code is handed to an authoring role. This is not
-  ordinary source gathering.
+  (frontier; research-grade). It may invoke existing non-mutating tools and
+  probes only; authoring any new script, fixture, apparatus, or code, even
+  ephemeral scratch, is handed to an authoring role. This is not ordinary
+  source gathering.
 
 LAWS
 1. LAYER FLOOR: foundational / library / architecture code never routes below
@@ -102,11 +113,12 @@ LAWS
    staffed, context-carrying integration verifier fork owned by the
    coordinator; per-piece evidence or verifier reports never establish the
    whole by addition. A verifier reports a per-claim verdict + probe run +
-   observed result. The coordinator consumes that evidence, spot-checks at
-   most one load-bearing claim on smell, and decides the evidence-backed,
-   reconciled outcome. Inline probing by the coordinator is the same misfire
-   as the coordinator executing a subtask. Verifier tier follows verdict
-   leverage, never defaults to cheap. Because current lanes share one OS uid,
+   observed result. The coordinator consumes and reconciles that evidence; it
+   does not rerun or spot-check worker probes inline. Inline probing by the
+   coordinator is the same misfire as the coordinator executing a subtask.
+   Verifier tier follows verdict leverage. Its senior default may be
+   overridden up or down with justification, but never below the task's
+   quality floor. Because current lanes share one OS uid,
    independently staffed means role/context separation, not security-grade
    independent attestation; `attested` or `verified` status is reserved for a
    future protected trust boundary.
@@ -143,17 +155,18 @@ authenticated accounts, subscription envelopes and reserves, allocation, safe
 substitution, resolved model, and decision/outcome telemetry. Provider model
 names remain adapter facts. Neither layer silently rewrites the other's facts.
 
-ORCHESTRATION — topology is conceptually independent of function, grade, tier,
-and deliberation; templates enforce their fixed pairings. Two tiers,
-hard depth cap. Delegation is exactly TWO tiers
+ORCHESTRATION — topology is conceptually independent of function, grade,
+domain requirements, tier, deliberation, and posture; templates enforce their
+fixed pairings. Two tiers, hard depth cap. Delegation is exactly TWO tiers
 deep; there is no third. Every spawn is one of:
 - ORCHESTRATOR — normally the gaffer:director function, a fork whose contract
   is DECOMPOSE AND FAN OUT. It does NOT
   execute subtasks itself; its only tools of substance are read/analyze,
-  spawn, steer, consume verification evidence, and integrate. Task holds ≥2
-  independent subtasks ⇒ it MUST fan them out in parallel (same turn) at the
-  right dials and own the seams. Task is atomic ⇒ it redirects/restaffs to the
-  appropriate worker; it never executes the piece itself.
+  spawn, steer, consume and reconcile verification evidence, and integrate.
+  It never runs worker completion probes inline. Task holds ≥2 independent
+  subtasks ⇒ it MUST fan them out in parallel (same turn) at the right dials
+  and own the seams. Task is atomic ⇒ it redirects/restaffs to the appropriate
+  worker; it never executes the piece itself.
 - WORKER (TERMINAL) — owns its piece end-to-end and is FORBIDDEN to
   sub-delegate. When law 7 calls for a verifier fork, it is a sibling lane
   spawned by the orchestrator, never a worker child. A worker whose piece turns
@@ -221,7 +234,8 @@ probe, and observed result when law 7 requires one. A bare "done" is never
 accepted.
 
 <!-- gaffer:spawn-surfaces adapter=native (default; inject-doctrine.sh swaps this block per GAFFER_SPAWN_ADAPTER / dispatch=) -->
-SPAWN SURFACES — a squad member is an eight-field Gaffer request: role,
+ADAPTER EXAMPLE (native spawn surface; invocation syntax in this fenced block
+is not portable doctrine) — a squad member is an eight-field Gaffer request: role,
 taskGrade, domainRequirements, topology, tier, reasoning, posture, and
 composition. It is not a tool. Invoke it through whatever spawn surface your
 harness gives you:
@@ -237,11 +251,9 @@ harness gives you:
   the squad pick or drop to an unrouted spawn.
 <!-- /gaffer:spawn-surfaces -->
 
-WORKFLOWS (incl. ultracode): these laws govern STAFFING every stage of any
-workflow you author. Squad members plug in via agentType —
-agent(prompt, {agentType: 'gaffer:scout'}) — or pin tier (and let the
-provider adapter resolve model+effort/reasoning)
-per stage yourself:
+WORKFLOWS: these laws govern STAFFING every stage of any workflow. Use the
+active adapter's fenced invocation example for its concrete syntax, and pin
+the semantic route per stage:
 - discovery/finder stages → gaffer:scout (economy), fan out wide
 - deep-analysis/root-cause stages → gaffer:analyst (senior); fan out when
   independently traceable mechanisms benefit from separate evidence trails
@@ -249,8 +261,10 @@ per stage yourself:
 - build/transform stages → gaffer:implementer (standard); layer floor
   still applies per stage — a foundational target raises tier/reasoning while
   retaining its function; use gaffer:integrator only for integrate-shaped work
+- artifact-review stages → gaffer:reviewer per supplied artifact/change
 - verify stages → gaffer:verifier per claim, in parallel; start at senior/high
-  and justify higher task-grade/tier/reasoning when leverage warrants it
+  and justify task-grade/tier/reasoning overrides up or down while preserving
+  the task's quality floor
 - rank two or more supplied alternatives → gaffer:judge (frontier)
 Never let a stage inherit the session's model/effort implicitly (in a
 top-tier session that silently runs every worker at top tier).

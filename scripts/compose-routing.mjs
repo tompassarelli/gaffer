@@ -6,10 +6,10 @@ import { canonicalRoleId } from "./role-id.mjs";
 
 const usage = `usage: node scripts/compose-routing.mjs <role> [options]
 
-Options (each axis overrides independently):
+Routing options:
   --task-grade <grade>      novice|junior|mid|senior|staff|principal|research-grade
   --domain <name[,name]>    repeatable domain requirement
-  --topology <kind>         worker|orchestrator (coordination authority)
+  --topology <kind>         worker|orchestrator (bespoke compositions only)
   --tier <tier>             economy|standard|senior|frontier
   --deliberation <level>    low|medium|high|xhigh|max (alias: --reasoning; emitted as reasoning)
   --posture <posture>       explore|deliver|preserve|evaluate
@@ -18,7 +18,7 @@ Options (each axis overrides independently):
   --contract <JSON|@file>   bespoke authority/deliverable/done contract
   --promotion-candidate     nominate a bespoke composition for review
   --no-promotion-candidate  explicit false (the default; accepted for clarity)
-  --override-reason <why>   required when changing any stock-template axis
+  --override-reason <why>   required when changing an overrideable stock-template axis
 
 Without --nearest, a bespoke composition must explicitly set --task-grade,
 --topology, --tier, --deliberation/--reasoning, and --posture. Domain
@@ -73,6 +73,10 @@ const nearest = args.nearest && catalog.presets.find(({ name }) => name === args
 if (args.nearest && !nearest) die(`unknown nearest stock template: ${args.nearest}`);
 if (preset && (args.nearest || args.rationale || args.contract || args.promotionSpecified))
   die("--nearest, --rationale, --contract, and promotion decisions apply only to bespoke compositions");
+if (args.topology !== undefined && !catalog.vocabulary.topologies.includes(args.topology))
+  die(`invalid topology: ${args.topology}`);
+if (preset && args.topology !== undefined)
+  die("--topology applies only to bespoke compositions; stock-template topology is fixed");
 if (!preset && !args.rationale?.trim()) die(`bespoke composition ${JSON.stringify(args.role)} requires --rationale`);
 if (!preset && !args.contract) die(`bespoke composition ${JSON.stringify(args.role)} requires --contract JSON|@file`);
 if (!preset && args.overrideReason) die("--override-reason applies only to stock-template axis overrides");
@@ -97,7 +101,7 @@ const selected = {
   taskGrade: args.taskGrade ?? template.taskGrade,
   tier: args.tier ?? template.tier,
   deliberation: args.deliberation ?? template.deliberation,
-  topology: args.topology ?? template.topology,
+  topology: preset ? preset.topology : (args.topology ?? template.topology),
   posture: args.posture ?? template.posture ?? catalog.defaults.posture,
 };
 for (const [field, axis] of [["taskGrade", "taskGrades"], ["tier", "semanticTiers"], ["deliberation", "deliberations"], ["topology", "topologies"], ["posture", "postures"]])

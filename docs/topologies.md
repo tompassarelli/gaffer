@@ -6,7 +6,7 @@ and reduction. Gaffer's current stock templates deliberately ship fixed,
 enforceable topology/capability pairings: director is an orchestrator with
 coordination authority; every other stock template is a worker without it.
 Use a bespoke composition when a different pairing is required rather than
-assuming that a topology override manufactures capabilities.
+assuming that a stock topology can be overridden.
 
 ## worker
 
@@ -30,10 +30,10 @@ parallel where possible, assign every seam, and require explicit done-bars.
 Self-contained units return worker evidence and add a verifier sibling when
 verdict leverage warrants one. An emergent aggregate always gets a report from
 an independently staffed, context-carrying whole-outcome verifier: verdict,
-probe, and observed result. Consume the evidence and verifier reports; on
-smell, spot-check at most one load-bearing claim. Reconcile every child and the
-whole-outcome verifier report into one evidence-backed result rather than
-forwarding a bag of reports. Depth stops here: workers do not spawn workers.
-If the task is atomic or tightly coupled, redirect it to the appropriate worker
-role instead of silently becoming a worker.
+probe, and observed result. Consume and reconcile the evidence and verifier
+reports; do not rerun or spot-check worker probes inline. Reconcile every child
+and the whole-outcome verifier report into one evidence-backed result rather
+than forwarding a bag of reports. Depth stops here: workers do not spawn
+workers. If the task is atomic or tightly coupled, redirect it to the
+appropriate worker role instead of silently becoming a worker.
 ```

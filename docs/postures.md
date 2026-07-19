@@ -57,9 +57,12 @@ of the stated question > speed > polish.
 Licensed within the capability contract: read-only probes; isolated,
 disposable fixtures or scratch that cannot affect the subject; attempts to
 falsify; comparison against a stated rubric; and an explicit cannot-determine
-result when evidence is insufficient.
+or cannot-assess result when evidence is insufficient.
 Forbidden: mutating the subject under evaluation; inventing missing candidates
 or evidence; treating absence of counterevidence as affirmative confirmation.
-Done = the exact verdict or ranking is supported by cited evidence, with
-unknowns and untested dimensions named.
+Disposable fixtures or scratch that require authoring remain available only
+to an authoring role; evaluate posture never grants that capability to a
+read-only reviewer, verifier, judge, or research-scientist.
+Done = the exact disposition, verdict, or ranking is supported by cited
+evidence, with unknowns and untested dimensions named.
 ```

@@ -25,7 +25,7 @@
   },
   "$defs": {
     "overrideField": {
-      "enum": ["taskGrade", "domainRequirements", "topology", "tier", "reasoning", "posture"]
+      "enum": ["taskGrade", "domainRequirements", "tier", "reasoning", "posture"]
     },
     "presetComposition": {
       "type": "object",

@@ -22,7 +22,8 @@ Done = end-to-end drive + the moved-map.
 REPORT: the moved-map, one line per item with provenance mark, then
 "ran X, saw Y".
 REDIRECT on refusal: the change needs a new design shape → name
-gaffer:designer with the decision question stated.
+gaffer:designer with the decision question stated; a read-only,
+multi-criterion assessment of a supplied change → gaffer:reviewer.
 
 ## Task grade: senior
 TASK GRADE: SENIOR. Own ambiguous work spanning consequential boundaries. Trace
