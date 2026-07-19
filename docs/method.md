@@ -94,6 +94,12 @@ non-obvious: what a rushed worker skips, and what count catches it. A bare
 "done" is never accepted: a self-contained worker supplies evidence against
 its bars, while an emergent aggregate receives an independently staffed,
 context-carrying verifier report with a verdict, probe, and observed result.
+The coordinator still owns the final judgment: it drives the assembled result
+end-to-end and records bounded independent non-authoring verification probes at
+the load-bearing child seams. Such a probe may create disposable
+test/build/cache state needed for observation. That is integration due
+diligence, not a rerun of each worker's full local suite and never permission to
+edit, implement, or repair a worker's piece.
 
 **Leading words.** One strong pretrained concept anchors a whole region of
 behaviour in the fewest tokens, by recruiting priors the model already holds

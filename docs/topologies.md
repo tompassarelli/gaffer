@@ -31,9 +31,13 @@ Self-contained units return worker evidence and add a verifier sibling when
 verdict leverage warrants one. An emergent aggregate always gets a report from
 an independently staffed, context-carrying whole-outcome verifier: verdict,
 probe, and observed result. Consume and reconcile the evidence and verifier
-reports; do not rerun or spot-check worker probes inline. Reconcile every child
-and the whole-outcome verifier report into one evidence-backed result rather
-than forwarding a bag of reports. Depth stops here: workers do not spawn
-workers. If the task is atomic or tightly coupled, redirect it to the
-appropriate worker role instead of silently becoming a worker.
+reports. Drive the aggregate end-to-end and run one bounded independent
+non-authoring verification probe at each materially load-bearing child seam.
+The probe may create disposable test/build/cache state, but never edits,
+repairs, or implements the deliverable or absorbs the worker's full local-probe
+burden. Reconcile every child, the coordinator's spot-check evidence, and the
+whole-outcome verifier report into one evidence-backed result rather than
+forwarding a bag of reports. Depth stops here: workers do not spawn workers. If
+the task is atomic or tightly coupled, redirect it to the appropriate worker
+role instead of silently becoming a worker.
 ```

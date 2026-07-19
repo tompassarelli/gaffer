@@ -854,24 +854,35 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
       /JUDGE[\s\S]{0,1000}(?:single make-or-break|ranking findings by severity)/i.test(roles))
     throw new Error("judge must rank multiple supplied alternatives only");
   if (!/DESIGNER[\s\S]{0,500}Must escalate: implementation/i.test(roles) ||
-      !/DIRECTOR[\s\S]{0,1800}context-carrying, independently staffed verifier returned a[\s\S]{0,120}verdict, probe, and observed result[\s\S]{0,120}emergent whole outcome/i.test(roles) ||
-      !/DIRECTOR[\s\S]{0,700}Do not rerun or spot-check a worker probe inline/i.test(roles) ||
-      /DIRECTOR[\s\S]{0,1600}(?:may spot-check|spot-check at most)/i.test(roles))
+      !/DIRECTOR[\s\S]{0,1800}context-carrying, independently staffed verifier returned a[\s\S]{0,120}verdict,\s+probe,\s+and observed result[\s\S]{0,120}emergent whole outcome/i.test(roles) ||
+      !/DIRECTOR[\s\S]{0,900}For every\s+child whose result materially supports[\s\S]{0,220}narrow\s+probe[\s\S]{0,160}load-bearing assertion or seam/i.test(roles) ||
+      !/DIRECTOR[\s\S]{0,1100}disposable test\/build\/cache state[\s\S]{0,220}editing,[\s\S]{0,80}implementing[\s\S]{0,160}full local[\s\S]{0,80}completion suite remain out of scope/i.test(roles))
     throw new Error("designer/director authority and verification boundaries drifted");
   if (/a completed unit is verified by a[\s\S]{0,80}context-carrying verifier fork/i.test(doctrine) ||
-      /otherwise the director's read-only spot-checks/i.test(roles) ||
-      /ORCHESTRATOR[\s\S]{0,1000}(?:may spot-check|spot-check at most)/i.test(topologies) ||
+      /otherwise the director's spot-checks/i.test(roles) ||
       !/ORCHESTRATOR[\s\S]{0,700}Self-contained units return worker evidence[\s\S]{0,180}verdict leverage warrants one/i.test(topologies) ||
       !/ORCHESTRATOR[\s\S]{0,900}emergent aggregate always gets a report from[\s\S]{0,120}independently staffed[\s\S]{0,160}verdict,\s*probe, and observed result/i.test(topologies) ||
-      !/emergent aggregate receives an independently staffed,[\s\S]{0,120}verifier report with a verdict, probe, and observed result/i.test(method))
+      !/ORCHESTRATOR[\s\S]{0,1100}bounded independent[\s\S]{0,100}non-authoring verification probe[\s\S]{0,120}materially load-bearing child seam/i.test(topologies) ||
+      !/emergent aggregate receives an independently staffed,[\s\S]{0,120}verifier report with a verdict, probe, and observed result/i.test(method) ||
+      !/coordinator still owns the final judgment[\s\S]{0,180}bounded independent non-authoring verification probes[\s\S]{0,220}not a rerun/i.test(method) ||
+      !/VERIFICATION ATTACHES WHERE THE OUTCOME LIVES[\s\S]{0,900}bounded[\s\S]{0,180}non-authoring verification probe[\s\S]{0,180}full completion suite/i.test(doctrine) ||
+      !/Orchestrator topology grants coordination and reconciliation authority[\s\S]{0,500}bounded independent[\s\S]{0,560}whole-outcome verifier report[\s\S]{0,180}ninth routing field/i.test(routing))
     throw new Error("outcome-attached verifier contract drifted");
+  const portableVerification = `${doctrine}\n${roles}\n${topologies}\n${method}\n${routing}`;
+  if (/(?:does not|do not) rerun or spot-check (?:a )?worker probe|no coordinator-level validation/i.test(
+    portableVerification,
+  ))
+    throw new Error("coordinator accountability regressed to an absolute spot-check ban");
+  if (/read-only (?:spot-check|verification probe|integration check)/i.test(portableVerification))
+    throw new Error("coordinator verification was narrowed from non-authoring to read-only");
   const trustVocabulary = `${doctrine}\n${roles}\n${topologies}\n${method}\n${readme}\n${routing}\n${JSON.stringify(staffing.presets)}\n${generatedDirector}`;
   if (/\b(?:self[- ]attest\w*|whole-outcome (?:verifier )?attestation|verifier attestations?|attested by|independently attested|verified (?:result|outcome))\b/i.test(trustVocabulary))
     throw new Error("shared-UID workflow claimed security-grade attestation or a verified result");
   if (!/current lanes share one OS uid[\s\S]{0,220}`attested` or `verified` status is reserved for a[\s\S]{0,80}future protected trust boundary/i.test(doctrine) ||
-      !/Current lanes share one OS uid[\s\S]{0,220}`attested` or `verified` status is[\s\S]{0,80}reserved for a future protected trust boundary/i.test(readme) ||
+      !/Current lanes share one OS uid[\s\S]{0,320}`attested` or[\s\S]{0,40}`verified` status is[\s\S]{0,80}reserved for a future protected trust boundary/i.test(readme) ||
       !/evidence-backed result/.test(director.tagline) ||
-      !/evidence-reconciled/.test(director.description))
+      !/evidence-reconciled/.test(director.description) ||
+      !/independently spot-checks materially load-bearing seams/.test(director.description))
     throw new Error("shared-UID trust vocabulary must reserve attested/verified status and describe evidence-backed outcomes");
   const postures = readFileSync(resolve(root, "docs/postures.md"), "utf8");
   if (!/POSTURE: EVALUATE[\s\S]{0,700}non-mutating|POSTURE: EVALUATE[\s\S]{0,700}mutating the subject/.test(postures))
@@ -911,7 +922,10 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
       !northAdapter.includes("Stock-template overrides may change task grade, domains, tier, reasoning, or") ||
       !northAdapter.includes("Stock topology is fixed") ||
       !northAdapter.includes("topology alone never loads the director role") ||
-      !northAdapter.includes("does not run worker probes inline"))
+      !northAdapter.includes("bounded independent non-authoring verification probes") ||
+      !northAdapter.includes("disposable test/build/cache state") ||
+      !northAdapter.includes("never edits, implements, or repairs the deliverable") ||
+      !northAdapter.includes("or absorbs a worker's full local-probe burden"))
     throw new Error("generated North adapter lost reviewer, topology, or director evidence boundaries");
   for (const provenanceState of ["gaffer:<preset>", "gaffer:<preset>+override", "gaffer:bespoke:<id>",
     "gaffer:not-selected", "gaffer:legacy-debt"])

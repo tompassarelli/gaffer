@@ -74,8 +74,12 @@ ORCHESTRATOR when the task decomposes (≥2 independent subtasks ⇒ MUST fan ou
 one mcp__north__spawn per subtask, same turn, then own the seams and reconcile
 the required evidence) and the terminal WORKER when it is atomic (⇒ MUST NOT
 sub-delegate). Verification is a sibling lane owned by the orchestrator; the
-orchestrator consumes its report but does not run worker probes inline. No
-worker spawns any agent, so depth caps at two.
+orchestrator consumes its report, drives the aggregate end-to-end, and runs
+bounded independent non-authoring verification probes at materially
+load-bearing child seams. A probe may create disposable test/build/cache state
+needed for observation, but never edits, implements, or repairs the deliverable
+or absorbs a worker's full local-probe burden. No worker spawns any agent, so
+depth caps at two.
 STOP-RULE: subdivide only while it buys more independence, certainty, or
 verifiability than integration cost; a unit with a clear objective, bounded
 scope, known I/O, and a verification path is TERMINAL (a worker's atom), so

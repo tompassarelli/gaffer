@@ -60,11 +60,13 @@ Install it and your sessions gain:
    inheriting a top-tier session's model; concrete invocation syntax belongs
    to the selected adapter's fenced example.
 
-   Verification remains evidence-backed: workers report evidence, and an
-   independently staffed verifier returns a verdict with the probe and observed
-   result. Current lanes share one OS uid, so Gaffer does not treat that staffing
-   separation as security-grade attestation; `attested` or `verified` status is
-   reserved for a future protected trust boundary.
+   Verification remains evidence-backed: workers report evidence, the
+   coordinator drives the assembled result end-to-end and independently
+   spot-checks materially load-bearing seams, and an independently staffed
+   verifier returns a verdict with the probe and observed result where the
+   outcome calls for one. Current lanes share one OS uid, so Gaffer does not
+   treat that staffing separation as security-grade attestation; `attested` or
+   `verified` status is reserved for a future protected trust boundary.
 
 3. **Skills**:
    - `compose` — assemble a bespoke (custom) composition for spawns the

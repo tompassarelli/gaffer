@@ -136,6 +136,18 @@ shape, and integrator applies a change. Verifier's senior/high default may be
 justifiably overridden up or down, but the task's quality floor remains
 binding.
 
+Orchestrator topology grants coordination and reconciliation authority, not
+worker implementation authority. A coordinator consumes worker evidence,
+drives the assembled result end-to-end, and performs bounded independent
+non-authoring verification probes at the materially load-bearing child seams.
+A probe may execute a narrow test/build and create disposable cache or
+temporary state needed to observe the assertion; it may not edit, implement, or
+repair the deliverable or inherit a worker's full local-probe burden.
+Self-contained units add a verifier sibling when verdict leverage warrants one.
+An emergent aggregate always receives an independently staffed,
+context-carrying whole-outcome verifier report. These obligations affect how
+the topology is staffed and prompted; they do not add a ninth routing field.
+
 The canonical machine-readable stock-template definitions live in
 `staffing/catalog.json` (`staffing/catalog.schema.json` documents the format).
 Catalog v2 has exactly `$schema`, `version`, `vocabulary`, `defaults`,
