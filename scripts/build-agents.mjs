@@ -166,12 +166,12 @@ function renderNorthAdapter() {
   ].join("\n");
   return `SPAWN SURFACES (adapter: north) — a squad member is the eight-field
 Gaffer request (role, taskGrade, domainRequirements, topology, tier, reasoning,
-posture, composition), delivered on the North substrate. Provider and account
-are North execution-envelope controls. Native Agent/Task/Workflow are DENIED
+posture, composition), delivered on the North substrate. Provider, account,
+and an optional exact-model pin are North execution-envelope controls. Native Agent/Task/Workflow are DENIED
 here (dispatch=north) — the harness still advertises gaffer:* + native agent
 types, IGNORE that and go STRAIGHT to north; never let the advertised list bait a
 native call (that is the recurring misfire).
-- contract-v2 job → mcp__north__spawn {prompt, provider, tier, role, posture,
+- contract-v2 job → mcp__north__spawn {prompt, provider, model, tier, role, posture,
   taskGrade, domainRequirements, topology, reasoning, composition}
 - fan-out → one mcp__north__spawn per lane in the SAME turn; observe at web :8088
 - thread-driven → capture the thread, then mcp__north__dispatch (posture from claims)
@@ -217,8 +217,18 @@ Comparable successful bespoke recurrence is evidence for review, never
 automatic promotion: responsibility, deliverable, capability/authority
 boundary, done criteria, and report shape recur, and each use carries
 done-criteria evidence.
-North resolves tier+reasoning through a provider
-catalog and records both requested and concrete routes. Routing defaults
+For an unpinned request, North resolves tier+reasoning through the catalog's
+canonical tier row and records both requested and concrete routes. An explicit
+exact-model pin is a separate execution-envelope constraint: first resolve its
+alias, then require the reasoning level in that model's provider-supported
+Gaffer-vocabulary list AND in \`models[exact].routes[tier]\`. Never infer a
+tier×reasoning cross-product from independent lists, and never filter an
+alternate model through the tier's default model. Unknown models, missing or
+empty support/routes, and unsupported exact shingles fail closed. This static
+Gaffer result is necessary but never proves subscription entitlement or live
+availability; North must independently establish an available authenticated
+target for that exact provider/model before the turn. Both checks are required.
+Routing defaults
 (canonical stock templates — generated from the machine \`presets\` key, do not hand-edit):
 
 ${table}
@@ -292,6 +302,7 @@ function renderProviderMatrix() {
     "| Provider | Tier | Exact model | Aliases | Deliberation | Default | Model delta |",
     "|---|---|---|---|---|---|---|",
   );
+  const exactCompatibility = [];
   const runtimeOnly = [];
   for (const catalog of catalogs) {
     const provider = catalog.provider;
@@ -307,6 +318,16 @@ function renderProviderMatrix() {
         : `none — ${delta.reason}`;
       lines.push(`| ${provider} | ${tier} | \`${entry.model}\` | ${aliasesFor(catalog, entry.model)} | ${levels.join(", ")} | ${defaultLevel} | ${deltaLabel} |`);
     }
+    for (const [model, descriptor] of Object.entries(catalog.models)) {
+      const vocabulary = descriptor.efforts ? "effort" : "reasoning";
+      const supported = descriptor.efforts ?? descriptor.reasoning;
+      const routed = new Set(Object.values(descriptor.routes).flat());
+      const unrouted = supported.filter((level) => !routed.has(level));
+      const routes = Object.entries(descriptor.routes)
+        .map(([tier, levels]) => `${tier}: ${levels.join(", ")}`)
+        .join("<br>");
+      exactCompatibility.push(`| ${provider} | \`${model}\` | ${aliasesFor(catalog, model)} | ${vocabulary} | ${supported.join(", ")} | ${routes} | ${unrouted.join(", ") || "—"} |`);
+    }
     for (const [model, delta] of Object.entries(catalog.modelDeltas)) {
       if (tierModels.has(model)) continue;
       const deltaLabel = delta.kind === "calibrated"
@@ -315,12 +336,35 @@ function renderProviderMatrix() {
       runtimeOnly.push(`| ${provider} | \`${model}\` | ${aliasesFor(catalog, model)} | ${deltaLabel} |`);
     }
   }
+  lines.push(
+    "",
+    "## Exact-model pin compatibility",
+    "",
+    "The support column records provider-supported levels only within Gaffer's",
+    "canonical deliberation vocabulary; it is not an exhaustive provider API",
+    "enum. Routes are a separate Gaffer calibration: each row names exact",
+    "model×tier×deliberation shingles, never a cross-product. Raw support does",
+    "not make an omitted shingle routable. Supported-but-unrouted levels remain",
+    "future calibration inputs, not dispatchable routes. Unpinned requests use the",
+    "canonical semantic-resolution table above; this table is consulted only when",
+    "the execution envelope explicitly pins an exact model or alias.",
+    "",
+    "Static compatibility is only one preflight. Account entitlement and current",
+    "target availability are independent North facts; North must prove an",
+    "available authenticated target for the exact provider/model before dispatch.",
+    "No catalog support or route entry establishes either runtime fact.",
+    "",
+    "| Provider | Exact model | Aliases | Control | Provider-supported levels in Gaffer vocabulary | Calibrated exact routes | Supported but unrouted |",
+    "|---|---|---|---|---|---|---|",
+    ...exactCompatibility,
+  );
   if (runtimeOnly.length) lines.push(
     "",
     "## Runtime-only exact-model delta entries",
     "",
-    "These models can be selected by a runtime promotion or fallback without",
-    "being a semantic tier default. Exact lookup prevents calibration inheritance.",
+    "These models are not a canonical unpinned semantic-tier default. An explicit",
+    "model pin must pass the exact compatibility table above; exact delta lookup",
+    "then prevents calibration inheritance from the default tier model.",
     "",
     "| Provider | Exact model | Aliases | Model delta |",
     "|---|---|---|---|",

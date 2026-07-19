@@ -8,6 +8,7 @@ import { loadStaffingCatalog, validateStaffingCatalog } from "./staffing-catalog
 import {
   loadProviderCatalog, modelDeltaFor, validateProviderCatalog,
   providerCatalogFreshness, resolvableDeliberations, resolveModelAlias,
+  resolvePinnedModelRoute,
 } from "./provider-catalog.mjs";
 import { OVERRIDE_FIELDS, ROUTING_FIELDS, validateRoutingRequest } from "./routing-request.mjs";
 import {
@@ -20,11 +21,19 @@ const tiers = staffing.vocabulary.semanticTiers;
 const grades = staffing.vocabulary.taskGrades;
 const staffingSchema = JSON.parse(readFileSync(resolve(root, "staffing/catalog.schema.json"), "utf8"));
 const routingSchema = JSON.parse(readFileSync(resolve(root, "contracts/routing-request.schema.json"), "utf8"));
+const providerSchema = JSON.parse(readFileSync(resolve(root, "providers/catalog.schema.json"), "utf8"));
 const staffingKeys = ["$schema", "version", "vocabulary", "defaults", "presets", "aliases"];
 const staffingDefinitionKeys = ["uniqueStrings", "capabilities", "preset", "alias", "roleId"];
 const staffingPresetKeys = [
   "name", "taskGrade", "tier", "deliberation", "topology", "posture",
   "capabilities", "tagline", "description",
+];
+const providerCatalogKeys = [
+  "$schema", "provider", "provenance", "transports", "modelAliases", "models",
+  "modelDeltas", "tiers",
+];
+const providerDefinitionKeys = [
+  "provenance", "source", "date", "modelDelta", "modelCompatibility", "modelRoutes", "tier", "reasoning",
 ];
 const stockTemplateNames = [
   "executor", "implementer", "integrator", "designer", "director",
@@ -40,6 +49,11 @@ if (staffing.version !== 2 || staffingSchema.properties?.version?.const !== 2 ||
   throw new Error("canonical staffing catalog/schema must use the exact v2 preset shape");
 if (JSON.stringify([...routingSchema.required].sort()) !== JSON.stringify([...ROUTING_FIELDS].sort()))
   throw new Error("canonical routing schema must require exactly the eight Gaffer fields");
+if (JSON.stringify(Object.keys(providerSchema.properties ?? {}).sort()) !== JSON.stringify([...providerCatalogKeys].sort()) ||
+    JSON.stringify([...(providerSchema.required ?? [])].sort()) !==
+      JSON.stringify(providerCatalogKeys.filter((key) => key !== "$schema").sort()) ||
+    JSON.stringify(Object.keys(providerSchema.$defs ?? {}).sort()) !== JSON.stringify([...providerDefinitionKeys].sort()))
+  throw new Error("provider catalog JSON Schema must retain the exact static compatibility shape");
 if (JSON.stringify(staffing.presets.map(({ name }) => name).sort()) !==
     JSON.stringify([...stockTemplateNames].sort()))
   throw new Error("stock-template library changed without an explicit catalog/validator review");
@@ -115,6 +129,54 @@ for (const preset of staffing.presets)
   for (const schema of capabilitySchemas)
     if (!capabilitySchemaAccepts(schema, preset.capabilities))
       throw new Error(`${preset.name}: canonical capabilities fail a JSON Schema capability fragment`);
+
+// Exercise the model-compatibility JSON Schema fragment independently from the
+// runtime validator. The schema is provider-agnostic about vocabulary choice;
+// runtime validation additionally requires Anthropic `efforts` and OpenAI
+// `reasoning`.
+const modelCompatibilitySchema = providerSchema.$defs?.modelCompatibility;
+function modelCompatibilitySchemaAccepts(value) {
+  const allowed = ["routes", "efforts", "reasoning"];
+  const routesSchema = providerSchema.$defs?.modelRoutes;
+  const reasoningSchema = providerSchema.$defs?.reasoning;
+  const vocabularyBranches = modelCompatibilitySchema?.oneOf?.map((branch) => branch.required?.[0]);
+  if (modelCompatibilitySchema?.type !== "object" || modelCompatibilitySchema.additionalProperties !== false ||
+      JSON.stringify(modelCompatibilitySchema.required) !== JSON.stringify(["routes"]) ||
+      routesSchema?.type !== "object" || routesSchema.minProperties !== 1 || routesSchema.additionalProperties !== false ||
+      reasoningSchema?.type !== "array" || reasoningSchema.minItems !== 1 || reasoningSchema.uniqueItems !== true ||
+      JSON.stringify(vocabularyBranches) !== JSON.stringify(["efforts", "reasoning"]))
+    throw new Error("model compatibility JSON Schema fragment lost fail-closed shape");
+  if (value == null || typeof value !== "object" || Array.isArray(value) ||
+      Object.keys(value).some((key) => !allowed.includes(key))) return false;
+  if (value.routes == null || typeof value.routes !== "object" || Array.isArray(value.routes) ||
+      Object.keys(value.routes).length < routesSchema.minProperties ||
+      Object.keys(value.routes).some((tier) => !Object.hasOwn(routesSchema.properties, tier))) return false;
+  for (const levels of Object.values(value.routes)) {
+    if (!Array.isArray(levels) || levels.length < reasoningSchema.minItems ||
+        new Set(levels).size !== levels.length ||
+        levels.some((level) => !reasoningSchema.items.enum.includes(level))) return false;
+  }
+  const vocabularies = ["efforts", "reasoning"].filter((key) => Object.hasOwn(value, key));
+  if (vocabularies.length !== 1) return false;
+  const levels = value[vocabularies[0]];
+  return Array.isArray(levels) && levels.length >= reasoningSchema.minItems &&
+    new Set(levels).size === levels.length &&
+    levels.every((level) => reasoningSchema.items.enum.includes(level));
+}
+for (const [value, expected] of [
+  [{ efforts: ["low", "xhigh", "max"], routes: { frontier: ["xhigh", "max"] } }, true],
+  [{ reasoning: ["low", "xhigh", "max"], routes: { frontier: ["xhigh", "max"] } }, true],
+  [{ efforts: [], routes: { frontier: ["xhigh"] } }, false],
+  [{ efforts: ["xhigh"], routes: {} }, false],
+  [{ efforts: ["xhigh"], routes: { frontier: [] } }, false],
+  [{ efforts: ["xhigh"], reasoning: ["xhigh"], routes: { frontier: ["xhigh"] } }, false],
+  [{ efforts: ["xhigh"], routes: { impossible: ["xhigh"] } }, false],
+  [{ reasoning: ["none", "xhigh"], routes: { frontier: ["xhigh"] } }, false],
+  [{ efforts: ["xhigh"], routes: { frontier: ["xhigh"] }, validUntil: "2026-07-19" }, false],
+]) {
+  if (modelCompatibilitySchemaAccepts(value) !== expected)
+    throw new Error(`model compatibility JSON Schema parity probe failed for ${JSON.stringify(value)}`);
+}
 // Negative schema-level probes exercise the validators used by the generators;
 // parsing a JSON Schema file alone is not validation.
 for (const invalid of [
@@ -183,6 +245,89 @@ for (const catalog of Object.values(providerCatalogs)) {
     modelDeltaFor(catalog, exact);
   }
 }
+const fableModel = providerCatalogs.anthropic.modelAliases.fable;
+if (resolvableDeliberations("frontier").has("high"))
+  throw new Error("unpinned frontier/high became reachable through an alternate exact-model route");
+for (const model of ["fable", fableModel]) {
+  for (const reasoning of ["xhigh", "max"]) {
+    const route = resolvePinnedModelRoute(providerCatalogs.anthropic, {
+      model, tier: "frontier", reasoning,
+    });
+    if (JSON.stringify(route) !== JSON.stringify({
+      provider: "anthropic", model: fableModel, tier: "frontier", reasoning,
+    })) throw new Error(`Fable pinned route did not resolve exactly from ${model} at ${reasoning}`);
+  }
+}
+function expectPinnedRouteFailure(label, catalog, request, errorContains) {
+  try {
+    resolvePinnedModelRoute(catalog, request);
+    throw new Error(`${label} pinned route was accepted`);
+  } catch (error) {
+    if (error.message === `${label} pinned route was accepted` || !error.message.includes(errorContains))
+      throw new Error(`${label} produced wrong error: ${error.message}`);
+  }
+}
+expectPinnedRouteFailure(
+  "raw-only Fable high", providerCatalogs.anthropic,
+  { model: "fable", tier: "frontier", reasoning: "high" },
+  "does not calibrate frontier/high",
+);
+for (const reasoning of ["low", "medium"])
+  expectPinnedRouteFailure(
+    `raw-only Fable ${reasoning}`, providerCatalogs.anthropic,
+    { model: "fable", tier: "frontier", reasoning },
+    `does not calibrate frontier/${reasoning}`,
+  );
+expectPinnedRouteFailure(
+  "Opus cross-product frontier/high", providerCatalogs.anthropic,
+  { model: "opus", tier: "frontier", reasoning: "high" },
+  "does not calibrate frontier/high",
+);
+expectPinnedRouteFailure(
+  "unknown exact model", providerCatalogs.anthropic,
+  { model: "claude-unknown", tier: "frontier", reasoning: "xhigh" },
+  "undeclared exact model",
+);
+for (const model of ["constructor", "toString", "__proto__"])
+  expectPinnedRouteFailure(
+    `prototype-named exact model ${model}`, providerCatalogs.anthropic,
+    { model, tier: "frontier", reasoning: "xhigh" },
+    "undeclared exact model",
+  );
+expectPinnedRouteFailure(
+  "Fable tier incompatibility", providerCatalogs.anthropic,
+  { model: "fable", tier: "senior", reasoning: "xhigh" },
+  "has no calibrated route for semantic tier senior",
+);
+expectPinnedRouteFailure(
+  "Sonnet cross-product economy/medium", providerCatalogs.anthropic,
+  { model: "sonnet", tier: "economy", reasoning: "medium" },
+  "does not calibrate economy/medium",
+);
+const emptyFableSupport = structuredClone(providerCatalogs.anthropic);
+emptyFableSupport.models[fableModel].efforts = [];
+expectPinnedRouteFailure(
+  "empty exact-model support", emptyFableSupport,
+  { model: "fable", tier: "frontier", reasoning: "xhigh" },
+  "empty efforts support; exact-model compatibility fails closed",
+);
+const emptyFableRoutes = structuredClone(providerCatalogs.anthropic);
+emptyFableRoutes.models[fableModel].routes = {};
+expectPinnedRouteFailure(
+  "empty exact-model routes", emptyFableRoutes,
+  { model: "fable", tier: "frontier", reasoning: "xhigh" },
+  "has no calibrated routes; exact-model compatibility fails closed",
+);
+expectPinnedRouteFailure(
+  "unknown semantic tier", providerCatalogs.anthropic,
+  { model: "fable", tier: "ultra", reasoning: "xhigh" },
+  "unknown semantic tier ultra",
+);
+expectPinnedRouteFailure(
+  "unknown reasoning level", providerCatalogs.anthropic,
+  { model: "fable", tier: "frontier", reasoning: "ultra" },
+  "unknown reasoning level ultra",
+);
 // A catalog may advertise exact runtime candidates without making them a
 // default semantic-tier mapping. Every such candidate still needs its own
 // exact delta decision; it may never inherit a neighboring model's prompt.
@@ -197,8 +342,10 @@ for (const { catalog, model } of runtimeCandidates) {
     throw new Error(`${catalog.provider}: runtime-only candidate ${model} lacks an exact delta decision`);
 }
 for (const catalog of Object.values(providerCatalogs)) {
-  try { modelDeltaFor(catalog, "unlisted-runtime-model"); throw new Error("missing exact model delta was inherited"); }
-  catch (error) { if (error.message === "missing exact model delta was inherited") throw error; }
+  for (const model of ["unlisted-runtime-model", "constructor", "toString", "__proto__"]) {
+    try { modelDeltaFor(catalog, model); throw new Error("missing exact model delta was inherited"); }
+    catch (error) { if (error.message === "missing exact model delta was inherited") throw error; }
+  }
 }
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const providerModelTokens = [...new Set(Object.values(providerCatalogs).flatMap((catalog) => [
@@ -293,7 +440,6 @@ for (const scope of provenanceScopes)
     openaiScopeModel,
     scope,
   );
-const fableModel = providerCatalogs.anthropic.modelAliases.fable;
 expectPerModelScopeGap(
   "Fable per-model missing effort-support",
   withoutModelScope(providerCatalogs.anthropic, fableModel, "effort-support"),
@@ -301,7 +447,14 @@ expectPerModelScopeGap(
   fableModel,
   "effort-support",
 );
-for (const [label, invalid] of [
+function mutateCatalog(catalog, mutate) {
+  const copy = structuredClone(catalog);
+  mutate(copy);
+  return copy;
+}
+const openaiEconomyModel = openaiFixture.tiers.economy.model;
+const openaiFrontierModel = openaiFixture.tiers.frontier.model;
+for (const [label, invalid, errorContains] of [
   ["unknown tier field", { ...openaiFixture, tiers: { ...openaiFixture.tiers,
     economy: { ...openaiFixture.tiers.economy, price: 1 },
   } }],
@@ -316,6 +469,41 @@ for (const [label, invalid] of [
   } }],
   ["duplicate transports", { ...openaiFixture, transports: ["codex-cli", "codex-cli"] }],
   ["missing model delta", { ...openaiFixture, modelDeltas: missingModelDeltas }],
+  ["empty raw model support", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].reasoning = [];
+  }), "provider-supported levels within Gaffer's vocabulary"],
+  ["empty exact route map", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].routes = {};
+  }), "routes must be a non-empty exact per-tier map"],
+  ["empty exact tier route", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].routes.economy = [];
+  }), "routes.economy must contain unique calibrated deliberation levels"],
+  ["route exceeds raw support", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiFrontierModel].reasoning = catalog.models[openaiFrontierModel].reasoning
+      .filter((level) => level !== "max");
+  }), "routes.frontier exceeds raw reasoning support: max"],
+  ["cross-tier model rung duplicate", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiFrontierModel].routes.frontier.push("high");
+  }), `exact route ${openaiFrontierModel}/high appears in both senior and frontier`],
+  ["default-model planted extra rung", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].routes.economy.push("high");
+  }), `models.${openaiEconomyModel}.routes.economy must exactly match the canonical default tier rung order`],
+  ["provider vocabulary mismatch", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].efforts = catalog.models[openaiEconomyModel].reasoning;
+    delete catalog.models[openaiEconomyModel].reasoning;
+  }), `models.${openaiEconomyModel} must use reasoning`],
+  ["provider support outside Gaffer vocabulary", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].reasoning.push("none");
+  }), "provider-supported levels within Gaffer's vocabulary"],
+  ["forbidden model expiry", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].validUntil = "2026-07-19";
+  }), "unknown field(s): validUntil"],
+  ["forbidden model account entitlement", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].accountEntitlement = true;
+  }), "unknown field(s): accountEntitlement"],
+  ["forbidden model target availability", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].targetAvailability = "ready";
+  }), "unknown field(s): targetAvailability"],
   ["reversed review chronology", { ...openaiFixture, provenance: { ...openaiFixture.provenance, reviewAfter: "2000-01-01" } }],
   ["unsupported provenance scope", { ...openaiFixture, provenance: { ...openaiFixture.provenance,
     sources: [{ ...openaiFixture.provenance.sources[0], scopes: ["model-family", "rung-economics"] }],
@@ -326,7 +514,11 @@ for (const [label, invalid] of [
   ["alias without exact delta", { ...openaiFixture, modelAliases: { ...openaiFixture.modelAliases, ghost: "gpt-ghost" } }],
 ]) {
   try { validateProviderCatalog(invalid, "openai"); throw new Error(`${label} provider catalog was accepted`); }
-  catch (error) { if (error.message === `${label} provider catalog was accepted`) throw error; }
+  catch (error) {
+    if (error.message === `${label} provider catalog was accepted` ||
+        (errorContains && !error.message.includes(errorContains)))
+      throw new Error(`${label} produced wrong error: ${error.message}`);
+  }
 }
 const overdueFixture = { ...openaiFixture, provenance: {
   ...openaiFixture.provenance, asOf: "2000-01-01", reviewAfter: "2000-02-01",
@@ -376,6 +568,18 @@ for (const fixture of routingFixtures.invalid) {
 const safeBespoke = routingFixtures.valid.find(({ name }) => name === "complete bespoke contract")?.request;
 if (!safeBespoke) throw new Error("safe bespoke routing fixture is missing");
 validateRoutingRequest(safeBespoke, staffing);
+{
+  const unpinnedFrontierHigh = structuredClone(safeBespoke);
+  unpinnedFrontierHigh.tier = "frontier";
+  unpinnedFrontierHigh.reasoning = "high";
+  try {
+    validateRoutingRequest(unpinnedFrontierHigh, staffing);
+    throw new Error("unpinned frontier/high routing request was accepted");
+  } catch (error) {
+    if (error.message === "unpinned frontier/high routing request was accepted" ||
+        !error.message.includes("unsupported route: tier 'frontier' with deliberation 'high'")) throw error;
+  }
+}
 for (const [id, expected] of roleIdCases) {
   const request = structuredClone(safeBespoke);
   request.role = id;
@@ -911,6 +1115,25 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
   if (!providerMatrix.includes("advisory freshness signals") ||
       !providerMatrix.includes("warning but remains reproducible and nonfatal"))
     throw new Error("generated provider matrix must explain nonfatal review freshness");
+  for (const phrase of [
+    "provider-supported levels only within Gaffer's", "not an exhaustive provider API",
+    "never a cross-product", "Raw support does", "not make an omitted shingle routable",
+    "Supported-but-unrouted levels remain", "future calibration inputs",
+    "Account entitlement and current", "target availability are independent North facts",
+  ])
+    if (!providerMatrix.includes(phrase))
+      throw new Error(`generated provider matrix lost exact-model fact separation: ${phrase}`);
+  const fableMatrixRow = providerMatrix.split("\n")
+    .find((line) => line.startsWith(`| anthropic | \`${fableModel}\` |`));
+  if (!fableMatrixRow?.includes("| frontier: xhigh, max | low, medium, high |"))
+    throw new Error("Fable matrix must expose high as provider-supported but unrouted calibration input");
+  if (!routing.includes("support never implies a tier cross-product") ||
+      !routing.includes("Static catalog compatibility establishes neither account") ||
+      !doctrine.includes("are four\nseparate facts") ||
+      !northAdapter.includes("models[exact].routes[tier]") ||
+      !northAdapter.includes("available authenticated\ntarget for that exact provider/model") ||
+      !northAdapter.includes("Both checks are required"))
+    throw new Error("portable and North adapter docs lost exact-route versus live-target separation");
   for (const enforcement of ["shell.readonly", "mcp__north-readonly-shell__run",
     "bwrap-backed read-only host/checkout", "ephemeral `/tmp`", "no network",
     "cleared environment", "fails closed at preflight", "--sandbox read-only",
@@ -937,9 +1160,18 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
   for (const catalog of Object.values(providerCatalogs)) {
     for (const value of [catalog.provenance.asOf, catalog.provenance.reviewAfter,
       ...catalog.provenance.sources.flatMap(({ url, scopes }) => [url, ...scopes]),
-      ...Object.keys(catalog.modelDeltas), ...Object.keys(catalog.modelAliases)])
+      ...Object.keys(catalog.modelDeltas), ...Object.keys(catalog.modelAliases),
+      ...Object.keys(catalog.models)])
       if (!providerMatrix.includes(value))
         throw new Error(`generated provider matrix omits catalog-owned provenance/resolution fact: ${value}`);
+    for (const [model, descriptor] of Object.entries(catalog.models)) {
+      const support = descriptor.efforts ?? descriptor.reasoning;
+      if (!providerMatrix.includes(`| ${support.join(", ")} |`))
+        throw new Error(`generated provider matrix omits ${model} raw support intersection`);
+      for (const [tier, levels] of Object.entries(descriptor.routes))
+        if (!providerMatrix.includes(`${tier}: ${levels.join(", ")}`))
+          throw new Error(`generated provider matrix omits exact route ${model}/${tier}`);
+    }
   }
 }
 

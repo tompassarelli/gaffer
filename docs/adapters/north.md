@@ -1,11 +1,11 @@
 SPAWN SURFACES (adapter: north) — a squad member is the eight-field
 Gaffer request (role, taskGrade, domainRequirements, topology, tier, reasoning,
-posture, composition), delivered on the North substrate. Provider and account
-are North execution-envelope controls. Native Agent/Task/Workflow are DENIED
+posture, composition), delivered on the North substrate. Provider, account,
+and an optional exact-model pin are North execution-envelope controls. Native Agent/Task/Workflow are DENIED
 here (dispatch=north) — the harness still advertises gaffer:* + native agent
 types, IGNORE that and go STRAIGHT to north; never let the advertised list bait a
 native call (that is the recurring misfire).
-- contract-v2 job → mcp__north__spawn {prompt, provider, tier, role, posture,
+- contract-v2 job → mcp__north__spawn {prompt, provider, model, tier, role, posture,
   taskGrade, domainRequirements, topology, reasoning, composition}
 - fan-out → one mcp__north__spawn per lane in the SAME turn; observe at web :8088
 - thread-driven → capture the thread, then mcp__north__dispatch (posture from claims)
@@ -51,8 +51,18 @@ Comparable successful bespoke recurrence is evidence for review, never
 automatic promotion: responsibility, deliverable, capability/authority
 boundary, done criteria, and report shape recur, and each use carries
 done-criteria evidence.
-North resolves tier+reasoning through a provider
-catalog and records both requested and concrete routes. Routing defaults
+For an unpinned request, North resolves tier+reasoning through the catalog's
+canonical tier row and records both requested and concrete routes. An explicit
+exact-model pin is a separate execution-envelope constraint: first resolve its
+alias, then require the reasoning level in that model's provider-supported
+Gaffer-vocabulary list AND in `models[exact].routes[tier]`. Never infer a
+tier×reasoning cross-product from independent lists, and never filter an
+alternate model through the tier's default model. Unknown models, missing or
+empty support/routes, and unsupported exact shingles fail closed. This static
+Gaffer result is necessary but never proves subscription entitlement or live
+availability; North must independently establish an available authenticated
+target for that exact provider/model before the turn. Both checks are required.
+Routing defaults
 (canonical stock templates — generated from the machine `presets` key, do not hand-edit):
 
   gaffer role         task grade      tier      reasoning  topology      posture   capabilities

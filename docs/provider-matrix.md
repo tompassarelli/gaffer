@@ -36,10 +36,36 @@ delta lookup; unversioned calibration is never inherited.
 | openai | senior | `gpt-5.6-sol` | `sol` | medium, high | high | [calibrated](deltas/gpt-5.6-sol.md) |
 | openai | frontier | `gpt-5.6-sol` | `sol` | xhigh, max | xhigh | [calibrated](deltas/gpt-5.6-sol.md) |
 
+## Exact-model pin compatibility
+
+The support column records provider-supported levels only within Gaffer's
+canonical deliberation vocabulary; it is not an exhaustive provider API
+enum. Routes are a separate Gaffer calibration: each row names exact
+model×tier×deliberation shingles, never a cross-product. Raw support does
+not make an omitted shingle routable. Supported-but-unrouted levels remain
+future calibration inputs, not dispatchable routes. Unpinned requests use the
+canonical semantic-resolution table above; this table is consulted only when
+the execution envelope explicitly pins an exact model or alias.
+
+Static compatibility is only one preflight. Account entitlement and current
+target availability are independent North facts; North must prove an
+available authenticated target for the exact provider/model before dispatch.
+No catalog support or route entry establishes either runtime fact.
+
+| Provider | Exact model | Aliases | Control | Provider-supported levels in Gaffer vocabulary | Calibrated exact routes | Supported but unrouted |
+|---|---|---|---|---|---|---|
+| anthropic | `claude-sonnet-5` | `sonnet` | effort | low, medium, high, xhigh, max | economy: low<br>standard: medium | high, xhigh, max |
+| anthropic | `claude-opus-4-8` | `opus` | effort | low, medium, high, xhigh, max | senior: medium, high<br>frontier: xhigh, max | low |
+| anthropic | `claude-fable-5` | `fable` | effort | low, medium, high, xhigh, max | frontier: xhigh, max | low, medium, high |
+| openai | `gpt-5.6-luna` | `luna` | reasoning | low, medium, high, xhigh, max | economy: low, medium | high, xhigh, max |
+| openai | `gpt-5.6-terra` | `terra` | reasoning | low, medium, high, xhigh, max | standard: low, medium | high, xhigh, max |
+| openai | `gpt-5.6-sol` | `sol` | reasoning | low, medium, high, xhigh, max | senior: medium, high<br>frontier: xhigh, max | low |
+
 ## Runtime-only exact-model delta entries
 
-These models can be selected by a runtime promotion or fallback without
-being a semantic tier default. Exact lookup prevents calibration inheritance.
+These models are not a canonical unpinned semantic-tier default. An explicit
+model pin must pass the exact compatibility table above; exact delta lookup
+then prevents calibration inheritance from the default tier model.
 
 | Provider | Exact model | Aliases | Model delta |
 |---|---|---|---|

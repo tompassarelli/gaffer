@@ -59,6 +59,59 @@
     "opus": "claude-opus-4-8",
     "fable": "claude-fable-5"
   },
+  "models": {
+    "claude-sonnet-5": {
+      "efforts": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "routes": {
+        "economy": [
+          "low"
+        ],
+        "standard": [
+          "medium"
+        ]
+      }
+    },
+    "claude-opus-4-8": {
+      "efforts": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "routes": {
+        "senior": [
+          "medium",
+          "high"
+        ],
+        "frontier": [
+          "xhigh",
+          "max"
+        ]
+      }
+    },
+    "claude-fable-5": {
+      "efforts": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "routes": {
+        "frontier": [
+          "xhigh",
+          "max"
+        ]
+      }
+    }
+  },
   "modelDeltas": {
     "claude-sonnet-5": {
       "kind": "none",

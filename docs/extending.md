@@ -10,8 +10,10 @@ Four requirements, everything else is free:
 
 1. **Routing pinned** — semantic tier and deliberation are always explicit.
    Provider/account selection belongs to the harness execution envelope; North
-   may leave provider `auto` or pin a target. The selected provider adapter must
-   resolve model AND effort/reasoning rather than inheriting them from a session.
+   may leave provider `auto` or pin a target/model. The selected provider adapter
+   must resolve model AND effort/reasoning rather than inheriting them from a
+   session. An exact model pin must pass that model's explicit per-tier route;
+   raw provider support alone is insufficient.
 2. **Comms norms respected** — compact reports, provenance marks
    (observed/inferred/assumed), not-done lists. Embed `docs/comms.md` or
    restate equivalent norms.
@@ -81,6 +83,14 @@ or report shape requires a bespoke composition. The v2 machine schema retains
    its own vocabulary. Save to `docs/deltas/<model>.md`, then record its repo
    path under that exact model in `providers/<provider>.json`. Runtime models
    without a calibration use an explicit `none`; they never inherit one.
+- **New provider model route**: add the model's provider-supported
+  effort/reasoning levels *within Gaffer's canonical vocabulary* and official
+  per-model `effort-support` provenance, then calibrate explicit disjoint
+  `routes.<tier>` shingles. Do not cross-product independent tier and effort
+  lists. Raw support may remain unrouted. A model used by a canonical tier row
+  must give that tier an exactly equal, equally ordered route; runtime-only
+  alternate models may expose only their independently calibrated subset.
+  Account entitlement and current target availability never belong here.
 - Promotion rule of thumb: review after comparable successful recurrence as
   defined above. Repetition is evidence, not authorization: promotion is always
   an explicit change to the stock-template library.
@@ -100,7 +110,7 @@ or report shape requires a bespoke composition. The v2 machine schema retains
 | Axis | Sets | Enforcement | In gaffer | At runtime |
 |---|---|---|---|---|
 | Routing | semantic tier + deliberation | hard at dispatch | stock template + routing request | semantic spawn opts |
-| Substrate | model + effort/reasoning | hard (API params) | provider catalog / compiled adapter | resolved spawn opts |
+| Substrate | model + effort/reasoning | hard (API params) | provider raw-support intersection + exact per-tier routes / compiled adapter | resolved spawn opts |
 | Capability surface | provider-neutral capability labels | hard, fail-closed adapter intersection | stock-template `capabilities` | adapter tool + sandbox mapping |
 | Role | authority / deliverable / report / redirect | advisory | `docs/roles.md` | — |
 | Task grade | work scope / autonomy / novelty prior | advisory | stock template or bespoke contract | spawn metadata |
@@ -142,3 +152,6 @@ concrete model names. North resolves that request through provider catalogs,
 owns the changing runtime alternatives, and records which pool it selected.
 Automatic alternatives remain same-capability substitutions before side
 effects; any degradation is explicit and evidenced.
+An explicit exact-model pin is an execution-envelope constraint, not a ninth
+Gaffer request field. Its static catalog check and North's live authenticated
+target check are both required and independent.

@@ -96,7 +96,12 @@ LAWS
    responsible capability.
 4. PIN THE TIER on every spawn. Provider may be explicit or `auto`; the
    provider adapter MUST resolve and record concrete model + effort/reasoning.
-   Never silently inherit the session model.
+   Never silently inherit the session model. Unpinned resolution uses the
+   canonical tier row. An explicit exact-model pin must pass that model's
+   provider-supported Gaffer-vocabulary list AND its exact per-tier route;
+   never infer a cross-product or filter an alternate model through the default
+   tier model. Static route compatibility does not prove an authenticated target
+   is currently available — the harness must establish that independently.
 5. BLAST RADIUS routes up; importance alone never does. A hard-but-local
    testable bug is still implement; a one-line naming decision that shapes
    an API is design.
@@ -160,6 +165,10 @@ request; they are not fields on the wire. NORTH owns runtime allocation:
 authenticated accounts, subscription envelopes and reserves, allocation, safe
 substitution, resolved model, and decision/outcome telemetry. Provider model
 names remain adapter facts. Neither layer silently rewrites the other's facts.
+Raw provider support within Gaffer's deliberation vocabulary, Gaffer's calibrated
+exact route, account entitlement, and current target availability are four
+separate facts. No support entry, route, or dated provenance review implies any
+of the other three.
 
 ORCHESTRATION — topology is conceptually independent of function, grade,
 domain requirements, tier, deliberation, and posture; templates enforce their

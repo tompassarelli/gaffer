@@ -35,14 +35,52 @@ export function resolvableDeliberations(tier, providers = PROVIDER_NAMES, root =
 }
 
 export function resolveModelAlias(catalog, modelOrAlias) {
-  return catalog.modelAliases?.[modelOrAlias] ?? modelOrAlias;
+  return Object.hasOwn(catalog.modelAliases ?? {}, modelOrAlias)
+    ? catalog.modelAliases[modelOrAlias]
+    : modelOrAlias;
+}
+
+// An exact-model pin is an execution-envelope constraint layered over the
+// canonical Gaffer tier+reasoning request. Static catalog compatibility is
+// necessary but not sufficient: the harness must independently establish an
+// available authenticated target before dispatch.
+export function resolvePinnedModelRoute(catalog, request = {}) {
+  keysOnly(request, ["model", "tier", "reasoning"], `${catalog?.provider ?? "provider"}.pinnedRoute`);
+  const { model: modelOrAlias, tier, reasoning } = request;
+  if (typeof modelOrAlias !== "string" || !modelOrAlias.trim())
+    throw new Error(`${catalog?.provider ?? "provider"}: pinned route requires a non-empty model alias or exact ID`);
+  const model = resolveModelAlias(catalog, modelOrAlias);
+  const descriptor = Object.hasOwn(catalog.models ?? {}, model) ? catalog.models[model] : undefined;
+  if (!descriptor)
+    throw new Error(`${catalog.provider}: pinned model ${modelOrAlias} resolves to undeclared exact model ${model}`);
+  if (!TIERS.includes(tier))
+    throw new Error(`${catalog.provider}: pinned route names unknown semantic tier ${tier}`);
+  if (!REASONING.includes(reasoning))
+    throw new Error(`${catalog.provider}: pinned route names unknown reasoning level ${reasoning}`);
+  const listName = catalog.provider === "anthropic" ? "efforts" : "reasoning";
+  const modelLevels = descriptor[listName];
+  if (!Array.isArray(modelLevels) || !modelLevels.length)
+    throw new Error(`${catalog.provider}: pinned model ${model} has empty ${listName} support; exact-model compatibility fails closed`);
+  if (!modelLevels.includes(reasoning))
+    throw new Error(`${catalog.provider}: pinned model ${model} does not support ${listName} level ${reasoning} within Gaffer's vocabulary`);
+  if (descriptor.routes == null || typeof descriptor.routes !== "object" || Array.isArray(descriptor.routes) ||
+      !Object.keys(descriptor.routes).length)
+    throw new Error(`${catalog.provider}: pinned model ${model} has no calibrated routes; exact-model compatibility fails closed`);
+  const routeLevels = descriptor.routes[tier];
+  if (!Array.isArray(routeLevels) || !routeLevels.length)
+    throw new Error(`${catalog.provider}: pinned model ${model} has no calibrated route for semantic tier ${tier}`);
+  if (!routeLevels.includes(reasoning))
+    throw new Error(`${catalog.provider}: pinned model ${model} does not calibrate ${tier}/${reasoning}`);
+  return { provider: catalog.provider, model, tier, reasoning };
 }
 
 // Delta selection is always by the concrete model that will execute. Runtime
 // promotion or fallback must never inherit the tier's original model delta.
 // An adapter must declare an explicit `none` entry for an uncalibrated model.
 export function modelDeltaFor(catalog, concreteModel) {
-  const descriptor = catalog.modelDeltas?.[concreteModel];
+  const descriptor = Object.hasOwn(catalog.modelDeltas ?? {}, concreteModel)
+    ? catalog.modelDeltas[concreteModel]
+    : undefined;
   if (!descriptor)
     throw new Error(`${catalog.provider}: concrete model ${concreteModel} has no exact modelDeltas entry; declare calibrated or explicit none`);
   return descriptor;
@@ -81,7 +119,7 @@ export function providerCatalogFreshness(catalog, today = new Date().toISOString
 }
 
 export function validateProviderCatalog(catalog, expectedProvider, root = ROOT) {
-  keysOnly(catalog, ["$schema", "provider", "provenance", "transports", "modelAliases", "modelDeltas", "tiers"], "provider catalog");
+  keysOnly(catalog, ["$schema", "provider", "provenance", "transports", "modelAliases", "models", "modelDeltas", "tiers"], "provider catalog");
   if (catalog?.provider !== expectedProvider) throw new Error(`${expectedProvider}: provider mismatch`);
   const provenance = catalog.provenance;
   keysOnly(provenance, ["asOf", "reviewAfter", "sources"], `${expectedProvider}.provenance`);
@@ -134,8 +172,53 @@ export function validateProviderCatalog(catalog, expectedProvider, root = ROOT) 
     if (!/^[a-z0-9][a-z0-9.-]*$/.test(alias) || typeof model !== "string" || !model.trim() || alias === model)
       throw new Error(`${expectedProvider}: invalid model alias ${JSON.stringify(alias)}`);
   }
-  keysOnly(catalog.tiers, TIERS, `${expectedProvider}.tiers`);
   const expectedLevels = expectedProvider === "anthropic" ? "efforts" : "reasoning";
+  if (catalog.models == null || typeof catalog.models !== "object" || Array.isArray(catalog.models) ||
+      !Object.keys(catalog.models).length)
+    throw new Error(`${expectedProvider}: models must be a non-empty exact-model compatibility map`);
+  const declaredModels = new Set(Object.keys(catalog.models));
+  for (const [model, descriptor] of Object.entries(catalog.models)) {
+    if (typeof model !== "string" || !model.trim() || Object.hasOwn(catalog.modelAliases, model))
+      throw new Error(`${expectedProvider}: models must use non-empty exact IDs that do not collide with aliases: ${JSON.stringify(model)}`);
+    if (descriptor == null || typeof descriptor !== "object" || Array.isArray(descriptor))
+      throw new Error(`${expectedProvider}.models.${model} must be an object`);
+    keysOnly(descriptor, ["routes", "efforts", "reasoning"], `${expectedProvider}.models.${model}`);
+    const vocabularies = ["efforts", "reasoning"].filter((key) => Object.hasOwn(descriptor, key));
+    if (vocabularies.length !== 1)
+      throw new Error(`${expectedProvider}.models.${model} must use exactly one provider deliberation vocabulary`);
+    const listName = vocabularies[0];
+    const levels = descriptor[listName];
+    if (!Array.isArray(levels) || !levels.length || levels.some((level) => !REASONING.includes(level)) ||
+        new Set(levels).size !== levels.length)
+      throw new Error(`${expectedProvider}.models.${model}.${listName} must contain unique provider-supported levels within Gaffer's vocabulary`);
+    if (listName !== expectedLevels)
+      throw new Error(`${expectedProvider}.models.${model} must use ${expectedLevels}`);
+    if (descriptor.routes == null || typeof descriptor.routes !== "object" || Array.isArray(descriptor.routes) ||
+        !Object.keys(descriptor.routes).length)
+      throw new Error(`${expectedProvider}.models.${model}.routes must be a non-empty exact per-tier map`);
+    keysOnly(descriptor.routes, TIERS, `${expectedProvider}.models.${model}.routes`);
+    const assignedRungs = new Map();
+    for (const [tier, routeLevels] of Object.entries(descriptor.routes)) {
+      if (!Array.isArray(routeLevels) || !routeLevels.length ||
+          routeLevels.some((level) => !REASONING.includes(level)) ||
+          new Set(routeLevels).size !== routeLevels.length)
+        throw new Error(`${expectedProvider}.models.${model}.routes.${tier} must contain unique calibrated deliberation levels`);
+      const unsupported = routeLevels.filter((level) => !levels.includes(level));
+      if (unsupported.length)
+        throw new Error(`${expectedProvider}.models.${model}.routes.${tier} exceeds raw ${listName} support: ${unsupported.join(",")}`);
+      for (const level of routeLevels) {
+        const priorTier = assignedRungs.get(level);
+        if (priorTier)
+          throw new Error(`${expectedProvider}: exact route ${model}/${level} appears in both ${priorTier} and ${tier}`);
+        assignedRungs.set(level, tier);
+      }
+    }
+  }
+  for (const [alias, model] of Object.entries(catalog.modelAliases)) {
+    if (!declaredModels.has(model))
+      throw new Error(`${expectedProvider}: modelAliases.${alias} targets undeclared exact model ${model}`);
+  }
+  keysOnly(catalog.tiers, TIERS, `${expectedProvider}.tiers`);
   for (const tier of TIERS) {
     const value = catalog.tiers?.[tier];
     keysOnly(value, ["model", "efforts", "defaultEffort", "reasoning", "defaultReasoning"], `${expectedProvider}.${tier}`);
@@ -152,6 +235,16 @@ export function validateProviderCatalog(catalog, expectedProvider, root = ROOT) 
       throw new Error(`${expectedProvider}.${tier} must use ${expectedLevels}`);
     if (Object.hasOwn(catalog.modelAliases, value.model))
       throw new Error(`${expectedProvider}.${tier}.model must be an exact model ID, not alias ${value.model}`);
+    const modelDescriptor = Object.hasOwn(catalog.models, value.model)
+      ? catalog.models[value.model]
+      : undefined;
+    if (!modelDescriptor)
+      throw new Error(`${expectedProvider}.${tier}.model lacks exact-model compatibility: ${value.model}`);
+    const modelRoute = modelDescriptor.routes[tier];
+    if (!Array.isArray(modelRoute) || !modelRoute.length)
+      throw new Error(`${expectedProvider}.models.${value.model}.routes must include default tier ${tier}`);
+    if (JSON.stringify(modelRoute) !== JSON.stringify(levels))
+      throw new Error(`${expectedProvider}.models.${value.model}.routes.${tier} must exactly match the canonical default tier rung order`);
   }
   const concreteRungs = new Map();
   for (const tier of TIERS) {
@@ -166,20 +259,16 @@ export function validateProviderCatalog(catalog, expectedProvider, root = ROOT) 
   }
   if (catalog.modelDeltas == null || typeof catalog.modelDeltas !== "object" || Array.isArray(catalog.modelDeltas))
     throw new Error(`${expectedProvider}: modelDeltas must be an object`);
-  const models = new Set(TIERS.map((tier) => catalog.tiers[tier].model));
   const deltaModels = new Set(Object.keys(catalog.modelDeltas));
-  const missing = [...models].filter((model) => !deltaModels.has(model));
-  if (missing.length)
-    throw new Error(`${expectedProvider}: modelDeltas must cover every tier model; missing=${missing.join(",")}`);
-  for (const [alias, model] of Object.entries(catalog.modelAliases)) {
-    if (!deltaModels.has(model))
-      throw new Error(`${expectedProvider}: modelAliases.${alias} target lacks exact modelDeltas entry: ${model}`);
-  }
-  const unsourced = [...deltaModels].filter((model) => !sourcedModels.has(model));
-  const unknownSourced = [...sourcedModels].filter((model) => !deltaModels.has(model));
+  const missingDeltas = [...declaredModels].filter((model) => !deltaModels.has(model));
+  const unknownDeltas = [...deltaModels].filter((model) => !declaredModels.has(model));
+  if (missingDeltas.length || unknownDeltas.length)
+    throw new Error(`${expectedProvider}: modelDeltas/model compatibility mismatch; missing=${missingDeltas.join(",")} unknown=${unknownDeltas.join(",")}`);
+  const unsourced = [...declaredModels].filter((model) => !sourcedModels.has(model));
+  const unknownSourced = [...sourcedModels].filter((model) => !declaredModels.has(model));
   if (unsourced.length || unknownSourced.length)
     throw new Error(`${expectedProvider}: provenance model coverage mismatch; unsourced=${unsourced.join(",")} unknown=${unknownSourced.join(",")}`);
-  const missingScopesByModel = [...deltaModels].flatMap((model) => {
+  const missingScopesByModel = [...declaredModels].flatMap((model) => {
     const covered = sourcedScopesByModel.get(model) ?? new Set();
     const missingModelScopes = SOURCE_SCOPES.filter((scope) => !covered.has(scope));
     return missingModelScopes.length ? [`${model} missing ${missingModelScopes.join(",")}`] : [];

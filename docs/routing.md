@@ -205,6 +205,22 @@ delta lookup. It must not inherit the original tier model's calibration: every
 runtime model declares either a calibrated repo path or explicit `none` in its
 provider catalog.
 
+Provider catalogs keep two model-level facts separate. `models.<exact>.efforts`
+or `.reasoning` records provider-supported levels intersected with Gaffer's
+canonical deliberation vocabulary; it is not an exhaustive provider API enum.
+`models.<exact>.routes.<tier>` is the smaller calibrated set of exact
+model×tier×deliberation shingles. Route lists are explicit and disjoint: raw
+support never implies a tier cross-product. Missing models, raw support, route
+maps, tier entries, or deliberation entries fail closed.
+
+The portable eight-field composer remains unpinned. It resolves only through
+the canonical `tiers.<tier>` row, whose default model route must match that row
+exactly; alternate exact-model entries do not silently broaden it. When a
+harness execution envelope explicitly pins a model or alias, the adapter
+instead validates the request's tier+reasoning against that selected model's
+raw-support intersection and exact route. It never filters an alternate model
+through the canonical tier model's effort list.
+
 ## Target resolution — owned by the harness, not by Gaffer
 
 Gaffer stops at the semantic request. Choosing an account, a concrete model, a
@@ -213,20 +229,26 @@ harness's job. That resolution is North's contract, not Gaffer's: Gaffer does
 not enumerate its fields or name any account, pool, or model.
 
 A conforming harness accepts the eight-field Gaffer request inside its own
-execution envelope. That envelope may additionally pin a provider or account,
+execution envelope. That envelope may additionally pin a provider, account, or
+exact model,
 but those are North inputs rather than Gaffer fields. The harness:
 
-1. Honors an explicit provider/account pin from its execution envelope, else
+1. Honors an explicit provider/account/model pin from its execution envelope, else
    selects freely among compatible accounts.
-2. Removes providers lacking required capabilities, authentication, or capacity.
-3. Rejects candidates below the quality floor the caller reasoned to, missing
+2. For an explicit model pin, requires the catalog's static raw-support and
+   exact-route checks; for an unpinned request, uses the canonical tier row.
+3. Independently requires an available authenticated target for the resolved
+   provider/model. Static catalog compatibility establishes neither account
+   entitlement nor current target availability.
+4. Removes providers lacking required capabilities, authentication, or capacity.
+5. Rejects candidates below the quality floor the caller reasoned to, missing
    required capabilities, or unable to prove a named external-access
    prerequisite before the model turn.
-4. Applies its own subscription-allocation policy and resource pressure; pressure
+6. Applies its own subscription-allocation policy and resource pressure; pressure
    trims optional breadth, polish, and retries before capability.
-5. Resolves the semantic `tier` + `reasoning` through `providers/<provider>.json`
+7. Resolves the semantic `tier` + `reasoning` through `providers/<provider>.json`
    to a concrete model and effort/reasoning control.
-6. Records the requested route beside the resolved one for audit.
+8. Records the requested route beside the resolved one for audit.
 
 Stock-template capabilities are provider-neutral requirements. An adapter may expose
 only the intersection it can enforce, and must fail closed when a required

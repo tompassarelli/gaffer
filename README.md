@@ -53,7 +53,9 @@ Install it and your sessions gain:
    see [`docs/provider-matrix.md`](docs/provider-matrix.md). Every exact catalog
    model must have official model-family, availability, and effort-support
    provenance; provider-wide union coverage cannot substitute for a model's
-   missing scope.
+   missing scope. Model entries separately record provider-supported levels
+   within Gaffer's deliberation vocabulary and calibrated exact per-tier route
+   shingles. Raw support never implies a tier cross-product or a live account.
 
    The template library also staffs **workflow stages**. The doctrine tells the
    session which member plays each stage and stops workers from silently
@@ -115,7 +117,9 @@ North consumes Gaffer's `staffing/catalog.json` and `providers/*.json` directly,
 accepts the portable eight-field routing request, then selects an authenticated
 subscription account and concrete provider runtime. The generated
 [North adapter contract](docs/adapters/north.md) documents the spawn surface
-and fail-closed capability mapping; install and bootstrap North itself rather
+and fail-closed capability mapping. Exact-model pins additionally require both
+Gaffer's static exact-route acceptance and North's independent proof of an
+available authenticated target; install and bootstrap North itself rather
 than applying the Claude plugin commands above.
 
 ## Architecture note
