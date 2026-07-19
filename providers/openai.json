@@ -24,8 +24,8 @@
     "sol": "gpt-5.6-sol"
   },
   "modelDeltas": {
-    "gpt-5.6-luna": { "kind": "none", "reason": "no calibrated Gaffer delta has been authored for this model" },
-    "gpt-5.6-terra": { "kind": "none", "reason": "no calibrated Gaffer delta has been authored for this model" },
+    "gpt-5.6-luna": { "kind": "calibrated", "path": "docs/deltas/gpt-5.6-luna.md" },
+    "gpt-5.6-terra": { "kind": "calibrated", "path": "docs/deltas/gpt-5.6-terra.md" },
     "gpt-5.6-sol": { "kind": "calibrated", "path": "docs/deltas/gpt-5.6-sol.md" }
   },
   "tiers": {
