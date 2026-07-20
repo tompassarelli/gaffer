@@ -8,7 +8,7 @@ import { loadStaffingCatalog, validateStaffingCatalog } from "./staffing-catalog
 import {
   loadProviderCatalog, modelDeltaFor, validateProviderCatalog,
   providerCatalogFreshness, resolvableDeliberations, resolveModelAlias,
-  resolvePinnedModelRoute,
+  resolvePinnedModelRoute, resolveContextWindow,
 } from "./provider-catalog.mjs";
 import { OVERRIDE_FIELDS, ROUTING_FIELDS, validateRoutingRequest } from "./routing-request.mjs";
 import {
@@ -33,7 +33,7 @@ const providerCatalogKeys = [
   "modelDeltas", "tiers",
 ];
 const providerDefinitionKeys = [
-  "provenance", "source", "date", "modelDelta", "modelCompatibility", "modelRoutes", "tier", "reasoning",
+  "provenance", "source", "date", "modelDelta", "modelCompatibility", "modelRoutes", "contextWindow", "tier", "reasoning",
 ];
 const stockTemplateNames = [
   "executor", "implementer", "integrator", "designer", "director",
@@ -136,14 +136,18 @@ for (const preset of staffing.presets)
 // `reasoning`.
 const modelCompatibilitySchema = providerSchema.$defs?.modelCompatibility;
 function modelCompatibilitySchemaAccepts(value) {
-  const allowed = ["routes", "efforts", "reasoning"];
+  const allowed = ["routes", "contextWindow", "efforts", "reasoning"];
   const routesSchema = providerSchema.$defs?.modelRoutes;
   const reasoningSchema = providerSchema.$defs?.reasoning;
+  const contextWindowSchema = providerSchema.$defs?.contextWindow;
   const vocabularyBranches = modelCompatibilitySchema?.oneOf?.map((branch) => branch.required?.[0]);
   if (modelCompatibilitySchema?.type !== "object" || modelCompatibilitySchema.additionalProperties !== false ||
-      JSON.stringify(modelCompatibilitySchema.required) !== JSON.stringify(["routes"]) ||
+      JSON.stringify(modelCompatibilitySchema.required) !== JSON.stringify(["routes", "contextWindow"]) ||
       routesSchema?.type !== "object" || routesSchema.minProperties !== 1 || routesSchema.additionalProperties !== false ||
       reasoningSchema?.type !== "array" || reasoningSchema.minItems !== 1 || reasoningSchema.uniqueItems !== true ||
+      contextWindowSchema?.type !== "object" || contextWindowSchema.additionalProperties !== false ||
+      JSON.stringify([...(contextWindowSchema.required ?? [])].sort()) !== JSON.stringify(["effectiveFrom", "tokens"]) ||
+      contextWindowSchema.properties?.tokens?.type !== "integer" || contextWindowSchema.properties.tokens.minimum !== 1 ||
       JSON.stringify(vocabularyBranches) !== JSON.stringify(["efforts", "reasoning"]))
     throw new Error("model compatibility JSON Schema fragment lost fail-closed shape");
   if (value == null || typeof value !== "object" || Array.isArray(value) ||
@@ -156,6 +160,11 @@ function modelCompatibilitySchemaAccepts(value) {
         new Set(levels).size !== levels.length ||
         levels.some((level) => !reasoningSchema.items.enum.includes(level))) return false;
   }
+  const cw = value.contextWindow;
+  if (cw == null || typeof cw !== "object" || Array.isArray(cw) ||
+      JSON.stringify(Object.keys(cw).sort()) !== JSON.stringify(["effectiveFrom", "tokens"]) ||
+      !Number.isInteger(cw.tokens) || cw.tokens < contextWindowSchema.properties.tokens.minimum ||
+      typeof cw.effectiveFrom !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(cw.effectiveFrom)) return false;
   const vocabularies = ["efforts", "reasoning"].filter((key) => Object.hasOwn(value, key));
   if (vocabularies.length !== 1) return false;
   const levels = value[vocabularies[0]];
@@ -163,16 +172,22 @@ function modelCompatibilitySchemaAccepts(value) {
     new Set(levels).size === levels.length &&
     levels.every((level) => reasoningSchema.items.enum.includes(level));
 }
+const okContextWindow = { contextWindow: { tokens: 1000000, effectiveFrom: "2026-07-16" } };
 for (const [value, expected] of [
-  [{ efforts: ["low", "xhigh", "max"], routes: { frontier: ["xhigh", "max"] } }, true],
-  [{ reasoning: ["low", "xhigh", "max"], routes: { frontier: ["xhigh", "max"] } }, true],
-  [{ efforts: [], routes: { frontier: ["xhigh"] } }, false],
-  [{ efforts: ["xhigh"], routes: {} }, false],
-  [{ efforts: ["xhigh"], routes: { frontier: [] } }, false],
-  [{ efforts: ["xhigh"], reasoning: ["xhigh"], routes: { frontier: ["xhigh"] } }, false],
-  [{ efforts: ["xhigh"], routes: { impossible: ["xhigh"] } }, false],
-  [{ reasoning: ["none", "xhigh"], routes: { frontier: ["xhigh"] } }, false],
-  [{ efforts: ["xhigh"], routes: { frontier: ["xhigh"] }, validUntil: "2026-07-19" }, false],
+  [{ efforts: ["low", "xhigh", "max"], routes: { frontier: ["xhigh", "max"] }, ...okContextWindow }, true],
+  [{ reasoning: ["low", "xhigh", "max"], routes: { frontier: ["xhigh", "max"] }, ...okContextWindow }, true],
+  [{ efforts: [], routes: { frontier: ["xhigh"] }, ...okContextWindow }, false],
+  [{ efforts: ["xhigh"], routes: {}, ...okContextWindow }, false],
+  [{ efforts: ["xhigh"], routes: { frontier: [] }, ...okContextWindow }, false],
+  [{ efforts: ["xhigh"], reasoning: ["xhigh"], routes: { frontier: ["xhigh"] }, ...okContextWindow }, false],
+  [{ efforts: ["xhigh"], routes: { impossible: ["xhigh"] }, ...okContextWindow }, false],
+  [{ reasoning: ["none", "xhigh"], routes: { frontier: ["xhigh"] }, ...okContextWindow }, false],
+  [{ efforts: ["xhigh"], routes: { frontier: ["xhigh"] }, ...okContextWindow, validUntil: "2026-07-19" }, false],
+  [{ efforts: ["xhigh"], routes: { frontier: ["xhigh"] } }, false],
+  [{ efforts: ["xhigh"], routes: { frontier: ["xhigh"] }, contextWindow: { tokens: 0, effectiveFrom: "2026-07-16" } }, false],
+  [{ efforts: ["xhigh"], routes: { frontier: ["xhigh"] }, contextWindow: { tokens: 1.5, effectiveFrom: "2026-07-16" } }, false],
+  [{ efforts: ["xhigh"], routes: { frontier: ["xhigh"] }, contextWindow: { tokens: 1000000 } }, false],
+  [{ efforts: ["xhigh"], routes: { frontier: ["xhigh"] }, contextWindow: { tokens: 1000000, effectiveFrom: "2026-07-16", note: "x" } }, false],
 ]) {
   if (modelCompatibilitySchemaAccepts(value) !== expected)
     throw new Error(`model compatibility JSON Schema parity probe failed for ${JSON.stringify(value)}`);
@@ -243,6 +258,35 @@ for (const catalog of Object.values(providerCatalogs)) {
     if (resolveModelAlias(catalog, alias) !== exact || resolveModelAlias(catalog, exact) !== exact)
       throw new Error(`${catalog.provider}: model alias resolution drifted for ${alias}`);
     modelDeltaFor(catalog, exact);
+  }
+}
+// Context window is an exact-model provider limit; a local alias inherits it
+// only after resolution, and the recorded tokens is a positive-integer ceiling
+// dated no later than the catalog snapshot. Provider limits differ across
+// providers and are never a usable harness budget.
+const expectedContextTokens = { anthropic: 1000000, openai: 1050000 };
+for (const catalog of Object.values(providerCatalogs)) {
+  const expectedTokens = expectedContextTokens[catalog.provider];
+  for (const [exact, descriptor] of Object.entries(catalog.models)) {
+    const direct = resolveContextWindow(catalog, exact);
+    if (direct.provider !== catalog.provider || direct.model !== exact ||
+        direct.tokens !== descriptor.contextWindow.tokens ||
+        direct.effectiveFrom !== descriptor.contextWindow.effectiveFrom)
+      throw new Error(`${catalog.provider}: exact-model context window resolution drifted for ${exact}`);
+    if (!Number.isInteger(direct.tokens) || direct.tokens !== expectedTokens)
+      throw new Error(`${catalog.provider}: ${exact} context window must be the official ${expectedTokens}-token provider limit`);
+    if (direct.effectiveFrom > catalog.provenance.asOf)
+      throw new Error(`${catalog.provider}: ${exact} context window effectiveFrom must not follow catalog asOf`);
+  }
+  for (const [alias, exact] of Object.entries(catalog.modelAliases)) {
+    const viaAlias = resolveContextWindow(catalog, alias);
+    const viaExact = resolveContextWindow(catalog, exact);
+    if (viaAlias.model !== exact || JSON.stringify(viaAlias) !== JSON.stringify(viaExact))
+      throw new Error(`${catalog.provider}: alias ${alias} did not inherit exact-model context window after resolution`);
+  }
+  for (const missing of ["unlisted-runtime-model", "constructor", "__proto__"]) {
+    try { resolveContextWindow(catalog, missing); throw new Error("missing context window was inherited"); }
+    catch (error) { if (error.message === "missing context window was inherited") throw error; }
   }
 }
 const fableModel = providerCatalogs.anthropic.modelAliases.fable;
@@ -394,7 +438,7 @@ if (staffing.aliases.some(({ name }) => name === "researcher") ||
 const openaiFixture = providerCatalogs.openai;
 const missingModelDeltas = { ...openaiFixture.modelDeltas };
 delete missingModelDeltas[openaiFixture.tiers.senior.model];
-const provenanceScopes = ["model-family", "availability", "effort-support"];
+const provenanceScopes = ["model-family", "availability", "effort-support", "context-window", "effective-date"];
 function withoutModelScope(catalog, model, scope) {
   const sources = catalog.provenance.sources.map((source) =>
       source.scopes.includes(scope) && source.modelFamilies.includes(model)
@@ -504,6 +548,27 @@ for (const [label, invalid, errorContains] of [
   ["forbidden model target availability", mutateCatalog(openaiFixture, (catalog) => {
     catalog.models[openaiEconomyModel].targetAvailability = "ready";
   }), "unknown field(s): targetAvailability"],
+  ["missing context window", mutateCatalog(openaiFixture, (catalog) => {
+    delete catalog.models[openaiEconomyModel].contextWindow;
+  }), "contextWindow must record the provider context-window limit"],
+  ["zero context window tokens", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].contextWindow.tokens = 0;
+  }), "contextWindow.tokens must be a positive integer provider limit"],
+  ["negative context window tokens", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].contextWindow.tokens = -1;
+  }), "contextWindow.tokens must be a positive integer provider limit"],
+  ["fractional context window tokens", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].contextWindow.tokens = 1050000.5;
+  }), "contextWindow.tokens must be a positive integer provider limit"],
+  ["future context window effectiveFrom", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].contextWindow.effectiveFrom = "2999-01-01";
+  }), "contextWindow.effectiveFrom 2999-01-01 must not follow catalog asOf"],
+  ["malformed context window effectiveFrom", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].contextWindow.effectiveFrom = "2026-13-40";
+  }), "contextWindow.effectiveFrom must be a real calendar date"],
+  ["forbidden context window field", mutateCatalog(openaiFixture, (catalog) => {
+    catalog.models[openaiEconomyModel].contextWindow.usableBudget = 900000;
+  }), "contextWindow has unknown field(s): usableBudget"],
   ["reversed review chronology", { ...openaiFixture, provenance: { ...openaiFixture.provenance, reviewAfter: "2000-01-01" } }],
   ["unsupported provenance scope", { ...openaiFixture, provenance: { ...openaiFixture.provenance,
     sources: [{ ...openaiFixture.provenance.sources[0], scopes: ["model-family", "rung-economics"] }],
@@ -520,9 +585,13 @@ for (const [label, invalid, errorContains] of [
       throw new Error(`${label} produced wrong error: ${error.message}`);
   }
 }
-const overdueFixture = { ...openaiFixture, provenance: {
-  ...openaiFixture.provenance, asOf: "2000-01-01", reviewAfter: "2000-02-01",
-} };
+const overdueFixture = mutateCatalog(openaiFixture, (catalog) => {
+  catalog.provenance.asOf = "2000-01-01";
+  catalog.provenance.reviewAfter = "2000-02-01";
+  // A backdated snapshot must also carry context windows effective no later
+  // than that snapshot; the provider limit predates this fixture's asOf.
+  for (const model of Object.values(catalog.models)) model.contextWindow.effectiveFrom = "2000-01-01";
+});
 validateProviderCatalog(overdueFixture, "openai");
 const overdueFreshness = providerCatalogFreshness(overdueFixture, "2000-03-01");
 if (overdueFreshness.status !== "overdue" || !overdueFreshness.message.includes("review overdue"))
@@ -1171,8 +1240,20 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
       for (const [tier, levels] of Object.entries(descriptor.routes))
         if (!providerMatrix.includes(`${tier}: ${levels.join(", ")}`))
           throw new Error(`generated provider matrix omits exact route ${model}/${tier}`);
+      const groupedTokens = String(descriptor.contextWindow.tokens).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      if (!providerMatrix.includes(`| ${groupedTokens} | ${descriptor.contextWindow.effectiveFrom} |`))
+        throw new Error(`generated provider matrix omits ${model} provider context-window limit`);
     }
   }
+  if (!providerMatrix.includes("## Context window (provider limit)"))
+    throw new Error("generated provider matrix must carry the exact-model context-window section");
+  for (const phrase of [
+    "provider-published context-window ceiling", "not the usable harness budget",
+    "dispatchable budget is always strictly smaller", "independent runtime",
+    "a local alias inherits it after resolution",
+  ])
+    if (!providerMatrix.includes(phrase))
+      throw new Error(`generated provider matrix must separate provider context-window limit from usable harness budget: ${phrase}`);
 }
 
 console.log("validate: catalogs, routing schema/fixtures, compositions, docs, and generated artifacts current");

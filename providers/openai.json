@@ -13,7 +13,7 @@
       {
         "url": "https://openai.com/index/gpt-5-6/",
         "modelFamilies": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"],
-        "scopes": ["availability"]
+        "scopes": ["availability", "context-window", "effective-date"]
       }
     ]
   },
@@ -26,18 +26,21 @@
   "models": {
     "gpt-5.6-luna": {
       "reasoning": ["low", "medium", "high", "xhigh", "max"],
-      "routes": { "economy": ["low", "medium"] }
+      "routes": { "economy": ["low", "medium"] },
+      "contextWindow": { "tokens": 1050000, "effectiveFrom": "2026-07-16" }
     },
     "gpt-5.6-terra": {
       "reasoning": ["low", "medium", "high", "xhigh", "max"],
-      "routes": { "standard": ["low", "medium"] }
+      "routes": { "standard": ["low", "medium"] },
+      "contextWindow": { "tokens": 1050000, "effectiveFrom": "2026-07-16" }
     },
     "gpt-5.6-sol": {
       "reasoning": ["low", "medium", "high", "xhigh", "max"],
       "routes": {
         "senior": ["medium", "high"],
         "frontier": ["xhigh", "max"]
-      }
+      },
+      "contextWindow": { "tokens": 1050000, "effectiveFrom": "2026-07-16" }
     }
   },
   "modelDeltas": {

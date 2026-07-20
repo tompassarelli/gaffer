@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const TIERS = ["economy", "standard", "senior", "frontier"];
 const REASONING = ["low", "medium", "high", "xhigh", "max"];
-const SOURCE_SCOPES = ["model-family", "availability", "effort-support"];
+const SOURCE_SCOPES = ["model-family", "availability", "effort-support", "context-window", "effective-date"];
 const OFFICIAL_DOMAINS = {
   anthropic: ["anthropic.com", "claude.com"],
   openai: ["openai.com"],
@@ -38,6 +38,18 @@ export function resolveModelAlias(catalog, modelOrAlias) {
   return Object.hasOwn(catalog.modelAliases ?? {}, modelOrAlias)
     ? catalog.modelAliases[modelOrAlias]
     : modelOrAlias;
+}
+
+// Context window is an exact-model fact; a local alias inherits its target
+// model's provider limit only AFTER resolution. There is no alias-level
+// context-window override, and the returned tokens is the provider ceiling,
+// not the usable harness budget the runtime may safely fill.
+export function resolveContextWindow(catalog, modelOrAlias) {
+  const model = resolveModelAlias(catalog, modelOrAlias);
+  const descriptor = Object.hasOwn(catalog.models ?? {}, model) ? catalog.models[model] : undefined;
+  if (!descriptor || descriptor.contextWindow == null)
+    throw new Error(`${catalog?.provider ?? "provider"}: no exact-model context window recorded for ${model}`);
+  return { provider: catalog.provider, model, tokens: descriptor.contextWindow.tokens, effectiveFrom: descriptor.contextWindow.effectiveFrom };
 }
 
 // An exact-model pin is an execution-envelope constraint layered over the
@@ -182,7 +194,7 @@ export function validateProviderCatalog(catalog, expectedProvider, root = ROOT) 
       throw new Error(`${expectedProvider}: models must use non-empty exact IDs that do not collide with aliases: ${JSON.stringify(model)}`);
     if (descriptor == null || typeof descriptor !== "object" || Array.isArray(descriptor))
       throw new Error(`${expectedProvider}.models.${model} must be an object`);
-    keysOnly(descriptor, ["routes", "efforts", "reasoning"], `${expectedProvider}.models.${model}`);
+    keysOnly(descriptor, ["routes", "contextWindow", "efforts", "reasoning"], `${expectedProvider}.models.${model}`);
     const vocabularies = ["efforts", "reasoning"].filter((key) => Object.hasOwn(descriptor, key));
     if (vocabularies.length !== 1)
       throw new Error(`${expectedProvider}.models.${model} must use exactly one provider deliberation vocabulary`);
@@ -213,6 +225,19 @@ export function validateProviderCatalog(catalog, expectedProvider, root = ROOT) 
         assignedRungs.set(level, tier);
       }
     }
+    // Provider context-window ceiling: a model-level fact recorded only on the
+    // exact model. tokens is the provider limit, never the usable harness
+    // budget; effectiveFrom must be a real ISO date no later than the catalog
+    // snapshot so the fact cannot claim a future provenance.
+    const contextWindow = descriptor.contextWindow;
+    if (contextWindow == null || typeof contextWindow !== "object" || Array.isArray(contextWindow))
+      throw new Error(`${expectedProvider}.models.${model}.contextWindow must record the provider context-window limit`);
+    keysOnly(contextWindow, ["tokens", "effectiveFrom"], `${expectedProvider}.models.${model}.contextWindow`);
+    if (!Number.isInteger(contextWindow.tokens) || contextWindow.tokens < 1)
+      throw new Error(`${expectedProvider}.models.${model}.contextWindow.tokens must be a positive integer provider limit`);
+    const effectiveFrom = isoDate(contextWindow.effectiveFrom, `${expectedProvider}.models.${model}.contextWindow.effectiveFrom`);
+    if (effectiveFrom > asOf)
+      throw new Error(`${expectedProvider}.models.${model}.contextWindow.effectiveFrom ${effectiveFrom} must not follow catalog asOf ${asOf}`);
   }
   for (const [alias, model] of Object.entries(catalog.modelAliases)) {
     if (!declaredModels.has(model))

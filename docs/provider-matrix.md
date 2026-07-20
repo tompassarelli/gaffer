@@ -7,8 +7,9 @@ semantic Gaffer request remains provider-neutral.
 
 ## Freshness and official provenance
 
-Official sources establish only the listed model-family, availability, and
-effort-support facts, with every exact catalog model covered for each fact
+Official sources establish only the listed model-family, availability,
+effort-support, context-window, and effective-date facts, with
+every exact catalog model covered for each fact
 category. Semantic tier placement, defaults, and omitted or
 dominated rungs are Gaffer's dated calibration judgments; the sources do not
 establish Gaffer's exact rung economics.
@@ -17,8 +18,8 @@ warning but remains reproducible and nonfatal; malformed or reversed dates fail.
 
 | Provider | As of | Review after | Official sources and scope |
 |---|---|---|---|
-| anthropic | 2026-07-16 | 2026-08-16 | [`claude-fable-5`](https://www.anthropic.com/claude/fable) — model-family, availability<br>[`claude-sonnet-5`](https://www.anthropic.com/news/claude-sonnet-5) — model-family, availability, effort-support<br>[`claude-opus-4-8`](https://platform.claude.com/docs/en/about-claude/models/whats-new-claude-4-8) — model-family, availability, effort-support<br>[`claude-fable-5`, `claude-sonnet-5`, `claude-opus-4-8`](https://platform.claude.com/docs/en/build-with-claude/effort) — effort-support |
-| openai | 2026-07-16 | 2026-08-16 | [`gpt-5.6-luna`, `gpt-5.6-terra`, `gpt-5.6-sol`](https://developers.openai.com/api/docs/models) — model-family, effort-support<br>[`gpt-5.6-luna`, `gpt-5.6-terra`, `gpt-5.6-sol`](https://openai.com/index/gpt-5-6/) — availability |
+| anthropic | 2026-07-16 | 2026-08-16 | [`claude-fable-5`](https://www.anthropic.com/claude/fable) — model-family, availability<br>[`claude-sonnet-5`](https://www.anthropic.com/news/claude-sonnet-5) — model-family, availability, effort-support<br>[`claude-opus-4-8`](https://platform.claude.com/docs/en/about-claude/models/whats-new-claude-4-8) — model-family, availability, effort-support<br>[`claude-fable-5`, `claude-sonnet-5`, `claude-opus-4-8`](https://platform.claude.com/docs/en/build-with-claude/effort) — effort-support<br>[`claude-fable-5`, `claude-sonnet-5`, `claude-opus-4-8`](https://platform.claude.com/docs/en/about-claude/models/overview) — context-window, effective-date |
+| openai | 2026-07-16 | 2026-08-16 | [`gpt-5.6-luna`, `gpt-5.6-terra`, `gpt-5.6-sol`](https://developers.openai.com/api/docs/models) — model-family, effort-support<br>[`gpt-5.6-luna`, `gpt-5.6-terra`, `gpt-5.6-sol`](https://openai.com/index/gpt-5-6/) — availability, context-window, effective-date |
 
 ## Semantic resolution
 
@@ -60,6 +61,27 @@ No catalog support or route entry establishes either runtime fact.
 | openai | `gpt-5.6-luna` | `luna` | reasoning | low, medium, high, xhigh, max | economy: low, medium | high, xhigh, max |
 | openai | `gpt-5.6-terra` | `terra` | reasoning | low, medium, high, xhigh, max | standard: low, medium | high, xhigh, max |
 | openai | `gpt-5.6-sol` | `sol` | reasoning | low, medium, high, xhigh, max | senior: medium, high<br>frontier: xhigh, max | low |
+
+## Context window (provider limit)
+
+Each token count is the provider-published context-window ceiling for the
+exact model — the maximum the provider will accept. It is a model-level fact
+recorded only on the exact model; a local alias inherits it after resolution.
+The ceiling is not the usable harness budget: the runtime must reserve
+space for the system prompt, tool schemas, and generated output, so the
+dispatchable budget is always strictly smaller and is an independent runtime
+fact, never derived here. `effective from` dates the provider fact and is no
+later than the catalog `as of` snapshot; official context-window and
+effective-date provenance is listed in the freshness table above.
+
+| Provider | Exact model | Aliases | Provider limit (tokens) | Effective from |
+|---|---|---|---|---|
+| anthropic | `claude-sonnet-5` | `sonnet` | 1,000,000 | 2026-07-16 |
+| anthropic | `claude-opus-4-8` | `opus` | 1,000,000 | 2026-07-16 |
+| anthropic | `claude-fable-5` | `fable` | 1,000,000 | 2026-07-16 |
+| openai | `gpt-5.6-luna` | `luna` | 1,050,000 | 2026-07-16 |
+| openai | `gpt-5.6-terra` | `terra` | 1,050,000 | 2026-07-16 |
+| openai | `gpt-5.6-sol` | `sol` | 1,050,000 | 2026-07-16 |
 
 ## Runtime-only exact-model delta entries
 

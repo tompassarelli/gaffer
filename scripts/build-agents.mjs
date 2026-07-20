@@ -264,6 +264,7 @@ function renderProviderMatrix() {
     .filter(([, exact]) => exact === model)
     .map(([alias]) => `\`${alias}\``)
     .join(", ") || "—";
+  const groupThousands = (value) => String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   const lines = [
     "# Provider resolution matrix",
     "",
@@ -274,8 +275,9 @@ function renderProviderMatrix() {
     "",
     "## Freshness and official provenance",
     "",
-    "Official sources establish only the listed model-family, availability, and",
-    "effort-support facts, with every exact catalog model covered for each fact",
+    "Official sources establish only the listed model-family, availability,",
+    "effort-support, context-window, and effective-date facts, with",
+    "every exact catalog model covered for each fact",
     "category. Semantic tier placement, defaults, and omitted or",
     "dominated rungs are Gaffer's dated calibration judgments; the sources do not",
     "establish Gaffer's exact rung economics.",
@@ -303,6 +305,7 @@ function renderProviderMatrix() {
     "|---|---|---|---|---|---|---|",
   );
   const exactCompatibility = [];
+  const contextWindows = [];
   const runtimeOnly = [];
   for (const catalog of catalogs) {
     const provider = catalog.provider;
@@ -327,6 +330,8 @@ function renderProviderMatrix() {
         .map(([tier, levels]) => `${tier}: ${levels.join(", ")}`)
         .join("<br>");
       exactCompatibility.push(`| ${provider} | \`${model}\` | ${aliasesFor(catalog, model)} | ${vocabulary} | ${supported.join(", ")} | ${routes} | ${unrouted.join(", ") || "—"} |`);
+      const cw = descriptor.contextWindow;
+      contextWindows.push(`| ${provider} | \`${model}\` | ${aliasesFor(catalog, model)} | ${groupThousands(cw.tokens)} | ${cw.effectiveFrom} |`);
     }
     for (const [model, delta] of Object.entries(catalog.modelDeltas)) {
       if (tierModels.has(model)) continue;
@@ -357,6 +362,24 @@ function renderProviderMatrix() {
     "| Provider | Exact model | Aliases | Control | Provider-supported levels in Gaffer vocabulary | Calibrated exact routes | Supported but unrouted |",
     "|---|---|---|---|---|---|---|",
     ...exactCompatibility,
+  );
+  lines.push(
+    "",
+    "## Context window (provider limit)",
+    "",
+    "Each token count is the provider-published context-window ceiling for the",
+    "exact model — the maximum the provider will accept. It is a model-level fact",
+    "recorded only on the exact model; a local alias inherits it after resolution.",
+    "The ceiling is not the usable harness budget: the runtime must reserve",
+    "space for the system prompt, tool schemas, and generated output, so the",
+    "dispatchable budget is always strictly smaller and is an independent runtime",
+    "fact, never derived here. `effective from` dates the provider fact and is no",
+    "later than the catalog `as of` snapshot; official context-window and",
+    "effective-date provenance is listed in the freshness table above.",
+    "",
+    "| Provider | Exact model | Aliases | Provider limit (tokens) | Effective from |",
+    "|---|---|---|---|---|",
+    ...contextWindows,
   );
   if (runtimeOnly.length) lines.push(
     "",
