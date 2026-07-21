@@ -681,38 +681,61 @@ if (new Set(grades).size !== grades.length || new Set(tiers).size !== tiers.leng
 const built = spawnSync(process.execPath, [resolve(root, "scripts/build-agents.mjs"), "--check"], { stdio: "inherit" });
 if (built.status !== 0) process.exit(built.status ?? 1);
 
-// Parse every generated agent with the runtime's real YAML implementation
-// (PyYAML), then consume that parsed structure below. Regex-only frontmatter
-// checks missed valid-looking scalars whose `: ` punctuation changed YAML shape.
+// Generated agent frontmatter is a deliberately closed YAML subset: exactly five
+// keys with JSON-quoted string scalars. Parse that contract directly so validation
+// is dependency-closed while still rejecting the `: ` shape drift that regex-only
+// checks previously missed.
 const generatedAgentPaths = [
   ...staffing.presets.map(({ name }) => resolve(root, `agents/${name}.md`)),
   ...staffing.aliases.map(({ name }) => resolve(root, `agents/${name}.md`)),
 ];
-const yamlProbe = spawnSync("python3", ["-c", String.raw`
-import json, pathlib, sys, yaml
-result = {}
-required = {"name": str, "description": str, "model": str, "effort": str, "tools": str}
-for raw_path in sys.argv[1:]:
-    path = pathlib.Path(raw_path)
-    lines = path.read_text(encoding="utf-8").splitlines()
-    if not lines or lines[0] != "---":
-        raise ValueError(f"{path}: missing opening YAML frontmatter delimiter")
-    try:
-        end = lines.index("---", 1)
-    except ValueError:
-        raise ValueError(f"{path}: missing closing YAML frontmatter delimiter")
-    data = yaml.safe_load("\n".join(lines[1:end]))
-    if not isinstance(data, dict) or set(data) != set(required):
-        raise ValueError(f"{path}: frontmatter keys must be exactly {sorted(required)}; got {data!r}")
-    for key, expected_type in required.items():
-        if not isinstance(data[key], expected_type) or not data[key]:
-            raise TypeError(f"{path}: {key} must parse as a non-empty {expected_type.__name__}")
-    result[str(path)] = data
-print(json.dumps(result))
-`, ...generatedAgentPaths], { encoding: "utf8", maxBuffer: 4 * 1024 * 1024 });
-if (yamlProbe.status !== 0)
-  throw new Error(`generated agent YAML parse failed:\n${yamlProbe.error?.message || yamlProbe.stderr || yamlProbe.stdout}`);
-const parsedAgentFrontmatter = JSON.parse(yamlProbe.stdout);
+const frontmatterKeys = ["name", "description", "model", "effort", "tools"];
+const parseGeneratedAgentFrontmatter = (raw, path) => {
+  const lines = raw.split(/\r?\n/);
+  if (lines[0] !== "---")
+    throw new Error(`${path}: missing opening YAML frontmatter delimiter`);
+  const end = lines.indexOf("---", 1);
+  if (end < 0)
+    throw new Error(`${path}: missing closing YAML frontmatter delimiter`);
+  const parsed = {};
+  for (const line of lines.slice(1, end)) {
+    const separator = line.indexOf(": ");
+    if (separator <= 0)
+      throw new Error(`${path}: frontmatter line must be key + JSON-quoted string: ${JSON.stringify(line)}`);
+    const key = line.slice(0, separator);
+    if (Object.hasOwn(parsed, key))
+      throw new Error(`${path}: duplicate frontmatter key ${JSON.stringify(key)}`);
+    let value;
+    try { value = JSON.parse(line.slice(separator + 2)); }
+    catch { throw new Error(`${path}: ${key} must be a JSON-quoted YAML string`); }
+    if (typeof value !== "string" || value.length === 0)
+      throw new Error(`${path}: ${key} must parse as a non-empty string`);
+    parsed[key] = value;
+  }
+  if (JSON.stringify(Object.keys(parsed).sort()) !== JSON.stringify([...frontmatterKeys].sort()))
+    throw new Error(`${path}: frontmatter keys must be exactly ${JSON.stringify([...frontmatterKeys].sort())}`);
+  return parsed;
+};
+const validFrontmatter = `---\nname: "x"\ndescription: "a: b"\nmodel: "inherit"\neffort: "high"\ntools: "Read"\n---\n`;
+parseGeneratedAgentFrontmatter(validFrontmatter, "valid-frontmatter-probe");
+for (const [name, hostile] of [
+  ["unquoted-colon", validFrontmatter.replace('description: "a: b"', "description: a: b")],
+  ["duplicate-key", validFrontmatter.replace('model: "inherit"', 'name: "again"\nmodel: "inherit"')],
+  ["unknown-key", validFrontmatter.replace('model: "inherit"', 'unknown: "x"\nmodel: "inherit"')],
+  ["missing-delimiter", validFrontmatter.replace(/---\n$/, "")],
+  ["non-string", validFrontmatter.replace('effort: "high"', "effort: 42")],
+  ["empty-string", validFrontmatter.replace('tools: "Read"', 'tools: ""')],
+]) {
+  try {
+    parseGeneratedAgentFrontmatter(hostile, name);
+    throw new Error(`hostile generated-frontmatter probe ${name} was accepted`);
+  } catch (error) {
+    if (error.message === `hostile generated-frontmatter probe ${name} was accepted`) throw error;
+  }
+}
+const parsedAgentFrontmatter = Object.fromEntries(generatedAgentPaths.map((path) => [
+  path, parseGeneratedAgentFrontmatter(readFileSync(path, "utf8"), path),
+]));
 for (const path of generatedAgentPaths) {
   const raw = readFileSync(path, "utf8");
   for (const field of ["name", "description", "model", "effort", "tools"])
