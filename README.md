@@ -230,4 +230,6 @@ verification is explicit degradation.
 
 ## License
 
-Apache-2.0.
+Gaffer is dual-licensed under your choice of the [MIT License](LICENSE-MIT) or
+the [Apache License, Version 2.0](LICENSE-APACHE)
+(`MIT OR Apache-2.0`).

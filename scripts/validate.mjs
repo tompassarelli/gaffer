@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve, dirname } from "node:path";
@@ -16,6 +17,27 @@ import {
 } from "./role-id.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const licenseChooser = `Gaffer is licensed under either of
+
+* the MIT License (see LICENSE-MIT), or
+* the Apache License, Version 2.0 (see LICENSE-APACHE),
+
+at your option.
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+`;
+const sha256 = (text) => createHash("sha256").update(text).digest("hex");
+const apacheLicense = readFileSync(resolve(root, "LICENSE-APACHE"), "utf8");
+const mitLicense = readFileSync(resolve(root, "LICENSE-MIT"), "utf8");
+const rootLicense = readFileSync(resolve(root, "LICENSE"), "utf8");
+const licenseReadme = readFileSync(resolve(root, "README.md"), "utf8");
+if (rootLicense !== licenseChooser ||
+    sha256(apacheLicense) !== "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30" ||
+    sha256(mitLicense) !== "51adc9bf9e72be82d08c2a694bcca11a6ac1b9e520bb537e1100a158d7d0d06d" ||
+    !licenseReadme.includes("[MIT License](LICENSE-MIT)") ||
+    !licenseReadme.includes("[Apache License, Version 2.0](LICENSE-APACHE)") ||
+    !licenseReadme.includes("`MIT OR Apache-2.0`"))
+  throw new Error("dual-license chooser, canonical texts, or README declaration drifted");
 const staffing = loadStaffingCatalog();
 const tiers = staffing.vocabulary.semanticTiers;
 const grades = staffing.vocabulary.taskGrades;
