@@ -301,6 +301,15 @@ mayDecide, mustEscalate, doneWhen, and report. A nearest template may seed
 composition but never grants capabilities implicitly. Promotion-candidate defaults
 false and nomination is explicit. Recurrence is evidence
 for review whether nominated or not, never automatic promotion.
+THE CAPABILITY VOCABULARY IS CLOSED. `fram.graph.edit` is its one
+graph-authoring entry: it authorizes North-sealed FRAM code-graph mutation
+through exactly add-def, set-body, rename-def, insert-after, and
+replace-in-body. It grants no generic fact tools, no reads, no filesystem,
+shell, web, or coordination authority, no arbitrary project MCP discovery, and
+no caller-selected server. Only an explicit bespoke contract's canonical
+capabilities may request it: no stock template ships it, a domain requirement
+never grants it, and it is neither a ninth routing field nor an alias of
+shell/filesystem authority.
 Extension spec: docs/extending.md · assemble parts: the
 compose skill · calibrate a delta for a new model: the elicit skill.
 Templates are starting points, never the ceiling of possibility.

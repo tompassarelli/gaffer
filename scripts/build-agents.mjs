@@ -57,6 +57,11 @@ const CLAUDE_TOOLS = {
   "shell.readonly": [],
   web: ["WebSearch", "WebFetch"],
   coordination: ["Agent"],
+  // North-sealed FRAM code-graph mutation (add-def, set-body, rename-def,
+  // insert-after, replace-in-body) is a North-enforced surface. The native
+  // plugin maps NO tool for it: the capability never implies a provider-native
+  // tool, and an adapter that cannot seal the boundary fails closed.
+  "fram.graph.edit": [],
 };
 if (JSON.stringify([...staffing.vocabulary.capabilities].sort()) !== JSON.stringify(Object.keys(CLAUDE_TOOLS).sort()))
   throw new Error("Claude tool adapter must map every canonical staffing capability exactly once");
@@ -208,6 +213,14 @@ OpenAI orchestration is currently ineligible and fails pre-turn; with
 Claude plugin-agent frontmatter cannot encode a hard sandbox, so the generated
 plugin adapter withholds Bash for \`shell.readonly\` stock templates rather
 than claiming a boundary it cannot provide.
+\`fram.graph.edit\` authorizes only North-sealed FRAM code-graph mutation
+through the add-def, set-body, rename-def, insert-after, and replace-in-body
+verbs. It appears only in an explicit bespoke contract's canonical
+capabilities: no stock template carries it, a domain requirement never grants
+it, and it implies no provider-native tool surface, no generic fact tools, no
+reads, no filesystem/shell/web/coordination authority, and no MCP server
+discovery or selection. An adapter that cannot seal exactly that boundary
+omits the capability and fails closed.
 North presents composition provenance as \`gaffer:<preset>\`,
 \`gaffer:<preset>+override\`, or \`gaffer:bespoke:<id>\`. A native session that
 did not select Gaffer is \`gaffer:not-selected\`; only pre-contract records may

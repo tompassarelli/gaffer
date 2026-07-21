@@ -84,7 +84,7 @@
     },
     "capabilities": {
       "type": "array", "minItems": 1, "uniqueItems": true,
-      "items": { "enum": ["filesystem.read", "filesystem.search", "filesystem.write", "shell", "shell.readonly", "web", "coordination"] }
+      "items": { "enum": ["filesystem.read", "filesystem.search", "filesystem.write", "shell", "shell.readonly", "web", "coordination", "fram.graph.edit"] }
     },
     "roleId": {
       "type": "string",

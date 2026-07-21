@@ -145,6 +145,17 @@ forbid `coordination`; `shell` and `shell.readonly` are mutually exclusive.
 Changing a stock template's topology is rejected rather than projecting a new
 capability set behind the scenes; a different pairing is bespoke.
 
+`fram.graph.edit` is the closed vocabulary's only graph-authoring capability.
+It licenses North-sealed FRAM code-graph mutation through exactly add-def,
+set-body, rename-def, insert-after, and replace-in-body — no generic fact
+tools, no reads, no filesystem/shell/web/coordination authority, no arbitrary
+project MCP discovery, and no caller-selected server. Request it only in an
+explicit bespoke `capabilities[]`: no stock template ships it, and a domain
+requirement never grants it (naming FRAM as a domain requirement loads
+context, not authority). It is not a ninth routing field and not an alias of
+shell or filesystem write access; an adapter that cannot seal exactly that
+boundary omits the capability and fails closed.
+
 Resource policy follows the same boundary. A bespoke composition selects one
 semantic tier and one reasoning level; it does not carry an ordered fallback
 ladder. It must not embed account names, entitlement balances, reset dates, or

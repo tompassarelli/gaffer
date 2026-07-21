@@ -196,7 +196,12 @@ verification is explicit degradation.
   request
   `shell.readonly`; an adapter must provide a hard write-denying sandbox or
   withhold shell access. Generated Claude plugin agents take the latter path
-  because plugin frontmatter cannot encode a hard sandbox.
+  because plugin frontmatter cannot encode a hard sandbox. The one
+  graph-authoring capability, `fram.graph.edit`, is bespoke-contract-only: it
+  authorizes North-sealed FRAM code-graph mutation (add-def, set-body,
+  rename-def, insert-after, replace-in-body), is never implied by a stock
+  template or domain requirement, and maps to no implicit provider-native
+  tool surface.
 
 ## Related work
 

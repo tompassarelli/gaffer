@@ -259,6 +259,21 @@ shell rather than silently widening authority. This is also why capabilities
 are stock-template facts rather than a ninth routing field: named stock templates supply them,
 while a bespoke contract states the authority its adapter must realize.
 
+The canonical capability vocabulary is closed and identical byte-for-byte in
+`staffing/catalog.json`, `staffing/catalog.schema.json`, and
+`contracts/routing-request.schema.json`; a label outside it is rejected, never
+coerced. `fram.graph.edit` is the vocabulary's one graph-authoring entry: it
+authorizes North-sealed FRAM code-graph mutation through exactly five
+operations — add-def, set-body, rename-def, insert-after, and replace-in-body —
+and nothing else. It grants no generic fact tools, no graph reads, no
+filesystem, shell, web, or coordination surface, no arbitrary project MCP
+discovery, and no caller-selected server. Only an explicit bespoke
+`composition.contract.capabilities` may request it: no stock template carries
+it, a domain requirement never grants it, and it adds no ninth routing field
+and aliases no shell, filesystem, or domain-requirement semantics. An adapter
+that cannot enforce the sealed boundary omits the capability and fails closed
+rather than mapping it to a wider native surface.
+
 Automatic fallback is SUBSTITUTION only: it preserves the semantic tier and
 required capabilities and is safe only before side effects. Lowering capability,
 deliberation, scope, or verification is DEGRADATION — an explicit, recorded

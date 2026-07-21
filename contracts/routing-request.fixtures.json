@@ -75,6 +75,27 @@
           }
         }
       }
+    },
+    {
+      "name": "bespoke worker requests explicit fram.graph.edit",
+      "request": {
+        "role": "graph-native-implementer", "taskGrade": "senior", "domainRequirements": [],
+        "topology": "worker", "tier": "senior", "reasoning": "high", "posture": "deliver",
+        "composition": {
+          "kind": "bespoke", "id": "graph-native-implementer",
+          "bespokeReason": "deliverable is authored only through North-sealed FRAM code-graph mutation",
+          "promotionCandidate": false,
+          "contract": {
+            "responsibility": "author one bounded change as sealed FRAM code-graph facts",
+            "deliverable": "graph-native definitions landed via add-def, set-body, rename-def, insert-after, and replace-in-body",
+            "capabilities": ["filesystem.read", "filesystem.search", "fram.graph.edit"],
+            "mayDecide": ["which sealed graph-edit verb realizes each definition change"],
+            "mustEscalate": ["any need for shell, filesystem write, generic fact tools, or another MCP server"],
+            "doneWhen": ["the sealed graph accepts every mutation and validation passes"],
+            "report": "the exact graph-edit operations applied and their observed validation result"
+          }
+        }
+      }
     }
   ],
   "invalid": [
@@ -148,6 +169,24 @@
         "topology": "orchestrator", "tier": "senior", "reasoning": "high", "posture": "deliver",
         "composition": {
           "kind": "preset", "id": "integrator", "overrides": []
+        }
+      }
+    },
+    {
+      "name": "near-miss fram capability label stays rejected",
+      "errorContains": "unknown canonical capability",
+      "request": {
+        "role": "graph-native-implementer", "taskGrade": "senior", "domainRequirements": [],
+        "topology": "worker", "tier": "senior", "reasoning": "high", "posture": "deliver",
+        "composition": {
+          "kind": "bespoke", "id": "graph-native-implementer",
+          "bespokeReason": "closed-vocabulary probe", "promotionCandidate": false,
+          "contract": {
+            "responsibility": "author graph facts", "deliverable": "graph-native definitions",
+            "capabilities": ["filesystem.read", "fram.graph"],
+            "mayDecide": ["verb choice"], "mustEscalate": ["wider authority"],
+            "doneWhen": ["sealed graph accepts the mutation"], "report": "operations and validation result"
+          }
         }
       }
     },

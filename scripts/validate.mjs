@@ -138,9 +138,13 @@ for (const schema of capabilitySchemas) {
     throw new Error("capability JSON Schema enum drifted from staffing vocabulary");
   for (const [value, expected] of [
     [["filesystem.read"], true],
+    [["fram.graph.edit"], true],
+    [["filesystem.read", "fram.graph.edit"], true],
     [[], false],
     [["filesystem.read", "filesystem.read"], false],
     [["filesystem.telepathy"], false],
+    [["fram.graph"], false],
+    [["fram.graph.edit.readonly"], false],
     [[42], false],
   ]) {
     if (capabilitySchemaAccepts(schema, value) !== expected)
@@ -240,9 +244,11 @@ for (const invalid of [
 }
 for (const [capabilities, expected] of [
   [["filesystem.read"], true],
+  [["fram.graph.edit"], true],
   [[], false],
   [["filesystem.read", "filesystem.read"], false],
   [["filesystem.telepathy"], false],
+  [["fram.graph"], false],
   [[42], false],
 ]) {
   const probe = { ...staffing, presets: [
@@ -822,6 +828,11 @@ for (const name of ["executor", "implementer", "integrator"])
     throw new Error(`${name} must retain its authoring capability`);
 if (!director.capabilities.includes("coordination"))
   throw new Error("director must retain provider-neutral coordination capability");
+// fram.graph.edit is bespoke-contract-only sealed graph-mutation authority.
+// No stock template may ship it, and domainRequirements never grant it.
+for (const preset of staffing.presets)
+  if (preset.capabilities.includes("fram.graph.edit"))
+    throw new Error(`${preset.name}: fram.graph.edit is explicit bespoke-contract authority; no stock template may carry it`);
 for (const preset of staffing.presets)
   if (preset.topology === "worker" && preset.capabilities.includes("coordination"))
     throw new Error(`${preset.name}: worker topology must not carry coordination capability`);
@@ -863,6 +874,8 @@ for (const preset of staffing.presets) {
     throw new Error(`generated ${preset.name} shell tool drifts from canonical capabilities`);
   if (preset.capabilities.includes("coordination") !== tools.includes("Agent"))
     throw new Error(`generated ${preset.name} coordination tool drifts from canonical capabilities`);
+  if (/fram/i.test(frontmatter.tools) || /\bfram\.graph\.edit\b/.test(generated))
+    throw new Error(`generated ${preset.name} leaked a FRAM tool surface or implicit fram.graph.edit capability`);
   if (!generated.includes("## Output norms"))
     throw new Error(`generated ${preset.name} omits the universal communication block`);
 }
@@ -910,6 +923,23 @@ for (const alias of staffing.aliases) {
     "--contract", JSON.stringify({ ...JSON.parse(contract), capabilities: ["filesystem.telepathy"] })]);
   if (badCapabilities.status === 0 || !badCapabilities.stderr.includes("unknown canonical capability"))
     throw new Error("bespoke contract accepted a capability outside the canonical vocabulary");
+  // A bespoke worker may explicitly request sealed FRAM graph-edit authority;
+  // near-miss labels stay outside the closed vocabulary.
+  const graphEdit = compose(["graph-native-implementer", "--task-grade", "senior",
+    "--topology", "worker", "--tier", "senior", "--deliberation", "high",
+    "--posture", "deliver", "--rationale", "North-sealed FRAM code-graph authoring",
+    "--contract", JSON.stringify({ ...JSON.parse(contract),
+      capabilities: ["filesystem.read", "filesystem.search", "fram.graph.edit"],
+    })]);
+  if (graphEdit.status !== 0 ||
+      !graphEdit.payload.composition.contract.capabilities.includes("fram.graph.edit"))
+    throw new Error(`bespoke fram.graph.edit request was rejected: ${graphEdit.stderr}`);
+  const nearMissGraphEdit = compose(["graph-native-implementer", "--task-grade", "senior",
+    "--topology", "worker", "--tier", "senior", "--deliberation", "high",
+    "--posture", "deliver", "--rationale", "closed-vocabulary probe",
+    "--contract", JSON.stringify({ ...JSON.parse(contract), capabilities: ["fram.graph"] })]);
+  if (nearMissGraphEdit.status === 0 || !nearMissGraphEdit.stderr.includes("unknown canonical capability"))
+    throw new Error("near-miss fram capability label was accepted");
   const mutatingEvaluation = compose(["evaluation-author", "--task-grade", "mid",
     "--topology", "worker", "--tier", "standard", "--deliberation", "medium",
     "--posture", "evaluate", "--rationale", "posture authority probe",
