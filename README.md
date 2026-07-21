@@ -2,13 +2,15 @@
 
 *Every squad needs a gaffer.*
 
-Orchestrating agentic workflows is complicated. Which models, at what
-deliberation? Template workers or purpose-built compositions? How should each
-worker be prompted, and what should each report back? **Let the gaffer figure
-it out.**
+**Gaffer is a provider-neutral routing doctrine for multi-agent orchestration**
+— usable from any CLI or harness, not tied to one vendor. Orchestrating
+agentic workflows is complicated. Which models, at what deliberation?
+Template workers or purpose-built compositions? How should each worker be
+prompted, and what should each report back? **Let the gaffer figure it out.**
 
-A provider-neutral routing library with two first-class delivery surfaces: a
-Claude Code plugin adapter and a [North multi-provider execution
+Gaffer's portable core (routing laws, template library, payload method) is
+adapter-agnostic; concrete delivery happens through adapters, of which two
+ship today: a Claude Code plugin adapter and a [North multi-provider execution
 adapter](docs/adapters/north.md). Gaffer chooses the semantic route; the
 adapter resolves it to the provider, model, and reasoning/effort — whether
 it's a single worker or a multi-stage workflow.
