@@ -43,7 +43,6 @@ const comms = block(read("docs/comms.md"), "universal");
 const anthropic = loadProviderCatalog("anthropic");
 
 const staffing = loadStaffingCatalog();
-export const TASK_GRADES = staffing.vocabulary.taskGrades;
 export const SEMANTIC_TIERS = staffing.vocabulary.semanticTiers;
 export const PRESETS = staffing.presets;
 const COMPAT_ALIASES = staffing.aliases;
