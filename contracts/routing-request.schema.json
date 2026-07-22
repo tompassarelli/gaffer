@@ -12,7 +12,10 @@
       "type": "array", "uniqueItems": true,
       "items": { "type": "string", "minLength": 1 }
     },
-    "topology": { "enum": ["worker", "orchestrator"] },
+    "topology": {
+      "enum": ["worker", "orchestrator"],
+      "description": "Coordination jurisdiction: worker is terminal; orchestrator may recursively staff freshly admitted children through an enforcing harness."
+    },
     "tier": { "enum": ["economy", "standard", "senior", "frontier"] },
     "reasoning": { "enum": ["low", "medium", "high", "xhigh", "max"] },
     "posture": { "enum": ["explore", "deliver", "preserve", "evaluate"] },

@@ -938,6 +938,9 @@ for (const preset of staffing.presets) {
   const topologies = readFileSync(resolve(root, "docs/topologies.md"), "utf8");
   if (!generatedDirector.includes("TOPOLOGY: ORCHESTRATOR") ||
       !generatedDirector.includes("TASK GRADE: STAFF") ||
+      !generatedDirector.includes("child orchestrator") ||
+      !generatedDirector.includes("fresh complete Gaffer") ||
+      !generatedDirector.includes("immediate parent") ||
       generatedDirector.includes("TOPOLOGY: WORKER") || generatedDirector.includes("INTERNED WORKER") ||
       /orchestrator[\s\S]{0,240}drops? to worker behavior/i.test(doctrine) ||
       /worker[\s\S]{0,160}(?:exception|may spawn)[\s\S]{0,80}verifier/i.test(`${doctrine}\n${topologies}`))
@@ -1232,6 +1235,37 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
   const internedWorker = /\binterned worker\b|worker\s*\(\s*interned\s*\)/i;
   if (internedWorker.test(doctrine) || internedWorker.test(northAdapter))
     throw new Error("obsolete interned-worker jargon returned; use terminal worker");
+  const topologyContract = `${readme}\n${doctrine}\n${routing}\n${roles}\n${topologies}\n${northAdapter}\n${JSON.stringify(staffing.presets)}`;
+  if (/two-tier law|two tiers, hard depth cap|delegation is exactly two tiers|depth caps at two|depth stays two|depth stops here|growing a third tier/i.test(topologyContract))
+    throw new Error("global two-tier/depth-cap orchestration law returned");
+  for (const boundary of [
+    "never a global depth cap",
+    "freshly classified",
+    "immediate parent",
+    "cycle detection",
+    "no-progress",
+    "settlement",
+    "Provider-native opaque fanout",
+  ])
+    if (!topologyContract.toLowerCase().includes(boundary.toLowerCase()))
+      throw new Error(`recursive role-jurisdiction contract lost boundary: ${boundary}`);
+  if (!/WORKER[\s\S]{0,180}terminal piece[\s\S]{0,160}(?:do NOT delegate|FORBIDDEN to\s+sub-delegate)/i.test(
+    `${doctrine}\n${topologies}`,
+  ) ||
+      !/TOPOLOGY: ORCHESTRATOR[\s\S]{0,700}child orchestrator/i.test(topologies) ||
+      !/Every child[\s\S]{0,180}fresh(?:ly)?[\s\S]{0,120}(?:Gaffer request|admission)/i.test(
+        `${doctrine}\n${topologies}`,
+      ) ||
+      !/every node that decomposes work OWNS the reduction of its DIRECT\s+children/i.test(doctrine) ||
+      !/Provider-native opaque fanout[\s\S]{0,180}DISALLOWED under North/i.test(doctrine))
+    throw new Error("worker terminality, recursive orchestrator admission, or immediate-parent reduction drifted");
+  for (const preset of staffing.presets) {
+    const generated = readFileSync(resolve(root, `agents/${preset.name}.md`), "utf8");
+    if (preset.topology === "worker" &&
+        (!generated.includes("Your jurisdiction is one terminal piece") ||
+         !generated.includes("do NOT delegate")))
+      throw new Error(`generated ${preset.name} lost terminal worker jurisdiction`);
+  }
   if (/\b(?:feature or fix|existing architecture|cross-seam integration|engineering trade-offs|migration paths)\b/i.test(taskGradeSource))
     throw new Error("shared task-grade blocks leaked authoring-role semantics");
   if (/layer floor\s*(?:→|->)\s*integrator|foundational targets? get gaffer:integrator|ANY work on foundational/i.test(
@@ -1290,15 +1324,15 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
       /JUDGE[\s\S]{0,1000}(?:single make-or-break|ranking findings by severity)/i.test(roles))
     throw new Error("judge must rank multiple supplied alternatives only");
   if (!/DESIGNER[\s\S]{0,500}Must escalate: implementation/i.test(roles) ||
-      !/DIRECTOR[\s\S]{0,1800}context-carrying, independently staffed verifier returned a[\s\S]{0,120}verdict,\s+probe,\s+and observed result[\s\S]{0,120}emergent whole outcome/i.test(roles) ||
-      !/DIRECTOR[\s\S]{0,900}For every\s+child whose result materially supports[\s\S]{0,220}narrow\s+probe[\s\S]{0,160}load-bearing assertion or seam/i.test(roles) ||
+      !/DIRECTOR[\s\S]{0,2400}context-carrying, independently staffed verifier returned a[\s\S]{0,120}verdict,\s+probe,\s+and observed result[\s\S]{0,120}emergent whole outcome/i.test(roles) ||
+      !/DIRECTOR[\s\S]{0,1100}For every\s+direct child whose result materially supports[\s\S]{0,220}narrow\s+probe[\s\S]{0,160}load-bearing assertion or seam/i.test(roles) ||
       !/DIRECTOR[\s\S]{0,1100}disposable test\/build\/cache state[\s\S]{0,220}editing,[\s\S]{0,80}implementing[\s\S]{0,160}full local[\s\S]{0,80}completion suite remain out of scope/i.test(roles))
     throw new Error("designer/director authority and verification boundaries drifted");
   if (/a completed unit is verified by a[\s\S]{0,80}context-carrying verifier fork/i.test(doctrine) ||
       /otherwise the director's spot-checks/i.test(roles) ||
       !/ORCHESTRATOR[\s\S]{0,700}Self-contained units return worker evidence[\s\S]{0,180}verdict leverage warrants one/i.test(topologies) ||
       !/ORCHESTRATOR[\s\S]{0,900}emergent aggregate always gets a report from[\s\S]{0,120}independently staffed[\s\S]{0,160}verdict,\s*probe, and observed result/i.test(topologies) ||
-      !/ORCHESTRATOR[\s\S]{0,1100}bounded independent[\s\S]{0,100}non-authoring verification probe[\s\S]{0,120}materially load-bearing child seam/i.test(topologies) ||
+      !/ORCHESTRATOR[\s\S]{0,1500}bounded\s+independent[\s\S]{0,100}non-authoring verification probe[\s\S]{0,160}materially load-bearing\s+(?:direct-)?child seam/i.test(topologies) ||
       !/emergent aggregate receives an independently staffed,[\s\S]{0,120}verifier report with a verdict, probe, and observed result/i.test(method) ||
       !/coordinator still owns the final judgment[\s\S]{0,180}bounded independent non-authoring verification probes[\s\S]{0,220}not a rerun/i.test(method) ||
       !/VERIFICATION ATTACHES WHERE THE OUTCOME LIVES[\s\S]{0,900}bounded[\s\S]{0,180}non-authoring verification probe[\s\S]{0,180}full completion suite/i.test(doctrine) ||
@@ -1377,10 +1411,16 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
       !northAdapter.includes("Stock-template overrides may change task grade, domains, tier, reasoning, or") ||
       !northAdapter.includes("Stock topology is fixed") ||
       !northAdapter.includes("topology alone never loads the director role") ||
-      !northAdapter.includes("bounded independent non-authoring verification probes") ||
+      !northAdapter.includes("ORCHESTRATION (role-jurisdiction law") ||
+      !northAdapter.includes("child orchestrator") ||
+      !northAdapter.includes("fresh mcp__north__spawn") ||
+      !northAdapter.includes("Never bypass a child orchestrator with flat fan-in") ||
+      !northAdapter.includes("never a global depth cap") ||
+      !northAdapter.includes("Provider-native opaque fanout") ||
+      !/bounded\s+independent non-authoring (?:verification )?probes/.test(northAdapter) ||
       !northAdapter.includes("disposable test/build/cache state") ||
       !northAdapter.includes("never edits, implements, or repairs the deliverable") ||
-      !northAdapter.includes("or absorbs a worker's full local-probe burden"))
+      !/or absorbs a worker's full\s+local-probe burden/.test(northAdapter))
     throw new Error("generated North adapter lost reviewer, topology, or director evidence boundaries");
   for (const provenanceState of ["gaffer:<preset>", "gaffer:<preset>+override", "gaffer:bespoke:<id>",
     "gaffer:not-selected", "gaffer:legacy-debt"])

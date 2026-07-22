@@ -171,6 +171,14 @@ orchestrator/coordination authority and the other stock templates carry worker
 authority. A topology change requires a bespoke composition; it never
 manufactures capabilities on a stock template.
 
+Worker authority is terminal. Orchestrator authority may recursively staff a
+worker or child orchestrator when that child's local dependency shape warrants
+it, but every child crosses a fresh North admission, routing, resource, metering,
+and settlement boundary. The immediate parent owns reduction. Explicit budgets,
+cycle/no-progress controls, and settlement gates stop recursion; Gaffer does not
+impose a global depth cap. Provider-native opaque fanout is not equivalent and
+remains unavailable under North until the same per-child boundary is enforceable.
+
 Gaffer also separates task economics from provider state. The seven
 minimum-sufficient signals capture where better judgment changes outcomes and
 how work composes; dependency shape argues for one worker, a fixed workflow, a

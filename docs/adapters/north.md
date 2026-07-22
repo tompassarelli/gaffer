@@ -79,24 +79,28 @@ Routing defaults
   judge               staff           frontier  xhigh      worker        evaluate  filesystem.read,filesystem.search,shell.readonly
   research-scientist  research-grade  frontier  xhigh      worker        explore   filesystem.read,filesystem.search,shell.readonly,web
 
-ORCHESTRATION (two-tier law, see doctrine.md): the delegated fork is the
-ORCHESTRATOR when the task decomposes (≥2 independent subtasks ⇒ MUST fan out
-one mcp__north__spawn per subtask, same turn, then own the seams and reconcile
-the required evidence) and the terminal WORKER when it is atomic (⇒ MUST NOT
-sub-delegate). Verification is a sibling lane owned by the orchestrator; the
-orchestrator consumes its report, drives the aggregate end-to-end, and runs
-bounded independent non-authoring verification probes at materially
-load-bearing child seams. A probe may create disposable test/build/cache state
-needed for observation, but never edits, implements, or repairs the deliverable
-or absorbs a worker's full local-probe burden. No worker spawns any agent, so
-depth caps at two.
+ORCHESTRATION (role-jurisdiction law, see doctrine.md): a WORKER owns one
+terminal piece and MUST NOT delegate. An ORCHESTRATOR coordinates rather than
+executing terminal work. It classifies every direct child from that child's
+LOCAL dependency shape: atomic or tightly coupled → worker; independently
+decomposable → child orchestrator. Every child is a fresh mcp__north__spawn or
+dispatch with its own complete Gaffer request, North admission, provider/account
+resolution, resource envelope, telemetry, and settlement; no route or budget is
+inherited by nesting. Verification is a sibling lane owned by the immediate
+orchestrator. The parent consumes worker evidence or a child orchestrator's
+reconciled outcome, runs bounded independent non-authoring probes at materially
+load-bearing direct-child seams, and OWNS REDUCTION of those direct children. A
+probe may create disposable test/build/cache state needed for observation, but
+never edits, implements, or repairs the deliverable or absorbs a worker's full
+local-probe burden. Never bypass a child orchestrator with flat fan-in.
 STOP-RULE: subdivide only while it buys more independence, certainty, or
-verifiability than integration cost; a unit with a clear objective, bounded
-scope, known I/O, and a verification path is TERMINAL (a worker's atom), so
-each sub-spawn carries that LOCAL contract. The orchestrator OWNS REDUCTION —
-child outputs reconcile in it, never flat fan-in; deliverables return UP,
-never sideways. Over-parallelize EXPLORATION, converge EXECUTION; width and
-sequential waves (explore → reconcile → execute) are unbounded, depth stays two.
+verifiability than integration cost. A clear objective with bounded scope,
+known I/O, and a verification path is terminal. Recursion stops through this
+local rule, explicit budgets, cycle detection, bounded no-progress/retry
+controls, and settlement gates — never a global depth cap. Deliverables return
+UP to the immediate parent, never sideways. Provider-native opaque fanout is
+distinct and disallowed under North until equivalent per-child admission,
+authority, metering, and settlement can be enforced.
 
 If a native call slips through, the agent-spawn-guard hook denies with the exact
 mcp__north__spawn call pre-resolved for that role and tier — one-paste recovery. A native

@@ -180,8 +180,8 @@ of the other three.
 
 ORCHESTRATION — topology is conceptually independent of function, grade,
 domain requirements, tier, deliberation, and posture; templates enforce their
-fixed pairings. Two tiers, hard depth cap. Delegation is exactly TWO tiers
-deep; there is no third. Every spawn is one of:
+fixed pairings. Topology grants a jurisdiction, not a global tree position.
+Every admitted child is one of:
 - ORCHESTRATOR — normally the gaffer:director function, a fork whose contract
   is DECOMPOSE AND FAN OUT. It does NOT
   execute subtasks itself; its only tools of substance are read/analyze,
@@ -189,21 +189,32 @@ deep; there is no third. Every spawn is one of:
   non-authoring integration checks, and integrate the result. It never absorbs
   a worker's implementation or full local-probe burden. Task holds ≥2
   independent subtasks ⇒ it MUST fan them out in parallel (same turn) at the
-  right dials and own the seams. Task is atomic ⇒ it redirects/restaffs to the
-  appropriate worker; it never executes the piece itself.
+  right dials and own the seams. A child whose LOCAL dependency shape still
+  requires decomposition may itself be an orchestrator; an atomic or tightly
+  coupled child is a worker. Task is atomic ⇒ redirect/restaff to the
+  appropriate worker; never execute the piece itself.
 - WORKER (TERMINAL) — owns its piece end-to-end and is FORBIDDEN to
   sub-delegate. When law 7 calls for a verifier fork, it is a sibling lane
-  spawned by the orchestrator, never a worker child. A worker whose piece turns
-  out to decompose ESCALATES (reports up); it never grows a third tier.
+  spawned by the immediate orchestrator, never a worker child. A worker whose
+  piece turns out to decompose ESCALATES to its immediate parent for fresh
+  classification and restaffing; it never changes its own jurisdiction.
+Every child — worker or orchestrator — is freshly classified and receives its
+own complete Gaffer request, North admission, provider/account resolution,
+resource envelope, and telemetry. A child never inherits the parent's role,
+grade, tier, reasoning, provider, account, or budget merely because it is
+nested. Provider-native opaque fanout is a separate substrate behavior and is
+DISALLOWED under North until the harness can enforce that same per-child
+admission, authority, metering, and settlement boundary.
 An orchestrator's exit is gated on RECONCILIATION: every child and its required
 evidence are reconciled; the coordinator has driven the assembled result
 end-to-end and recorded its bounded load-bearing spot-checks; and an
 independently staffed, context-carrying verifier has reported a verdict, probe,
 and observed result on the emergent whole outcome, before it reports done.
 Exiting while a child still runs is a defect, not a completion.
-The orchestrator is the ONLY tier that spawns; the worker is the ONLY tier
-that executes. The router picks topology per task — decomposes ⇒ director;
-atomic ⇒ worker.
+Only orchestrator topology spawns; only worker topology executes a terminal
+piece. This jurisdiction rule applies at every admitted node. The router picks
+topology independently for every child — local decomposition ⇒ orchestrator;
+atomic or tightly coupled ⇒ worker.
 
 Choose topology by dependency shape, not ceremony. This is an orchestrator
 decision today: North records topology but does not synthesize the graph:
@@ -227,29 +238,28 @@ terminal when it has a clear objective, bounded scope, known inputs/outputs,
 and a verification path; splitting a terminal unit is coordination theater,
 so a terminal unit is exactly a worker's atom. Shape the cut by the
 ASYMMETRY — over-parallelize EXPLORATION, aggressively converge EXECUTION —
-and note only DEPTH is capped: width and waves are NOT, so an orchestrator
-may fan out sequentially (explore wave → reconcile → execute wave), getting
-depth-like structure with zero new reduction seams. Decomposition is a
-subGRAPH, not a tree — shared dependencies and cross-cutting constraints are
-real edges, and those seams belong to the orchestrator. Convergence mirrors
-decomposition: every node that decomposes work OWNS the reduction of that
-work — child outputs return to the parent that spawned them (the node that
-knows why each child exists), NEVER flat fan-in to a root synthesizer. At two
-tiers this is concrete — the orchestrator IS the reducing parent, so done
-means reconciled (seams resolved, load-bearing claims supported by evidence),
-not "workers reported"; worker deliverables return UP, never sideways.
+and apply the stop-rule LOCALLY at every orchestrator. There is no global hard
+depth cap. Recursion stops through explicit resource budgets, cycle detection,
+bounded no-progress and retry controls, and settlement gates — plus the local
+finding that another cut would cost more integration than it buys. Width,
+depth, and sequential waves are consequences of admitted dependency shape and
+available budget, never goals. Decomposition is a subGRAPH, not a tree — shared
+dependencies and cross-cutting constraints are real edges. Convergence mirrors
+decomposition: every node that decomposes work OWNS the reduction of its DIRECT
+children. Outputs return to the immediate parent that knows why each child
+exists, NEVER flat fan-in to a root synthesizer and never sideways between
+siblings. A parent consumes a child orchestrator's reconciled result rather
+than bypassing it to collect that child's descendants. Done means settled and
+reconciled, not "children reported."
 Director lifecycle:
 receive → classify → redirect/restaff atomic work OR decompose composite work
-(stop-rule decides) → spawn workers with LOCAL contracts (objective, scope, I/O, verification path
-— what makes each child terminal) → await → reconcile into the parent result
-→ return upward.
-
-Why the cap — two tiers, not N with a depth budget: the audited failure was
-UNDER-decomposition (1 sub-spawn across 15 spawns), never over-; an uncapped
-depth invites the opposite, turtles all the way down. The stop-rule applied
-to the doctrine itself settles it — extra tiers add reduction seams faster
-than independence — so two tiers + waves + the escalation valve cover what
-N-tier promises. Two tiers fixes both ends.
+(stop-rule decides) → freshly classify each LOCAL child → admit and spawn a
+worker or child orchestrator through North → await settlement → reconcile
+direct-child evidence into the parent result → return that result upward.
+Budget exhaustion, a repeated dependency cycle, bounded no-progress, or an
+unsettled child stops expansion and produces an explicit incomplete/escalated
+outcome; none is converted into a silent success or a reason to bypass the
+parent's reduction boundary.
 
 BRIEF DONE-BARS. Every brief an orchestrator fans out ends each step with a
 checkable done-bar — a command + its expected output, or a grep + the hit

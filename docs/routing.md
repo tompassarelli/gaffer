@@ -32,10 +32,15 @@ is an error, not a silently-ignored no-op — the composer rejects unknown optio
 | dependency shape | atomic-cohesive, deterministic-workflow, parallel-breadth, dynamic-decomposition, tightly-coupled-sequential | topology + route floor |
 | reasoning shape | deterministic, bounded-branching, multi-hypothesis, system-synthesis, exceptional | tier + deliberation floor |
 
-The two-tier orchestration cap and the topology choice follow from dependency
-shape; a frontier director is warranted by dynamic decomposition, not by
-importance. These stay an orchestrator's reasoning today — North records
-`topology` but does not synthesize a director graph from this metadata.
+Topology follows LOCAL dependency shape at every admitted node; a frontier
+director is warranted by dynamic decomposition, not by importance or by its
+distance from the root. Worker jurisdiction is terminal. Orchestrator
+jurisdiction may recursively staff workers or child orchestrators through
+North, with each child freshly classified, admitted, routed, resource-bounded,
+metered, and settled. The immediate parent owns reduction. Budgets, cycle and
+no-progress controls, and settlement gates stop recursion; there is no global
+hard depth cap. North records `topology` but does not synthesize a director
+graph from this metadata alone.
 
 The canonical sidecar schema and examples are
 [`contracts/selection-assessment.schema.json`](../contracts/selection-assessment.schema.json)
@@ -166,6 +171,13 @@ Self-contained units add a verifier sibling when verdict leverage warrants one.
 An emergent aggregate always receives an independently staffed,
 context-carrying whole-outcome verifier report. These obligations affect how
 the topology is staffed and prompted; they do not add a ninth routing field.
+An orchestrator may create a child orchestrator only through the same North
+execution boundary used for any child: a fresh eight-field Gaffer request plus
+independent admission, provider/account resolution, resource envelope,
+telemetry, and settlement. No route or budget is inherited by tree position,
+and each immediate parent reduces its direct children. Provider-native opaque
+fanout is distinct from this contract and remains disallowed under North until
+the harness can enforce equivalent per-child boundaries.
 
 The canonical machine-readable stock-template definitions live in
 `staffing/catalog.json` (`staffing/catalog.schema.json` documents the format).
