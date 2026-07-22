@@ -3,10 +3,10 @@
 Gaffer chooses semantics; a provider adapter chooses a concrete runtime. Three
 layers sit above that choice, and keeping them apart is the whole contract:
 
-- **Planner inputs** are how a caller REASONS ITS WAY to a request — task shape,
-  leverage, dependency shape, quality floor. They are upstream judgment, not
-  wire fields: no adapter accepts them and none is dispatched. They DERIVE the
-  routing fields below.
+- **Planner inputs** are how a caller REASONS ITS WAY to a request. Task shape
+  proposes a role; seven versioned minimum-sufficient signals derive the
+  capability/deliberation floor. They live in a validated sidecar, not on the
+  wire, and DERIVE the routing fields below.
 - **The routing request** is the provider-neutral payload Gaffer emits and a
   harness consumes. Hard controls such as tier/reasoning/topology affect
   dispatch; descriptive fields such as grade/domains/contracts are validated
@@ -24,14 +24,27 @@ is an error, not a silently-ignored no-op — the composer rejects unknown optio
 | Planner input | What it captures | Derives |
 |---|---|---|
 | task shape | execute / implement / integrate / design / direct / scout / analyze / review / verify / judge / research-science | role + stock-template defaults |
-| leverage | how much better judgment changes downstream outcomes (distinct from difficulty and grade) | argues tier / quality floor up |
-| dependency shape | atomic-cohesive, deterministic-workflow, parallel-breadth, dynamic-decomposition, tightly-coupled-sequential | topology |
-| quality floor | lowest responsible tier for the decision | bounds tier selection; refuses degraded routes |
+| decision ownership | none, bounded, cross-boundary, system-shaping, open-solution-class | tier floor |
+| seam scope | none, established, consequential, system-wide | tier floor |
+| error exposure | contained-reversible, material-recoverable, high-or-hard-to-reverse | tier floor |
+| oracle strength | not-applicable, objective-local, objective-end-to-end, partial, judgment-only | tier + deliberation floor |
+| foundational impact | none, implementation-only, invariant-decision-owned | no automatic layer promotion; invariant ownership raises the floor |
+| dependency shape | atomic-cohesive, deterministic-workflow, parallel-breadth, dynamic-decomposition, tightly-coupled-sequential | topology + route floor |
+| reasoning shape | deterministic, bounded-branching, multi-hypothesis, system-synthesis, exceptional | tier + deliberation floor |
 
 The two-tier orchestration cap and the topology choice follow from dependency
 shape; a frontier director is warranted by dynamic decomposition, not by
 importance. These stay an orchestrator's reasoning today — North records
 `topology` but does not synthesize a director graph from this metadata.
+
+The canonical sidecar schema and examples are
+[`contracts/selection-assessment.schema.json`](../contracts/selection-assessment.schema.json)
+and [`contracts/selection-assessment.fixtures.json`](../contracts/selection-assessment.fixtures.json).
+`scripts/selection-assessment.mjs` recomputes the derived minimum and rule codes,
+rejects a selected tier or reasoning level below either minimum, and requires a
+coded detailed exception above either minimum. `max` additionally requires
+`reasoningShape=exceptional` and a concrete `exceptionalDeliberation`. That
+field is rejected below max. The assessment is not part of `RoutingRequest`.
 
 ## The routing request (Gaffer's contract)
 
@@ -91,6 +104,10 @@ composition with explicit capabilities. The canonical JSON Schema and
 cross-harness examples are
 [`contracts/routing-request.schema.json`](../contracts/routing-request.schema.json)
 and [`contracts/routing-request.fixtures.json`](../contracts/routing-request.fixtures.json).
+The request therefore remains exactly eight fields even when its selection was
+grounded by a sidecar. Free-text `composition.overrideReason` remains human
+provenance for a changed stock template; mechanically derived `ruleCodes` do
+not replace or populate it.
 
 Role and composition IDs use one lowercase kebab-case namespace
 (`^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$`). Composer-only compatibility aliases are
@@ -124,9 +141,11 @@ requirements, topology, semantic tier, deliberation, and posture are
 conceptually independent. Current stock templates nevertheless ship fixed,
 enforceable topology/capability pairings. A stock template's topology cannot
 be overridden. Choose a compatible stock template or a bespoke composition
-with explicit capabilities for a different topology. The layer floor raises
-foundational, library, and architecture work to at least `senior`. Blast radius
-may raise a tier; importance alone does not.
+with explicit capabilities for a different topology. Foundational
+implementation-only work may remain `economy` or `standard`; owning a
+foundational invariant decision raises the minimum to `senior`. System-shaping
+ownership or system synthesis raises it to `frontier`. A repository or path
+never raises the route by itself, and importance alone does not.
 
 Reviewer is the multi-criterion evaluation of one supplied artifact or change:
 prioritized evidence-backed findings plus `accept`, `changes-required`, or
@@ -157,11 +176,13 @@ payload without knowing a
 provider model name:
 
 ```sh
-node scripts/compose-routing.mjs integrator --domain Nix --tier frontier --deliberation xhigh \
-  --override-reason "foundational configuration contract"
+node scripts/compose-routing.mjs implementer --domain Nix \
+  --assessment @/absolute/path/to/selection-assessment.json
 node scripts/compose-routing.mjs migration-forensics --nearest analyst \
   --rationale "needs provenance tracing plus schema recovery" \
-  --contract @/absolute/path/to/migration-contract.json --no-promotion-candidate
+  --contract @/absolute/path/to/migration-contract.json \
+  --assessment @/absolute/path/to/selection-assessment.json \
+  --no-promotion-candidate
 ```
 
 The command prints the JSON that follows a `GAFFER_ROUTING` marker.
@@ -171,7 +192,8 @@ are valid bespoke compositions only with a reason, promotion status,
 structured authority / deliverable / done contract, and an optional
 `nearestPreset` reference when a stock template genuinely helps explain or
 seed the composition. Without `--nearest`, the composer requires explicit task
-grade, topology, tier, deliberation, and posture; it never fills an unknown role
+grade, topology, tier, deliberation, and posture; an assessment may supply the
+selected tier and deliberation but never the other axes. It never fills an unknown role
 from generic defaults. Domain requirements may explicitly be an empty list.
 
 Selection ladder: use a stock template unchanged when its deliverable and
@@ -241,7 +263,8 @@ but those are North inputs rather than Gaffer fields. The harness:
    provider/model. Static catalog compatibility establishes neither account
    entitlement nor current target availability.
 4. Removes providers lacking required capabilities, authentication, or capacity.
-5. Rejects candidates below the quality floor the caller reasoned to, missing
+5. Rejects candidates below the mechanically derived minimum when a selection
+   assessment is attached, missing
    required capabilities, or unable to prove a named external-access
    prerequisite before the model turn.
 6. Applies its own subscription-allocation policy and resource pressure; pressure
@@ -314,9 +337,10 @@ Together they validate and record role, task grade, domain requirements,
 topology, tier, deliberation, posture, and composition as independent metadata.
 Recorded metadata is useful for audit and empirical routing reports, but does
 not by itself load domain expertise, change a role contract by grade, or spawn
-an orchestrator graph. Planner inputs (shape, leverage, dependency shape,
-quality floor) are deliberately NOT accepted as request fields — feeding one to
-the composer fails rather than being accepted as if it worked.
+an orchestrator graph. Planner inputs are deliberately NOT accepted as request
+fields. The seven minimum-sufficient signals are accepted only inside the
+versioned `--assessment` sidecar; feeding one as a top-level composer option or
+routing field fails rather than being accepted as if it worked.
 
 ## Compatibility
 

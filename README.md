@@ -24,8 +24,10 @@ Install it and your sessions gain:
    on one continuous semantic ramp. Function, task grade, domain requirements,
    topology, model capability, deliberation, and posture stay independent,
    governed by three routing laws:
-   - **Layer floor** — foundational / library / architecture code never
-     goes to the cheap tier, however mechanical the task looks.
+   - **Minimum-sufficient floor** — repository layer never raises cost by
+     itself. Foundational implementation-only work can remain economy/standard;
+     owning invariant, cross-boundary, or system-shaping decisions raises the
+     floor mechanically.
    - **Shingle law** — each semantic step exposes only useful
      model×deliberation rungs; the same concrete rung never masquerades as two
      tiers, and dominated overlaps are omitted. Harder ⇒ climb the semantic
@@ -169,11 +171,12 @@ orchestrator/coordination authority and the other stock templates carry worker
 authority. A topology change requires a bespoke composition; it never
 manufactures capabilities on a stock template.
 
-Gaffer also separates task economics from provider state. Leverage estimates the
-downstream value of better judgment, and dependency shape argues for one worker,
-a fixed workflow, a director with parallel workers, or a strong sequential worker
-plus a verifier when verdict leverage warrants one — but these are **planner
-inputs** that derive the request, not fields on it. The routing request carries
+Gaffer also separates task economics from provider state. The seven
+minimum-sufficient signals capture where better judgment changes outcomes and
+how work composes; dependency shape argues for one worker, a fixed workflow, a
+director with parallel workers, or a strong sequential worker plus a verifier
+when verdict leverage warrants one. These are **planner inputs** in a sidecar,
+not fields on the request. The routing request carries
 only role, task grade, domain requirements, topology (`worker`/`orchestrator`),
 tier, reasoning, posture, and composition; the composer validates the semantic
 pair and North resolves its provider/account/model. Allocation strategy,
@@ -181,6 +184,16 @@ candidate waterfalls, resolved model, account identity, and resource pressure
 are North's runtime facts, never Gaffer request fields. Same-tier substitution
 may happen automatically before side effects; lowering capability or
 verification is explicit degradation.
+
+New selections can carry a separate
+[`minimum-sufficient-v1`](contracts/selection-assessment.schema.json) assessment.
+It records decision ownership, seam scope, error exposure, oracle strength,
+foundational impact, dependency shape, and reasoning shape; its derived minimum
+and rule codes are recomputed rather than trusted. A selected route below the
+minimum is rejected, one above it requires a coded detailed exception, and
+`max` requires a concrete exceptional-deliberation justification. The sidecar
+does not alter the exact eight-field routing request, so existing consumers
+remain compatible.
 
 ## Tuning
 

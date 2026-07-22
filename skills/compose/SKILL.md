@@ -64,11 +64,20 @@ pass it through the selected adapter's documented spawn surface.
      is explicit, not permission to borrow a different provider's delta.
    Done: role, grade, topology, posture, and comms paths are named; the exact
    concrete model's delta path is named or explicitly `none` for this adapter.
-4. **Pin provider-neutral routing**: semantic tier and deliberation are
-   explicit. Provider/account selection is a separate harness-envelope concern;
+4. **Derive and pin provider-neutral routing**: classify decision ownership,
+   seam scope, error exposure, oracle strength, foundational impact, dependency
+   shape, and reasoning shape in a `minimum-sufficient-v1` assessment. Recompute
+   its minimum tier/reasoning and rule codes; never trust caller-supplied
+   derived values. Foundational implementation-only work may remain
+   economy/standard; invariant-decision ownership routes at least senior, and
+   system synthesis routes frontier. A route below the derived minimum is
+   invalid; one above it needs a coded detailed exception. `max` additionally
+   requires exceptional reasoning shape and concrete `exceptionalDeliberation`.
+   Semantic tier and deliberation are explicit. Provider/account selection is a separate harness-envelope concern;
    North defaults that envelope to `provider: auto`. The selected adapter
-   resolves the concrete model and effort/reasoning. Remember the layer floor:
-   foundational/library/architecture work never runs below senior tier.
+   resolves the concrete model and effort/reasoning. Pass the assessment to
+   `scripts/compose-routing.mjs --assessment @<absolute-path>`; it remains a
+   sidecar and the emitted request retains exactly eight fields.
    Done: tier + deliberation are literal Gaffer request values; provider is a
    literal North envelope value (normally `auto`), never a ninth Gaffer field.
 5. **Paste** the blocks above the task text. Trim the delta before trimming

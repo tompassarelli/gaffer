@@ -2,7 +2,7 @@ GAFFER ACTIVE — routing doctrine for delegated work.
 
 When you delegate (Agent tool, Workflow, any spawn surface), select the
 FUNCTION by TASK SHAPE. Do not use importance or felt difficulty as a proxy for
-role; task grade, leverage, layer, and risk independently set the capability
+role; the minimum-sufficient selection signals independently set the capability
 floor and deliberation.
 
 The templates are a STANDARD LIBRARY, not a roster limit — shape triage
@@ -82,10 +82,12 @@ SHAPES → TEMPLATES (semantic tier; provider adapters resolve concrete models)
   source gathering.
 
 LAWS
-1. LAYER FLOOR: foundational / library / architecture code never routes below
-   SENIOR, however mechanical the task looks — the stack layer sets the floor,
-   not surface difficulty. Economy/standard extend established patterns in
-   solidified code; senior/frontier handle novel or judgment-heavy work.
+1. FOUNDATIONAL IMPACT, NOT REPOSITORY LAYER: implementation-only work may
+   remain economy/standard even in foundational, library, or architecture
+   code when established invariants and an objective oracle bound it. Owning a
+   foundational invariant decision raises the minimum to senior. System-shaping
+   or open-solution-class ownership, system-wide seams, or system synthesis
+   raises it to frontier. A path or repository name never raises a route alone.
 2. SHINGLE LAW: route on one continuous semantic ramp:
    economy → standard → senior → frontier. Each provider catalog maps these
    tiers onto its useful model×reasoning/effort rungs and omits dominated
@@ -141,9 +143,10 @@ and the cost of a plausible wrong answer. High leverage may justify a premium
 director or worker even when execution is short; low-leverage volume should use
 the cheapest rung that clears its quality floor.
 
-- QUALITY FLOOR is the minimum semantic tier that can responsibly own the
-  decision. It is set by task grade, layer floor, required capabilities, and
-  risk. A resource limit never silently lowers it.
+- QUALITY FLOOR is the minimum semantic tier and deliberation mechanically
+  derived from decision ownership, seam scope, error exposure, oracle strength,
+  foundational impact, dependency shape, and reasoning shape. A resource limit
+  never silently lowers it.
 - When resources tighten, reduce speculative breadth, polish, retry count, and
   verification breadth beyond the evidence required at that outcome before
   violating the quality floor. If the remaining envelope cannot fund a
@@ -159,9 +162,14 @@ the cheapest rung that clears its quality floor.
   entitlements and their pressure are runtime facts, not API-credit balances.
 
 GAFFER owns the semantic request — role, grade, domain, topology, tier,
-deliberation, posture, composition — and the planner reasoning that DERIVES it:
-shape, leverage, quality floor, dependency shape. Those planner inputs shape the
-request; they are not fields on the wire. NORTH owns runtime allocation:
+deliberation, posture, composition — and the planner reasoning that DERIVES it.
+`minimum-sufficient-v1` records seven independent selection signals in a
+versioned sidecar, mechanically recomputes minimum tier/reasoning and rule
+codes, rejects routes below that minimum, and requires a coded, detailed
+exception above it. `max` additionally requires `reasoningShape=exceptional`
+and a concrete `exceptionalDeliberation`. The sidecar never becomes a ninth
+routing field. Free-text `overrideReason` remains human provenance for a stock
+template change; derived rule codes do not replace it. NORTH owns runtime allocation:
 authenticated accounts, subscription envelopes and reserves, allocation, safe
 substitution, resolved model, and decision/outcome telemetry. Provider model
 names remain adapter facts. Neither layer silently rewrites the other's facts.
@@ -275,9 +283,10 @@ the semantic route per stage:
 - deep-analysis/root-cause stages → gaffer:analyst (senior); fan out when
   independently traceable mechanisms benefit from separate evidence trails
   and later synthesis, not because a subsystem count was crossed
-- build/transform stages → gaffer:implementer (standard); layer floor
-  still applies per stage — a foundational target raises tier/reasoning while
-  retaining its function; use gaffer:integrator only for integrate-shaped work
+- build/transform stages → gaffer:implementer (standard); foundational
+  implementation-only work stays on its minimum-sufficient route, while
+  invariant decision ownership raises tier/reasoning without changing the
+  function; use gaffer:integrator only for integrate-shaped work
 - artifact-review stages → gaffer:reviewer per supplied artifact/change
 - verify stages → gaffer:verifier per claim, in parallel; start at senior/high
   and justify task-grade/tier/reasoning overrides up or down while preserving
@@ -289,7 +298,7 @@ top-tier session that silently runs every worker at top tier).
 BESPOKE COMPOSITIONS — first-class, not an exception. The templates cover
 common shapes; they are a standard library, not a roster limit. When the
 domain deserves a purpose-built composition, AUTHOR ONE — the laws above still
-bind it (pin tier, layer floor, shingle), and the blocks are parts,
+bind it (pin the minimum-sufficient route and obey the shingle), and the blocks are parts,
 not requirements: borrow the comms norms and only the exact concrete model's
 calibrated delta when its provider catalog supplies one; an explicit `none`
 never inherits a neighboring model's delta. Borrow role/posture when they fit,

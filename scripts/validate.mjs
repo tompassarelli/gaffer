@@ -13,6 +13,10 @@ import {
 } from "./provider-catalog.mjs";
 import { OVERRIDE_FIELDS, ROUTING_FIELDS, validateRoutingRequest } from "./routing-request.mjs";
 import {
+  EXCEPTION_CODES, REASONING_LEVELS, SELECTION_ASSESSMENT_VERSION, SIGNAL_VALUES,
+  TIERS, deriveSelectionAssessment, validateSelectionAssessment,
+} from "./selection-assessment.mjs";
+import {
   canonicalRoleId, containedLeaf, RETIRED_ROLE_IDS, ROLE_ID_PATTERN_SOURCE,
 } from "./role-id.mjs";
 
@@ -43,6 +47,7 @@ const tiers = staffing.vocabulary.semanticTiers;
 const grades = staffing.vocabulary.taskGrades;
 const staffingSchema = JSON.parse(readFileSync(resolve(root, "staffing/catalog.schema.json"), "utf8"));
 const routingSchema = JSON.parse(readFileSync(resolve(root, "contracts/routing-request.schema.json"), "utf8"));
+const selectionSchema = JSON.parse(readFileSync(resolve(root, "contracts/selection-assessment.schema.json"), "utf8"));
 const providerSchema = JSON.parse(readFileSync(resolve(root, "providers/catalog.schema.json"), "utf8"));
 const staffingKeys = ["$schema", "version", "vocabulary", "defaults", "presets", "aliases"];
 const staffingDefinitionKeys = ["uniqueStrings", "capabilities", "preset", "alias", "roleId"];
@@ -71,6 +76,42 @@ if (staffing.version !== 2 || staffingSchema.properties?.version?.const !== 2 ||
   throw new Error("canonical staffing catalog/schema must use the exact v2 preset shape");
 if (JSON.stringify([...routingSchema.required].sort()) !== JSON.stringify([...ROUTING_FIELDS].sort()))
   throw new Error("canonical routing schema must require exactly the eight Gaffer fields");
+const selectionFields = ["version", "signals", "derived", "selected"];
+if (JSON.stringify([...(selectionSchema.required ?? [])].sort()) !== JSON.stringify([...selectionFields].sort()) ||
+    selectionSchema.properties?.version?.const !== SELECTION_ASSESSMENT_VERSION ||
+    JSON.stringify([...(selectionSchema.properties?.signals?.required ?? [])].sort()) !==
+      JSON.stringify(Object.keys(SIGNAL_VALUES).sort()) ||
+    JSON.stringify([...(selectionSchema.$defs?.tier?.enum ?? [])]) !== JSON.stringify(TIERS) ||
+    JSON.stringify([...(selectionSchema.$defs?.reasoning?.enum ?? [])]) !== JSON.stringify(REASONING_LEVELS) ||
+    JSON.stringify([...(selectionSchema.properties?.exception?.properties?.code?.enum ?? [])]) !== JSON.stringify(EXCEPTION_CODES))
+  throw new Error("selection-assessment schema drifted from minimum-sufficient-v1 executable vocabulary");
+for (const [field, values] of Object.entries(SIGNAL_VALUES))
+  if (JSON.stringify(selectionSchema.properties?.signals?.properties?.[field]?.enum ?? []) !== JSON.stringify(values))
+    throw new Error(`selection-assessment schema signal vocabulary drifted for ${field}`);
+// Ajv 2020 strict mode requires every nested `required` to be paired with a
+// local object type and local property declaration. Keep this dependency-free
+// structural assertion here; North's consumer tests perform the actual strict
+// Ajv compilation with its installed validator.
+const maxConditional = selectionSchema.allOf?.[0];
+const selectedCondition = maxConditional?.if?.properties?.selected;
+const maxThen = maxConditional?.then;
+const exceptionalThen = maxThen?.properties?.exceptionalDeliberation;
+const signalsThen = maxThen?.properties?.signals;
+const nonMaxNot = maxConditional?.else?.not;
+const exceptionalNot = nonMaxNot?.properties?.exceptionalDeliberation;
+if (selectedCondition?.type !== "object" ||
+    JSON.stringify(selectedCondition.required) !== JSON.stringify(["reasoning"]) ||
+    !Object.hasOwn(selectedCondition.properties ?? {}, "reasoning") ||
+    maxThen?.type !== "object" ||
+    JSON.stringify(maxThen.required) !== JSON.stringify(["exceptionalDeliberation"]) ||
+    exceptionalThen?.type !== "string" || exceptionalThen?.minLength !== 1 ||
+    signalsThen?.type !== "object" ||
+    JSON.stringify(signalsThen.required) !== JSON.stringify(["reasoningShape"]) ||
+    !Object.hasOwn(signalsThen.properties ?? {}, "reasoningShape") ||
+    nonMaxNot?.type !== "object" ||
+    JSON.stringify(nonMaxNot.required) !== JSON.stringify(["exceptionalDeliberation"]) ||
+    exceptionalNot?.type !== "string" || exceptionalNot?.minLength !== 1)
+  throw new Error("selection-assessment max conditional lost strict Ajv object/local-property declarations");
 if (JSON.stringify(Object.keys(providerSchema.properties ?? {}).sort()) !== JSON.stringify([...providerCatalogKeys].sort()) ||
     JSON.stringify([...(providerSchema.required ?? [])].sort()) !==
       JSON.stringify(providerCatalogKeys.filter((key) => key !== "$schema").sort()) ||
@@ -635,6 +676,25 @@ for (const fixture of routingFixtures.valid) {
   try { validateRoutingRequest(fixture.request, staffing); }
   catch (error) { throw new Error(`valid routing fixture '${fixture.name}' failed: ${error.message}`); }
 }
+
+const selectionFixtures = JSON.parse(readFileSync(resolve(root, "contracts/selection-assessment.fixtures.json"), "utf8"));
+if (selectionFixtures.version !== 1) throw new Error("selection-assessment fixtures must remain version 1");
+for (const fixture of selectionFixtures.valid) {
+  try { validateSelectionAssessment(fixture.assessment); }
+  catch (error) { throw new Error(`valid selection fixture '${fixture.name}' failed: ${error.message}`); }
+}
+for (const fixture of selectionFixtures.invalid) {
+  try { validateSelectionAssessment(fixture.assessment); throw new Error("invalid selection fixture was accepted"); }
+  catch (error) {
+    if (error.message === "invalid selection fixture was accepted" || !error.message.includes(fixture.errorContains))
+      throw new Error(`invalid selection fixture '${fixture.name}' produced wrong error: ${error.message}`);
+  }
+}
+for (const fixture of selectionFixtures.valid) {
+  const recomputed = deriveSelectionAssessment(fixture.assessment.signals);
+  if (JSON.stringify(recomputed) !== JSON.stringify(fixture.assessment.derived))
+    throw new Error(`selection fixture '${fixture.name}' does not carry the exact recomputed derivation`);
+}
 for (const fixture of routingFixtures.invalid) {
   try { validateRoutingRequest(fixture.request, staffing); throw new Error("invalid routing fixture was accepted"); }
   catch (error) {
@@ -775,6 +835,11 @@ const compose = (argv) => {
 };
 const hasExactRoutingFields = (payload) =>
   JSON.stringify(Object.keys(payload).sort()) === JSON.stringify([...ROUTING_FIELDS].sort());
+const selectionFixture = (name) => {
+  const assessment = selectionFixtures.valid.find((fixture) => fixture.name === name)?.assessment;
+  if (!assessment) throw new Error(`selection fixture is missing: ${name}`);
+  return JSON.stringify(assessment);
+};
 
 // Topology is coordination authority only: worker|orchestrator. Reviewer,
 // verifier, and judge are worker-topology ROLES, never a third topology.
@@ -987,7 +1052,6 @@ for (const [role, flag, value, field] of [
   ["integrator", "--posture", "preserve", "posture"],
   ["integrator", "--domain", "Nix", "domainRequirements"],
   ["implementer", "--tier", "senior", "tier"],
-  ["designer", "--deliberation", "max", "reasoning"],
 ]) {
   const base = compose([role]).payload;
   const { status, payload, stderr } = compose([role, flag, value, "--override-reason", `test ${field} override`]);
@@ -1000,6 +1064,49 @@ for (const [role, flag, value, field] of [
     if (axis === field || JSON.stringify(payload[axis]) === JSON.stringify(base[axis])) continue;
     throw new Error(`override ${flag} collapsed orthogonal axis ${axis}`);
   }
+}
+
+// The versioned assessment is a sidecar: it can select tier/reasoning, but it
+// never adds a ninth request field or mutate any orthogonal routing axis.
+for (const [fixtureName, role, expectedTier, expectedReasoning, overrideReason] of [
+  ["foundational mechanical implementation remains economy", "executor", "economy", "low", null],
+  ["foundational known-pattern implementation remains standard", "implementer", "standard", "medium", null],
+  ["foundational invariant decision routes senior", "implementer", "senior", "medium", "owns a foundational invariant decision"],
+  ["system synthesis routes frontier", "designer", "frontier", "xhigh", null],
+]) {
+  const base = compose([role]).payload;
+  const args = [role, "--assessment", selectionFixture(fixtureName)];
+  if (overrideReason) args.push("--override-reason", overrideReason);
+  const { status, payload, stderr } = compose(args);
+  if (status !== 0 || payload.tier !== expectedTier || payload.reasoning !== expectedReasoning ||
+      !hasExactRoutingFields(payload))
+    throw new Error(`selection assessment boundary '${fixtureName}' failed: ${stderr}`);
+  for (const axis of ROUTING_FIELDS.filter((axis) => !["tier", "reasoning", "composition"].includes(axis)))
+    if (JSON.stringify(payload[axis]) !== JSON.stringify(base[axis]))
+      throw new Error(`selection assessment '${fixtureName}' collapsed orthogonal axis ${axis}`);
+}
+
+{
+  const maxAssessment = selectionFixture("exceptional max route carries concrete justification");
+  const { status, payload, stderr } = compose(["designer", "--assessment", maxAssessment,
+    "--override-reason", "exceptional system design requires maximum deliberation"]);
+  if (status !== 0 || payload.tier !== "frontier" || payload.reasoning !== "max" || !hasExactRoutingFields(payload))
+    throw new Error(`exceptional max assessment failed: ${stderr}`);
+  const noAssessment = compose(["designer", "--deliberation", "max", "--override-reason", "unsupported bare max"]);
+  if (noAssessment.status === 0 || !noAssessment.stderr.includes("max reasoning requires --assessment"))
+    throw new Error("composer accepted max without exceptional-deliberation assessment");
+}
+
+{
+  const tampered = selectionFixtures.invalid.find(({ name }) => name === "tampered derived floor")?.assessment;
+  const result = compose(["designer", "--assessment", JSON.stringify(tampered)]);
+  if (result.status === 0 || !result.stderr.includes("mechanically recomputed"))
+    throw new Error("composer accepted tampered derived selection values");
+  const mismatch = compose(["implementer", "--tier", "senior", "--assessment",
+    selectionFixture("foundational known-pattern implementation remains standard"),
+    "--override-reason", "mismatch probe"]);
+  if (mismatch.status === 0 || !mismatch.stderr.includes("conflicts with assessment selection"))
+    throw new Error("composer accepted tier flags that contradict the selection sidecar");
 }
 for (const [direction, args, expected] of [
   ["down", ["--task-grade", "mid", "--tier", "standard", "--deliberation", "medium"],
@@ -1023,9 +1130,12 @@ for (const [direction, args, expected] of [
       !incompatibleTopology.stderr.includes("--topology applies only to bespoke compositions"))
     throw new Error("composer accepted a stock-template topology option");
 }
-// In-tier deliberation override (frontier resolves xhigh AND max) is a valid single-axis move.
+// In-tier max deliberation remains a valid single-axis move when its exceptional
+// class and concrete circumstance are carried by the sidecar.
 {
-  const { status, payload } = compose(["designer", "--deliberation", "max", "--override-reason", "maximum design deliberation"]);
+  const { status, payload } = compose(["designer", "--assessment",
+    selectionFixture("exceptional max route carries concrete justification"),
+    "--override-reason", "maximum design deliberation"]);
   if (status !== 0 || payload.tier !== "frontier" || payload.reasoning !== "max")
     throw new Error("in-tier deliberation override (frontier xhigh→max) must pass");
 }
@@ -1055,6 +1165,8 @@ for (const tier of staffing.vocabulary.semanticTiers) {
   const supported = resolvableDeliberations(tier);
   for (const deliberation of staffing.vocabulary.deliberations) {
     const args = ["integrator", "--tier", tier, "--deliberation", deliberation];
+    if (tier === "frontier" && deliberation === "max")
+      args.push("--assessment", selectionFixture("exceptional max route carries concrete justification"));
     if (tier !== matrixBase.tier || deliberation !== matrixBase.reasoning)
       args.push("--override-reason", "matrix probe");
     const { status, stderr } = compose(args);
@@ -1125,6 +1237,12 @@ for (const unsupported of ["--leverage", "--quality-floor", "--dependency-shape"
   if (/layer floor\s*(?:→|->)\s*integrator|foundational targets? get gaffer:integrator|ANY work on foundational/i.test(
     `${readme}\n${doctrine}\n${JSON.stringify(staffing.presets)}`))
     throw new Error("layer floor must raise capability without renaming the task function");
+  const selectionPolicyText = `${readme}\n${doctrine}\n${method}\n${routing}\n${composeSkill}\n${JSON.stringify(staffing.presets)}`;
+  if (/foundational(?:\s*\/\s*library)?(?:\s*\/\s*architecture)?[\s\S]{0,100}never routes? below[\s\S]{0,30}senior|foundational targets? raises? (?:the )?(?:semantic )?tier/i.test(selectionPolicyText))
+    throw new Error("blanket foundational senior floor returned; implementation-only work must remain eligible for economy/standard");
+  for (const phrase of ["minimum-sufficient-v1", "implementation-only", "invariant decision", "exactly eight fields"])
+    if (!selectionPolicyText.includes(phrase))
+      throw new Error(`minimum-sufficient policy documentation lost required boundary: ${phrase}`);
   if (/root CLAUDE\.md/.test(roles)) throw new Error("role blocks must route to canonical AGENTS.md");
   if (/any second file the spec didn't name|3\+ distant subsystems/i.test(roles) ||
       !/mechanically coupled or generated surfaces required by the specified\s+change/i.test(roles) ||

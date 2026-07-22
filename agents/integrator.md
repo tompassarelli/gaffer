@@ -1,6 +1,6 @@
 ---
 name: "integrator"
-description: "Integrate-shaped tasks — changes across behavioral seams, ambiguous debugging, and refactors with behavior at stake. Senior engineering stock template. Foundational/library/architecture work has at least a senior capability floor, but layer alone does not make the function integration. For choosing a new design shape rather than working within one, use designer instead. Task grade: senior."
+description: "Integrate-shaped tasks — changes across consequential behavioral seams, ambiguous debugging, and refactors with behavior at stake. Senior engineering stock template. Cross-boundary decision ownership or consequential seams establish the senior floor; repository layer alone does not. For choosing a new design shape rather than working within one, use designer instead. Task grade: senior."
 model: "claude-opus-4-8"
 effort: "high"
 tools: "Read, Grep, Glob, Edit, Write, Bash"

@@ -3,6 +3,7 @@ import { loadStaffingCatalog } from "./staffing-catalog.mjs";
 import { readFileSync } from "node:fs";
 import { presetOverrides, validateRoutingRequest } from "./routing-request.mjs";
 import { canonicalRoleId } from "./role-id.mjs";
+import { assertAssessmentSelection, validateSelectionAssessment } from "./selection-assessment.mjs";
 
 const usage = `usage: node scripts/compose-routing.mjs <role> [options]
 
@@ -16,6 +17,7 @@ Routing options:
   --nearest <template>      optional stock-template reference/defaults for a bespoke composition
   --rationale <reason>      required when <role> is not a stock template or alias
   --contract <JSON|@file>   bespoke authority/deliverable/done contract
+  --assessment <JSON|@file> minimum-sufficient-v1 selection sidecar
   --promotion-candidate     nominate a bespoke composition for review
   --no-promotion-candidate  explicit false (the default; accepted for clarity)
   --override-reason <why>   required when changing an overrideable stock-template axis
@@ -41,7 +43,7 @@ function argumentsOf(argv) {
     "--taskGrade": "taskGrade", "--task-grade": "taskGrade", "--domain": "domain",
     "--topology": "topology", "--tier": "tier", "--deliberation": "deliberation", "--reasoning": "deliberation",
     "--posture": "posture", "--nearest": "nearest", "--rationale": "rationale",
-    "--contract": "contract", "--override-reason": "overrideReason",
+    "--contract": "contract", "--assessment": "assessment", "--override-reason": "overrideReason",
     "--promotion-candidate": "promotionCandidate", "--no-promotion-candidate": "noPromotionCandidate",
   };
   for (let index = 1; index < argv.length; index++) {
@@ -85,7 +87,8 @@ if (!preset && !nearest) {
     ["taskGrade", "--task-grade"], ["topology", "--topology"], ["tier", "--tier"],
     ["deliberation", "--deliberation/--reasoning"], ["posture", "--posture"],
   ];
-  const missing = required.filter(([field]) => args[field] === undefined).map(([, option]) => option);
+  const assessedFields = args.assessment ? new Set(["tier", "deliberation"]) : new Set();
+  const missing = required.filter(([field]) => args[field] === undefined && !assessedFields.has(field)).map(([, option]) => option);
   if (missing.length)
     die(`bespoke composition without --nearest must explicitly set: ${missing.join(", ")}`);
 }
@@ -96,11 +99,25 @@ function parseContract(input) {
   catch (error) { die(`--contract must be valid JSON or @file: ${error.message}`); }
 }
 
+function parseAssessment(input) {
+  const source = input.startsWith("@") ? readFileSync(input.slice(1), "utf8") : input;
+  let value;
+  try { value = JSON.parse(source); }
+  catch (error) { die(`--assessment must be valid JSON or @file: ${error.message}`); }
+  try { return validateSelectionAssessment(value); }
+  catch (error) { die(error.message); }
+}
+
 const template = preset ?? nearest ?? catalog.defaults;
+const assessment = args.assessment ? parseAssessment(args.assessment) : null;
+if (assessment && args.tier !== undefined && args.tier !== assessment.selected.tier)
+  die(`--tier ${args.tier} conflicts with assessment selection ${assessment.selected.tier}`);
+if (assessment && args.deliberation !== undefined && args.deliberation !== assessment.selected.reasoning)
+  die(`--deliberation/--reasoning ${args.deliberation} conflicts with assessment selection ${assessment.selected.reasoning}`);
 const selected = {
   taskGrade: args.taskGrade ?? template.taskGrade,
-  tier: args.tier ?? template.tier,
-  deliberation: args.deliberation ?? template.deliberation,
+  tier: args.tier ?? assessment?.selected.tier ?? template.tier,
+  deliberation: args.deliberation ?? assessment?.selected.reasoning ?? template.deliberation,
   topology: preset ? preset.topology : (args.topology ?? template.topology),
   posture: args.posture ?? template.posture ?? catalog.defaults.posture,
 };
@@ -138,5 +155,11 @@ if (preset) {
 
 try { validateRoutingRequest(payload, catalog); }
 catch (error) { die(error.message); }
+if (assessment) {
+  try { assertAssessmentSelection(assessment, payload.tier, payload.reasoning); }
+  catch (error) { die(error.message); }
+} else if (payload.reasoning === "max") {
+  die("max reasoning requires --assessment with reasoningShape exceptional and exceptionalDeliberation");
+}
 
 console.log(JSON.stringify(payload));

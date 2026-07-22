@@ -13,11 +13,13 @@ importance alone never does.
 
 Two empirical laws sharpen the routing:
 
-- **Layer floor.** Foundational / library / architecture code never routes
-  below the `senior` semantic tier, however mechanical the task looks. Lower
-  tiers extend established patterns in well-trodden code; foundational work
-  needs senior or frontier judgment even when the diff is small. The stack
-  layer sets the floor, not surface difficulty.
+- **Minimum-sufficient floor.** Repository or stack layer is not a capability
+  proxy. Foundational implementation-only work may remain `economy` or
+  `standard` when it owns no invariant decision and has a bounded seam plus an
+  objective oracle. Foundational invariant-decision ownership routes at least
+  `senior`; system-shaping/open-solution ownership or system synthesis routes
+  `frontier`. The selection assessment makes that boundary explicit instead of
+  promoting every foundational edit.
 - **Shingle law.** A provider catalog exposes only useful
   model×deliberation rungs and assigns each exact rung to only one semantic
   tier. When an upper rung is dominated by the next route's lower rung, the
@@ -28,6 +30,31 @@ Two empirical laws sharpen the routing:
   generated from the catalogs in
   [`docs/provider-matrix.md`](provider-matrix.md); they are evidence for the
   mapping, not shared doctrine.
+
+## Minimum-sufficient selection assessment
+
+Role still describes the deliverable, while a versioned sidecar derives the
+minimum route from seven independent signals:
+
+| Signal | Question |
+|---|---|
+| `decisionOwnership` | Is the worker executing, making a bounded choice, owning a cross-boundary invariant, shaping a system, or exploring an open solution class? |
+| `seamScope` | Are there no seams, established seams, consequential seams, or system-wide seams? |
+| `errorExposure` | Is a plausible error contained/reversible, material/recoverable, or high/hard to reverse? |
+| `oracleStrength` | Is the outcome objectively checkable locally/end-to-end, only partially observed, or judgment-only? |
+| `foundationalImpact` | Is foundational code untouched, implementation-only, or does the lane own an invariant decision? |
+| `dependencyShape` | Is work atomic, a fixed workflow, parallel breadth, dynamic decomposition, or tightly coupled sequential work? |
+| `reasoningShape` | Is reasoning deterministic, bounded branching, multi-hypothesis, system synthesis, or exceptional? |
+
+`scripts/selection-assessment.mjs` recomputes `minimumTier`,
+`minimumReasoning`, and stable `ruleCodes` from those signals. A selected route
+below either minimum is invalid. A route above either minimum needs one of four
+explicit exception codes plus detail: `explicit-human-floor`,
+`recent-lower-tier-failure`, `calibration-experiment`, or `unmodeled-risk`.
+`max` is valid only for `reasoningShape=exceptional` with a concrete nonempty
+`exceptionalDeliberation`; that field is rejected below max so stale ceremony
+cannot accumulate. Free-text stock-template `overrideReason` remains distinct
+human provenance. The assessment is a sidecar, never a ninth request field.
 
 ## Review is an artifact-evaluation shape
 
@@ -103,7 +130,7 @@ edit, implement, or repair a worker's piece.
 
 **Leading words.** One strong pretrained concept anchors a whole region of
 behaviour in the fewest tokens, by recruiting priors the model already holds
-(*tight loop*, *red-capable*, *driven end-to-end*, *layer floor*). It works
+(*tight loop*, *red-capable*, *driven end-to-end*, *minimum-sufficient floor*). It works
 twice: in the body it anchors execution — the worker reaches for the same
 behaviour every time the word appears — and in the invocation it anchors
 firing, the same word in prompts, docs, and code linking them to the intent.

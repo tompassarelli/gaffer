@@ -17,19 +17,19 @@
       "name": "executor", "taskGrade": "novice", "tier": "economy", "deliberation": "low", "topology": "worker", "posture": "deliver",
       "capabilities": ["filesystem.read", "filesystem.search", "filesystem.write", "shell"],
       "tagline": "the specified change, applied exactly",
-      "description": "Execute-shaped tasks — bounded, mechanical, fully specified. Apply a patch, rename a symbol, add obvious tests, fix lint. Economy is the default capability tier; a foundational target raises the tier without changing an execute-shaped deliverable into integration. Do NOT use when any judgment call is needed (→ implementer) or when behavior crosses a seam (→ integrator)."
+      "description": "Execute-shaped tasks — bounded, mechanical, fully specified. Apply a patch, rename a symbol, add obvious tests, fix lint. Economy remains valid for foundational implementation-only work when no invariant decision is owned. Do NOT use when any judgment call is needed (→ implementer) or when behavior crosses a seam (→ integrator)."
     },
     {
       "name": "implementer", "taskGrade": "mid", "tier": "standard", "deliberation": "medium", "topology": "worker", "posture": "deliver",
       "capabilities": ["filesystem.read", "filesystem.search", "filesystem.write", "shell"],
       "tagline": "a working feature or fix inside existing patterns",
-      "description": "Implement-shaped tasks — one feature or fix inside known patterns. The junior/mid-level development stock template. A foundational target raises the semantic tier without changing an implement-shaped deliverable into integration. Do NOT use for ambiguous cross-seam debugging (→ integrator) or for anything choosing a new shape (→ designer)."
+      "description": "Implement-shaped tasks — one feature or fix inside known patterns. The junior/mid-level development stock template. Foundational implementation inside established invariants may remain standard; owning an invariant decision raises the minimum without changing the deliverable into integration. Do NOT use for ambiguous cross-seam debugging (→ integrator) or for anything choosing a new shape (→ designer)."
     },
     {
       "name": "integrator", "taskGrade": "senior", "tier": "senior", "deliberation": "high", "topology": "worker", "posture": "deliver",
       "capabilities": ["filesystem.read", "filesystem.search", "filesystem.write", "shell"],
       "tagline": "a working change across seams, with the map of what moved",
-      "description": "Integrate-shaped tasks — changes across behavioral seams, ambiguous debugging, and refactors with behavior at stake. Senior engineering stock template. Foundational/library/architecture work has at least a senior capability floor, but layer alone does not make the function integration. For choosing a new design shape rather than working within one, use designer instead."
+      "description": "Integrate-shaped tasks — changes across consequential behavioral seams, ambiguous debugging, and refactors with behavior at stake. Senior engineering stock template. Cross-boundary decision ownership or consequential seams establish the senior floor; repository layer alone does not. For choosing a new design shape rather than working within one, use designer instead."
     },
     {
       "name": "designer", "taskGrade": "staff", "tier": "frontier", "deliberation": "xhigh", "topology": "worker", "posture": "explore",

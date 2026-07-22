@@ -1,6 +1,6 @@
 ---
 name: "executor"
-description: "Execute-shaped tasks — bounded, mechanical, fully specified. Apply a patch, rename a symbol, add obvious tests, fix lint. Economy is the default capability tier; a foundational target raises the tier without changing an execute-shaped deliverable into integration. Do NOT use when any judgment call is needed (→ implementer) or when behavior crosses a seam (→ integrator). Task grade: novice."
+description: "Execute-shaped tasks — bounded, mechanical, fully specified. Apply a patch, rename a symbol, add obvious tests, fix lint. Economy remains valid for foundational implementation-only work when no invariant decision is owned. Do NOT use when any judgment call is needed (→ implementer) or when behavior crosses a seam (→ integrator). Task grade: novice."
 model: "claude-sonnet-5"
 effort: "low"
 tools: "Read, Grep, Glob, Edit, Write, Bash"

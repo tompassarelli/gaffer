@@ -1,6 +1,6 @@
 ---
 name: "implementer"
-description: "Implement-shaped tasks — one feature or fix inside known patterns. The junior/mid-level development stock template. A foundational target raises the semantic tier without changing an implement-shaped deliverable into integration. Do NOT use for ambiguous cross-seam debugging (→ integrator) or for anything choosing a new shape (→ designer). Task grade: mid."
+description: "Implement-shaped tasks — one feature or fix inside known patterns. The junior/mid-level development stock template. Foundational implementation inside established invariants may remain standard; owning an invariant decision raises the minimum without changing the deliverable into integration. Do NOT use for ambiguous cross-seam debugging (→ integrator) or for anything choosing a new shape (→ designer). Task grade: mid."
 model: "claude-sonnet-5"
 effort: "medium"
 tools: "Read, Grep, Glob, Edit, Write, Bash"
