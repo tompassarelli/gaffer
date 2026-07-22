@@ -1,7 +1,7 @@
 ---
 name: "director"
 description: "Director-shaped work — a task with two or more genuinely independent pieces whose seams must be designed, staffed, evidence-reconciled, and integrated. The standard high-capability orchestrator function: decomposes to terminal worker briefs, routes every worker independently, consumes worker evidence and verifier reports, drives the aggregate end-to-end, independently spot-checks materially load-bearing seams, owns cross-cutting constraints, and returns one result. It does not execute worker subtasks or absorb their full local-probe burden. Use a worker role for atomic or tightly coupled work; override taskGrade to principal when direction spans systems or long-lived constraints. Task grade: staff."
-model: "claude-opus-4-8"
+model: "claude-fable-5"
 effort: "xhigh"
 tools: "Read, Grep, Glob, WebSearch, WebFetch, Agent"
 ---

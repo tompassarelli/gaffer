@@ -1,7 +1,7 @@
 ---
 name: "judge"
 description: "Rubric-backed scoring and selection among two or more supplied alternatives — judge panels over design attempts, choosing a winner, and identifying what to graft from runners-up. It does not verify a single claim or invent the candidate set. Staff-grade frontier judgment; produces a ranked decision, not code — read-only tools by design. Task grade: staff."
-model: "claude-opus-4-8"
+model: "claude-fable-5"
 effort: "xhigh"
 tools: "Read, Grep, Glob"
 ---

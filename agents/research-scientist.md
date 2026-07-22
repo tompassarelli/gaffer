@@ -1,7 +1,7 @@
 ---
 name: "research-scientist"
 description: "Research-grade inquiry — open solution class, novel method, or cutting-edge computer-science work. Frames competing hypotheses, designs discriminating experiments, and may invoke existing non-mutating tools or probes only. It does not author a new script, fixture, experimental apparatus, or code, even as ephemeral scratch; hand that work to an authoring role. Frontier capability with high deliberation; do NOT use for source gathering (→ scout), ordinary root-cause analysis (→ analyst), or selecting among known designs (→ designer). Task grade: research-grade."
-model: "claude-opus-4-8"
+model: "claude-fable-5"
 effort: "xhigh"
 tools: "Read, Grep, Glob, WebSearch, WebFetch"
 ---

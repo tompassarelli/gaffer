@@ -147,7 +147,7 @@
     },
     "claude-fable-5": {
       "kind": "none",
-      "reason": "runtime-only catalog candidate has no calibrated Gaffer delta"
+      "reason": "no elicited Fable self-report yet establishes an exact Claude Fable 5 calibration for the canonical frontier default"
     }
   },
   "tiers": {
@@ -174,7 +174,7 @@
       "defaultEffort": "high"
     },
     "frontier": {
-      "model": "claude-opus-4-8",
+      "model": "claude-fable-5",
       "efforts": [
         "xhigh",
         "max"
