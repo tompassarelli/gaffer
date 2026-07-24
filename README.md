@@ -1,3 +1,24 @@
+> [!IMPORTANT]
+> **This repository is archived. Its work now lives inside North.**
+>
+> As of 2026-07-25 this project was absorbed into
+> [`tompassarelli/north`](https://github.com/tompassarelli/north) as the
+> `orchestration/` directory, with full commit history preserved via
+> `git subtree`. It is no longer a separate flake input or a separate
+> checkout, and the name "gaffer" has been retired in favour of
+> "orchestration" throughout.
+>
+> **Why:** the routing catalog and the runtime that consumes it kept drifting
+> apart — the catalog would move and North's validators and fixtures would not,
+> which repeatedly broke builds in ways that were hard to attribute. Living in
+> one repository means the catalog, its validators, and its fixtures move
+> together in a single commit.
+>
+> Nothing here is maintained. For current routing doctrine, staffing catalog and
+> provider deltas, see `orchestration/` in North.
+
+---
+
 # gaffer
 
 *Every squad needs a gaffer.*
