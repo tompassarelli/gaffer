@@ -68,10 +68,32 @@
   ],
   "modelAliases": {
     "sonnet": "claude-sonnet-5",
-    "opus": "claude-opus-4-8",
+    "opus": "claude-opus-5",
     "fable": "claude-fable-5"
   },
   "models": {
+    "claude-opus-5": {
+      "efforts": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "routes": {
+        "senior": [
+          "medium",
+          "high"
+        ],
+        "frontier": [
+          "xhigh"
+        ]
+      },
+      "contextWindow": {
+        "tokens": 1000000,
+        "effectiveFrom": "2026-07-25"
+      }
+    },
     "claude-sonnet-5": {
       "efforts": [
         "low",
@@ -137,6 +159,10 @@
     }
   },
   "modelDeltas": {
+    "claude-opus-5": {
+      "kind": "none",
+      "reason": "adopted as senior+director default 2026-07-25 on benchmark grounding; exact Opus 5 delta pending a gaffer:elicit calibration pass"
+    },
     "claude-sonnet-5": {
       "kind": "none",
       "reason": "the existing unversioned Sonnet self-report does not establish an exact Sonnet 5 calibration"
@@ -166,7 +192,7 @@
       "defaultEffort": "medium"
     },
     "senior": {
-      "model": "claude-opus-4-8",
+      "model": "claude-opus-5",
       "efforts": [
         "medium",
         "high"
@@ -174,10 +200,9 @@
       "defaultEffort": "high"
     },
     "frontier": {
-      "model": "claude-fable-5",
+      "model": "claude-opus-5",
       "efforts": [
-        "xhigh",
-        "max"
+        "xhigh"
       ],
       "defaultEffort": "xhigh"
     }
